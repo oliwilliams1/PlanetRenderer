@@ -16,14 +16,12 @@ endif()
 project ("PlanetRenderer")
 
 find_package(glfw3 CONFIG REQUIRED)
-find_package(glm CONFIG REQUIRED)
-find_package(imgui CONFIG REQUIRED)
 
 # Add source to this project's executable.
 add_executable(PlanetRenderer "main.cpp" "PlanetRenderer.h")
 
 # Link libraries
-target_link_libraries(PlanetRenderer PRIVATE glfw glm imgui)
+target_link_libraries(PlanetRenderer PRIVATE glfw)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET PlanetRenderer PROPERTY CXX_STANDARD 20)

@@ -1,8 +1,10 @@
-﻿// PlanetRenderer.h : Include file for standard system include files,
-// or project specific include files.
+﻿#pragma once
 
-#pragma once
-
+// Standard library stuff
 #include <iostream>
+#include <stdio.h>
 
-// TODO: Reference additional headers your program requires here.
+// External libraries
+#include <GLFW/glfw3.h>
+
+// Own stuff

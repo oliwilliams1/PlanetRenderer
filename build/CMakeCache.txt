@@ -179,8 +179,8 @@ CMAKE_STATIC_LINKER_FLAGS_RELEASE:STRING=
 // during RELWITHDEBINFO builds.
 CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 
-//The CMake toolchain file
-CMAKE_TOOLCHAIN_FILE:FILEPATH=C:/Program Files/Microsoft Visual Studio/2022/Community/VC/vcpkg/scripts/buildsystems/vcpkg.cmake
+//Vcpkg toolchain file
+CMAKE_TOOLCHAIN_FILE:STRING=C:/Program Files/Microsoft Visual Studio/2022/Community/VC/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 //If this value is on, makefiles will be generated without the
 // .SILENT directive, and all commands will be echoed to the console
@@ -269,7 +269,7 @@ _VCPKG_INSTALLED_DIR:PATH=C:/Users/Oliver/source/repos/PlanetRenderer/build/vcpk
 glfw3_DIR:PATH=C:/Users/Oliver/source/repos/PlanetRenderer/build/vcpkg_installed/x64-windows/share/glfw3
 
 //The directory containing a CMake configuration file for glm.
-glm_DIR:PATH=C:/Users/Oliver/source/repos/PlanetRenderer/build/vcpkg_installed/x64-windows/share/glm
+glm_DIR:PATH=glm_DIR-NOTFOUND
 
 //The directory containing a CMake configuration file for imgui.
 imgui_DIR:PATH=C:/Users/Oliver/source/repos/PlanetRenderer/build/vcpkg_installed/x64-windows/share/imgui
