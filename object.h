@@ -13,6 +13,5 @@ public:
 	void Draw() const;
 
 private:
-	GLuint VAO, VBO;
-	GLuint ShaderProgram;
+	GLuint VAO, VBO, IBO;
 };
