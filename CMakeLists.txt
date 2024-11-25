@@ -16,6 +16,7 @@ project ("PlanetRenderer")
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(imgui CONFIG REQUIRED)
 
 # Add source to this project's executable.
 add_executable(PlanetRenderer "main.cpp" "PlanetRenderer.h" "object.cpp" "object.h" "shader.h" "shader.cpp" "camera.h" "camera.cpp")
@@ -24,6 +25,7 @@ add_executable(PlanetRenderer "main.cpp" "PlanetRenderer.h" "object.cpp" "object
 target_link_libraries(PlanetRenderer PRIVATE glfw)
 target_link_libraries(PlanetRenderer PRIVATE glm::glm)
 target_link_libraries(PlanetRenderer PRIVATE GLEW::GLEW)
+target_link_libraries(PlanetRenderer PRIVATE imgui::imgui)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET PlanetRenderer PROPERTY CXX_STANDARD 20)

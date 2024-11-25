@@ -29,7 +29,7 @@ Architecture: x64-windows
 Multi-Arch: same
 Abi: 193bea62084f7942071557a25d5247f138ed52f366335f56f3475bbcebd50eaf
 Description: OpenGL Mathematics (GLM)
-Status: purge ok not-installed
+Status: install ok installed
 
 Package: imgui
 Version: 1.90.7
