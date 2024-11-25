@@ -1,0 +1,26 @@
+# ninja log v5
+30	561	7542062559152900	src/CMakeFiles/glfw.dir/monitor.c.obj	181eba048938305e
+39	575	7542062559187897	src/CMakeFiles/glfw.dir/vulkan.c.obj	8dec66255cc81a31
+78	586	7542062559277893	src/CMakeFiles/glfw.dir/null_init.c.obj	26931b075a085694
+22	597	7542062559417897	src/CMakeFiles/glfw.dir/init.c.obj	cfab29c7ab8052f5
+65	722	7542062560767896	src/CMakeFiles/glfw.dir/egl_context.c.obj	cb01c61d03e555e0
+94	739	7542062560947888	src/CMakeFiles/glfw.dir/null_window.c.obj	ea373715ed1a953e
+563	955	7542062563127888	src/CMakeFiles/glfw.dir/win32_module.c.obj	d47c8b89248dd71e
+586	1013	7542062563607917	src/CMakeFiles/glfw.dir/win32_thread.c.obj	c6cff4130a68ebe4
+70	1025	7542062563527896	src/CMakeFiles/glfw.dir/osmesa_context.c.obj	e72919441dc7a4f0
+17	1180	7542062564662901	src/CMakeFiles/glfw.dir/context.c.obj	a5f258d44d6132c9
+34	1187	7542062565197903	src/CMakeFiles/glfw.dir/platform.c.obj	6301f9f39a85ebb9
+43	1194	7542062565117892	src/CMakeFiles/glfw.dir/window.c.obj	1d82ed1b6b2ec592
+26	1201	7542062565127909	src/CMakeFiles/glfw.dir/input.c.obj	e1a23391c429769
+83	1209	7542062565347912	src/CMakeFiles/glfw.dir/null_monitor.c.obj	5da53641c0605c9f
+723	1244	7542062565987890	src/CMakeFiles/glfw.dir/win32_joystick.c.obj	fca18da416054585
+104	1309	7542062566387904	src/CMakeFiles/glfw.dir/null_joystick.c.obj	64009df0a13ee3a2
+1026	1372	7542062567327896	src/CMakeFiles/glfw.dir/glfw.rc.res	df2ec765398e93b6
+576	1398	7542062567557902	src/CMakeFiles/glfw.dir/win32_time.c.obj	42f2f81636323fc
+598	1449	7542062568067901	src/CMakeFiles/glfw.dir/win32_init.c.obj	68e27a9b42ebc3a3
+739	1547	7542062569032884	src/CMakeFiles/glfw.dir/win32_monitor.c.obj	d4e9926f5d88f960
+956	1615	7542062569712905	src/CMakeFiles/glfw.dir/win32_window.c.obj	e76e10c7578eb155
+1013	1652	7542062570107909	src/CMakeFiles/glfw.dir/wgl_context.c.obj	33f0c78ce47f6816
+1653	1810	7542062571587891	src/glfw3.dll	692ce3854d1471a9
+1653	1810	7542062571587891	src/glfw3dll.lib	692ce3854d1471a9
+1811	2662	0	CMakeFiles/install.util	c969f65bdb583eb4
