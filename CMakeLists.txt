@@ -11,20 +11,31 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-
-
 project ("PlanetRenderer")
 
 find_package(glfw3 CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
+find_package(GLEW REQUIRED)
 
 # Add source to this project's executable.
-add_executable(PlanetRenderer "main.cpp" "PlanetRenderer.h")
+add_executable(PlanetRenderer "main.cpp" "PlanetRenderer.h" "object.cpp" "object.h" "shader.h" "shader.cpp")
 
 # Link libraries
 target_link_libraries(PlanetRenderer PRIVATE glfw)
+target_link_libraries(PlanetRenderer PRIVATE glm::glm)
+target_link_libraries(PlanetRenderer PRIVATE GLEW::GLEW)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET PlanetRenderer PROPERTY CXX_STANDARD 20)
 endif()
 
-# TODO: Add tests and install targets if needed.
+# Add shaders to build
+set(SHADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")
+
+# Collect shader files
+file(GLOB SHADERS "${SHADER_DIR}/*.vert" "${SHADER_DIR}/*.frag")
+
+# Copy shaders to the output directory after build
+add_custom_command(TARGET PlanetRenderer POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${SHADER_DIR} $<TARGET_FILE_DIR:PlanetRenderer>/shaders)
