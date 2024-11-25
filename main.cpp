@@ -42,16 +42,12 @@ int main()
 	Object triangle = Object();
 
 	while (!glfwWindowShouldClose(window)) {
-		camera.update();
-		triangle.Draw();
-
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::Begin("Camera data view");
-		ImGui::Text("Sample");
-		ImGui::End();
+		camera.update();
+		triangle.Draw();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -10,6 +10,8 @@ Camera::Camera(GLFWwindow* window, int width, int height) {
 	this->pitch = 0.0f;
 	this->speed = 0.01f;
 
+	this->position = glm::vec3(0, 0, 0);
+
 	this->up = glm::vec3(0, 1, 0);
 	this->right = glm::vec3(1, 0, 0);
 	this->forward = glm::vec3(0, 0, -1);
@@ -33,6 +35,14 @@ void Camera::update()
 		position += glm::normalize(glm::cross(forward, up)) * speed;
 	}
 
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+		position += glm::vec3(0, 1, 0) * speed;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+		position -= glm::vec3(0, 1, 0) * speed;
+	}
+
 	yaw, pitch = glm::radians(yaw), glm::radians(pitch);
 	
 	float cosPitch = glm::cos(pitch);
@@ -51,4 +61,10 @@ void Camera::update()
 	glm::mat4 m_Proj = glm::perspective(glm::radians(fov), aspectRatio, zNear, zFar);
 
 	m_ProjView = m_Proj * m_View;
+
+	ImGui::Begin("Camera data view");
+	ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
+	ImGui::Text("Forward: (%.2f, %.2f, %.2f)", forward.x, forward.y, forward.z);
+	ImGui::Text("Up: (%.2f, %.2f, %.2f)", up.x, up.y, up.z);
+	ImGui::End();
 }
