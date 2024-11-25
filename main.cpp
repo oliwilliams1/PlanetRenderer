@@ -26,10 +26,14 @@ int main()
 
 	std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+	Camera camera = Camera(window, width, height);
 	Shader triangleShader = Shader("shaders/triangle.vert", "shaders/triangle.frag");
 	Object triangle = Object();
 
 	while (!glfwWindowShouldClose(window)) {
+		camera.update();
 		triangle.Draw();
 		glfwSwapBuffers(window);
 		glfwPollEvents();

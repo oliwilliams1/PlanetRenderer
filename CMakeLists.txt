@@ -18,7 +18,7 @@ find_package(glm CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 
 # Add source to this project's executable.
-add_executable(PlanetRenderer "main.cpp" "PlanetRenderer.h" "object.cpp" "object.h" "shader.h" "shader.cpp")
+add_executable(PlanetRenderer "main.cpp" "PlanetRenderer.h" "object.cpp" "object.h" "shader.h" "shader.cpp" "camera.h" "camera.cpp")
 
 # Link libraries
 target_link_libraries(PlanetRenderer PRIVATE glfw)

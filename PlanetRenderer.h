@@ -10,5 +10,6 @@
 #include <GLFW/glfw3.h>
 
 // Own stuff
+#include "camera.h"
 #include "object.h"
 #include "shader.h"
