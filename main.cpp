@@ -26,6 +26,14 @@ int main()
 
 	std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	glFrontFace(GL_CCW);
+
 	// Init ImGui
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -58,7 +66,7 @@ int main()
 		camera.update(mouseDelta);
 
 		// Clear
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Setup ImGui for new frame
 		ImGui_ImplOpenGL3_NewFrame();

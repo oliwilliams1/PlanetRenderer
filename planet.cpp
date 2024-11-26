@@ -9,7 +9,13 @@ Planet::Planet() : Object() {
         SubdividePlanet(vertices, indices);
     }
     SpherisePlanet(vertices, indices);
-    SetData(vertices, indices);
+
+    std::vector<glm::vec3> normals(vertices.size());
+    for (int i = 0; i < normals.size(); i++) {
+        normals[i] = glm::normalize(vertices[i]);
+    }
+
+    SetData(vertices, normals, indices);
 }
 
 void Planet::GeneratePlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices) {
@@ -26,11 +32,11 @@ void Planet::GeneratePlanet(std::vector<glm::vec3>& vertices, std::vector<unsign
 
     indices = {
         0, 1, 2, 0, 2, 3,
-        4, 5, 6, 4, 6, 7,
-        0, 1, 5, 0, 5, 4,
+        4, 6, 5, 4, 7, 6,
+        0, 4, 5, 0, 5, 1,
         3, 2, 6, 3, 6, 7,
         0, 3, 7, 0, 7, 4,
-        1, 2, 6, 1, 6, 5
+        1, 5, 6, 1, 6, 2 
     };
 }
 

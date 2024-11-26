@@ -57,8 +57,8 @@ void Camera::update(glm::dvec2 mouseDelta)
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) position -= speed * forward;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) position -= glm::normalize(glm::cross(forward, up)) * speed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) position += glm::normalize(glm::cross(forward, up)) * speed;
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) position += glm::vec3(0, 1, 0) * speed;
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) position -= glm::vec3(0, 1, 0) * speed;
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) position += up * speed;
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) position -= up * speed;
 
     // Convert pitch and yaw to radians
     float radYaw = glm::radians(yaw);
