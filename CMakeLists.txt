@@ -1,26 +1,13 @@
 ﻿cmake_minimum_required(VERSION 3.12)
 
+project("PlanetRenderer" CXX)
+
+# Set the project name and compilers
 set(CMAKE_C_COMPILER "gcc")
 set(CMAKE_CXX_COMPILER "g++")
 
-# Set the project name
-project("PlanetRenderer")
-
-# Detect the compiler and set the toolchain file if using MSVC
-if (MSVC)
-    set(CMAKE_TOOLCHAIN_FILE "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
-
-    # Enable Hot Reload for MSVC compilers if supported.
-    if (POLICY CMP0141)
-        cmake_policy(SET CMP0141 NEW)
-        set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
-    endif()
-else()
-    # For non-MSVC compilers, you can set additional configurations if needed
-    message(STATUS "Using non-MSVC compiler")
-endif()
-
 # Find required packages
+find_package(OpenGL REQUIRED)  # Add OpenGL package
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
@@ -38,11 +25,22 @@ add_executable(PlanetRenderer
     "camera.cpp"
 )
 
+# Add imgui files if user is not using VCPKG
+if (NOT MSVC)
+    target_sources(PlanetRenderer PRIVATE
+        "imgui_impl_glfw.cpp"
+        "imgui_impl_opengl3.cpp"
+    )
+endif()
+
 # Link libraries
-target_link_libraries(PlanetRenderer PRIVATE glfw)
-target_link_libraries(PlanetRenderer PRIVATE glm::glm)
-target_link_libraries(PlanetRenderer PRIVATE GLEW::GLEW)
-target_link_libraries(PlanetRenderer PRIVATE imgui::imgui)
+target_link_libraries(PlanetRenderer PRIVATE 
+    glfw 
+    glm::glm 
+    GLEW::GLEW 
+    OpenGL::GL
+    imgui::imgui
+)
 
 # Set C++ standard
 set_property(TARGET PlanetRenderer PROPERTY CXX_STANDARD 20)
