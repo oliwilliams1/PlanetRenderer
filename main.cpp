@@ -26,36 +26,60 @@ int main()
 
 	std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
-	// Initialize ImGui
+	// Init ImGui
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-
 	ImGui::StyleColorsDark();
-
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 330");
 
+	// Init objects
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
 	Camera camera = Camera(window, width, height);
 	Shader triangleShader = Shader("shaders/triangle.vert", "shaders/triangle.frag");
 	Object triangle = Object();
 
+	glm::dvec2 mousePos{0.0, 0.0};
+	glm::dvec2 mouseDelta{0.0, 0.0};
+
+	glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
+
 	while (!glfwWindowShouldClose(window)) {
+		// Pre-frame stuff
+		glfwPollEvents();
+
+		glm::dvec2 currentMousePos;
+		glfwGetCursorPos(window, &currentMousePos.x, &currentMousePos.y);
+
+		mouseDelta = currentMousePos - mousePos;
+		mousePos = currentMousePos;
+
+		camera.update(mouseDelta);
+
+		// Clear
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		// Setup ImGui for new frame
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-
-		camera.update();
+		
+		// Render objects
 		triangle.Draw();
 
+		// ImGui debug windows
+		camera.debugDraw();
+
+		// Render ImGui
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+		// Swap buffers
 		glfwSwapBuffers(window);
-		glfwPollEvents();
 	}
 
+	// Cleanup
 	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;
