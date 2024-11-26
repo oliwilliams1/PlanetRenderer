@@ -13,16 +13,6 @@ endif()
 
 project ("PlanetRenderer" CXX)
 
-# Use g++ if not MSVC, if not MSVC use manual IMGUI installation
-if(NOT MSVC)
-    set(CMAKE_C_COMPILER "gcc")
-    set(CMAKE_CXX_COMPILER "g++")
-    target_sources(PlanetRenderer PRIVATE
-        "imgui_impl_glfw.cpp"
-        "imgui_impl_opengl3.cpp"
-    )
-endif()
-
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
@@ -33,7 +23,8 @@ add_executable(PlanetRenderer "main.cpp" "PlanetRenderer.h" "object.cpp" "object
 
 # Add imgui files if user is not using VCPKG
 if (NOT MSVC)
-    log("Using imgui from source")
+    set(CMAKE_C_COMPILER "gcc")
+    set(CMAKE_CXX_COMPILER "g++")
     target_sources(PlanetRenderer PRIVATE
         "imgui_impl_glfw.cpp"
         "imgui_impl_opengl3.cpp"

@@ -2,6 +2,8 @@
 
 int main()
 {
+	int width = 800;
+	int height = 600;
 	// Init GLFW
 	if (!glfwInit()) {
 		std::cout << stderr << "Failed to initialize GLFW" << std::endl;
@@ -9,7 +11,7 @@ int main()
 	}
 
 	// Create a window with OpenGL
-	GLFWwindow* window = glfwCreateWindow(800, 600, "Planet Renderer", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(width, height, "Planet Renderer", nullptr, nullptr);
 	if (!window) {
 		std::cout << stderr << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -42,8 +44,6 @@ int main()
 	ImGui_ImplOpenGL3_Init("#version 330");
 
 	// Init objects
-	int width, height;
-	glfwGetWindowSize(window, &width, &height);
 	Camera camera = Camera(window, width, height);
 	Shader mainShader = Shader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
 	Planet mainPlanet = Planet();
