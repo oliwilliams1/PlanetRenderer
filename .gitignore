@@ -1,9 +1,3 @@
 .vs/
-
-# CMake build directory
 build/
-# CMake cache files
-CMakeCache.txt
-
-# vcpkg
 vcpkg_installed/

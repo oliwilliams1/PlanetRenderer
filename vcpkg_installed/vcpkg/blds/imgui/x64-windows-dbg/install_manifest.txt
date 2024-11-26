@@ -1,4 +1,0 @@
-C:/Users/Oliver/source/repos/PlanetRenderer/vcpkg_installed/vcpkg/pkgs/imgui_x64-windows/debug/lib/imguid.lib
-C:/Users/Oliver/source/repos/PlanetRenderer/vcpkg_installed/vcpkg/pkgs/imgui_x64-windows/debug/share/imgui/imgui-config.cmake
-C:/Users/Oliver/source/repos/PlanetRenderer/vcpkg_installed/vcpkg/pkgs/imgui_x64-windows/debug/share/imgui/imgui-targets.cmake
-C:/Users/Oliver/source/repos/PlanetRenderer/vcpkg_installed/vcpkg/pkgs/imgui_x64-windows/debug/share/imgui/imgui-targets-debug.cmake
