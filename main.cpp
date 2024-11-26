@@ -73,10 +73,8 @@ int main()
 		};
 		ImGui::End();
 		
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		// Render objects
 		mainPlanet.Draw();
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		// ImGui debug windows
 		camera.debugDraw();
