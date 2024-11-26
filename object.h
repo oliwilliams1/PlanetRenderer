@@ -10,8 +10,10 @@
 class Object {
 public:
 	Object();
+	void SetData(std::vector<glm::vec3> vertices, std::vector<unsigned int> indices);
 	void Draw() const;
 
-private:
+protected:
+	unsigned int indicesCount = 0;
 	GLuint VAO, VBO, IBO;
 };

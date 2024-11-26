@@ -14,5 +14,5 @@
 
 // Own stuff
 #include "camera.h"
-#include "object.h"
+#include "planet.h"
 #include "shader.h"

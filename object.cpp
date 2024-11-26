@@ -1,30 +1,12 @@
 #include "object.h"
 
 Object::Object() {
-    std::vector<glm::vec3> vertices = {
-        glm::vec3(-1.0f, -1.0f, -1.0f),
-        glm::vec3(1.0f, -1.0f, -1.0f),
-        glm::vec3(1.0f,  1.0f, -1.0f),
-        glm::vec3(-1.0f,  1.0f, -1.0f),
-        glm::vec3(-1.0f, -1.0f,  1.0f),
-        glm::vec3(1.0f, -1.0f,  1.0f),
-        glm::vec3(1.0f,  1.0f,  1.0f),
-        glm::vec3(-1.0f,  1.0f,  1.0f)
-    };
-
-    std::vector<unsigned int> indices = {
-        0, 1, 2, 0, 2, 3,
-        4, 5, 6, 4, 6, 7,
-        0, 1, 5, 0, 5, 4,
-        3, 2, 6, 3, 6, 7,
-        0, 3, 7, 0, 7, 4,
-        1, 2, 6, 1, 6, 5
-    };
-
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &IBO);
+}
 
+void Object::SetData(std::vector<glm::vec3> vertices, std::vector<unsigned int> indices) {
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -38,11 +20,13 @@ Object::Object() {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    indicesCount = indices.size();
 }
 
 void Object::Draw() const {
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }

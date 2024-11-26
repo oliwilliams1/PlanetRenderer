@@ -37,8 +37,8 @@ int main()
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
 	Camera camera = Camera(window, width, height);
-	Shader mainShader = Shader("shaders/triangle.vert", "shaders/triangle.frag", "Cube Shader");
-	Object triangle = Object();
+	Shader mainShader = Shader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
+	Planet mainPlanet = Planet();
 
 	glm::dvec2 mousePos{0.0, 0.0};
 	glm::dvec2 mouseDelta{0.0, 0.0};
@@ -73,8 +73,10 @@ int main()
 		};
 		ImGui::End();
 		
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		// Render objects
-		triangle.Draw();
+		mainPlanet.Draw();
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		// ImGui debug windows
 		camera.debugDraw();
