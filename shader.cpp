@@ -52,7 +52,11 @@ void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
     glAttachShader(ShaderProgram, ShaderObj);
 }
 
-Shader::Shader(const char* vsSource, const char* fsSource) {
+Shader::Shader(const char* vsSource, const char* fsSource, const char* shaderName) {
+    this->shaderName = shaderName;
+    this->vsSource = vsSource;
+    this->fsSource = fsSource;
+
     shaderProgram = glCreateProgram();
     if (shaderProgram == 0) {
         std::cout << stderr << "Error creating shader program!" << std::endl;

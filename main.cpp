@@ -37,7 +37,7 @@ int main()
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
 	Camera camera = Camera(window, width, height);
-	Shader triangleShader = Shader("shaders/triangle.vert", "shaders/triangle.frag");
+	Shader mainShader = Shader("shaders/triangle.vert", "shaders/triangle.frag", "Cube Shader");
 	Object triangle = Object();
 
 	glm::dvec2 mousePos{0.0, 0.0};
@@ -64,6 +64,14 @@ int main()
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
+		// Extremely simple shader reloader (works with one shader)
+		ImGui::Begin("Shader Reloader");
+		ImGui::Text("Reload following shaders...");
+		if (ImGui::Button(mainShader.shaderName)) {
+			Shader newShader(mainShader.vsSource.c_str(), mainShader.fsSource.c_str(), mainShader.shaderName);
+		};
+		ImGui::End();
 		
 		// Render objects
 		triangle.Draw();

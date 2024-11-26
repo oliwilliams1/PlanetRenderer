@@ -58,11 +58,21 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET PlanetRenderer PROPERTY CXX_STANDARD 20)
 endif()
 
-# Add shader folder to build output
+# Gather shaders for copying
 set(SHADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")
-
 file(GLOB SHADERS "${SHADER_DIR}/*.vert" "${SHADER_DIR}/*.frag")
 
-add_custom_command(TARGET PlanetRenderer POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${SHADER_DIR} $<TARGET_FILE_DIR:PlanetRenderer>/shaders)
+# Custom command to copy shaders to the build output
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/shaders
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/shaders
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${SHADERS}
+        ${CMAKE_CURRENT_BINARY_DIR}/shaders/
+    DEPENDS ${SHADERS}
+    COMMENT "Copying shaders to build output"
+)
+
+# Ensure shaders are copied
+add_custom_target(copy_shaders ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+add_dependencies(PlanetRenderer copy_shaders)
