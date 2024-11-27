@@ -105,3 +105,17 @@ void Planet::InvertPlanet(std::vector<glm::vec3>& vertices) {
 		vertices[i] *= -1.0f;
 	}
 }
+
+PlanetShader::PlanetShader(const char* vsSource, const char* fsSource, const char* shaderName)
+    : Shader(vsSource, fsSource, shaderName) {
+    SetupUniforms();
+}
+
+void PlanetShader::SetupUniforms() {
+    planetColourLocation = glGetUniformLocation(shaderProgram, "planetColour");
+    if (planetColourLocation == -1) {
+        std::cerr << "Warning: planetColour uniform not found!" << std::endl;
+    }
+
+    glUniform3f(planetColourLocation, 0.5f, 0.25f, 0.0f);
+}

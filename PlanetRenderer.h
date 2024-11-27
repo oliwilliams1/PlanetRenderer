@@ -15,4 +15,3 @@
 // Own stuff
 #include "camera.h"
 #include "planet.h"
-#include "shader.h"

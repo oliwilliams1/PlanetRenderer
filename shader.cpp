@@ -1,6 +1,6 @@
 #include "shader.h"
 
-bool ReadFile(const char* pFileName, std::string& outFile) {
+bool Shader::ReadFile(const char* pFileName, std::string& outFile) {
     std::ifstream f(pFileName);
 
     bool ret = false;
@@ -22,7 +22,7 @@ bool ReadFile(const char* pFileName, std::string& outFile) {
     return ret;
 }
 
-void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType) {
+void Shader::AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType) {
     GLuint ShaderObj = glCreateShader(ShaderType);
 
     if (ShaderObj == 0) {
@@ -76,8 +76,6 @@ Shader::Shader(const char* vsSource, const char* fsSource, const char* shaderNam
 
     glLinkProgram(shaderProgram);
 
-    // Set uniforms here
-
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (success == 0) {
         glGetProgramInfoLog(shaderProgram, sizeof(errorLog), nullptr, errorLog);
@@ -86,6 +84,10 @@ Shader::Shader(const char* vsSource, const char* fsSource, const char* shaderNam
     }
 
     glUseProgram(shaderProgram);
+}
+
+Shader::~Shader() {
+    glDeleteProgram(shaderProgram);
 }
 
 void Shader::use() const {

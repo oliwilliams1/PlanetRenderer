@@ -45,7 +45,7 @@ int main()
 
 	// Init objects
 	Camera camera = Camera(window, width, height);
-	Shader mainShader = Shader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
+	PlanetShader planetShader = PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
 	Planet mainPlanet = Planet();
 
 	glm::dvec2 mousePos{0.0, 0.0};
@@ -76,8 +76,8 @@ int main()
 		// Extremely simple shader reloader (works with one shader)
 		ImGui::Begin("Shader Reloader");
 		ImGui::Text("Reload following shaders...");
-		if (ImGui::Button(mainShader.shaderName)) {
-			Shader newShader(mainShader.vsSource.c_str(), mainShader.fsSource.c_str(), mainShader.shaderName);
+		if (ImGui::Button(planetShader.shaderName)) {
+			Shader newShader(planetShader.vsSource.c_str(), planetShader.fsSource.c_str(), planetShader.shaderName);
 		};
 		ImGui::End();
 		
