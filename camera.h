@@ -11,7 +11,7 @@
 struct CameraData {
 	glm::mat4 m_ProjView; // 16 bytes
 	glm::vec3 position;   // 12 bytes
-	float padding;        // 4 bytes
+	float time;           // 4 bytes
 };
 
 class Camera {

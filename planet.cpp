@@ -19,7 +19,7 @@ Planet::Planet(Shader* shader) : Object(shader) {
     std::vector<unsigned int> indices;
     GeneratePlanet(vertices, indices);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) {
         SubdividePlanet(vertices, indices);
     }
     SpherisePlanet(vertices);

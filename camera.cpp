@@ -83,6 +83,7 @@ void Camera::update(glm::dvec2 mouseDelta)
 
     cameraData.m_ProjView = m_Proj * m_View;
     cameraData.position   = this->position;
+    cameraData.time       = glfwGetTime();
 
     // Send off to GPU via UBO
     glBindBuffer(GL_UNIFORM_BUFFER, UBO);

@@ -8,7 +8,7 @@ out vec4 colour;
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
     vec3 cameraPos;
-    float padding;
+    float time;
 };
 
 uniform vec3 planetColour;
