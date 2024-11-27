@@ -43,7 +43,7 @@ void Camera::rotate(glm::dvec2 mouseDelta) {
 void Camera::update(glm::dvec2 mouseDelta)
 {
     // Only rotate if RMB is down
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+    if ((glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)) {
         this->rotate(mouseDelta);
 
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -55,8 +55,8 @@ void Camera::update(glm::dvec2 mouseDelta)
     // Movement
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) position += speed * forward;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) position -= speed * forward;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) position -= glm::normalize(glm::cross(forward, up)) * speed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) position += glm::normalize(glm::cross(forward, up)) * speed;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) position -= glm::normalize(glm::cross(forward, up)) * speed;
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) position += up * speed;
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) position -= up * speed;
 

@@ -8,7 +8,8 @@ Planet::Planet() : Object() {
     for (int i = 0; i < 3; i++) {
         SubdividePlanet(vertices, indices);
     }
-    SpherisePlanet(vertices, indices);
+    SpherisePlanet(vertices);
+    InvertPlanet(vertices);
 
     std::vector<glm::vec3> normals(vertices.size());
     for (int i = 0; i < normals.size(); i++) {
@@ -93,8 +94,14 @@ void Planet::SubdividePlanet(std::vector<glm::vec3>& vertices, std::vector<unsig
     }
 }
 
-void Planet::SpherisePlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices) {
+void Planet::SpherisePlanet(std::vector<glm::vec3>& vertices) {
     for (int i = 0; i < vertices.size(); i++) {
 		vertices[i] = glm::normalize(vertices[i]);
+	}
+}
+
+void Planet::InvertPlanet(std::vector<glm::vec3>& vertices) {
+	for (int i = 0; i < vertices.size(); i++) {
+		vertices[i] *= -1.0f;
 	}
 }

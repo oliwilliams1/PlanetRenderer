@@ -10,5 +10,6 @@ public:
 private: 
     void GeneratePlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);
     void SubdividePlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);
-    void SpherisePlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);
+    void SpherisePlanet(std::vector<glm::vec3>& vertices);
+    void InvertPlanet(std::vector<glm::vec3>& vertices);
 };
