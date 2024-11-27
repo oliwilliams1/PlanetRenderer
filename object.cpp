@@ -1,10 +1,17 @@
 #include "object.h"
 
-Object::Object() {
+Object::Object(Shader* shader) {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &IBO);
-    glGenBuffers(1, &NBO); // Generate buffer for normals
+    glGenBuffers(1, &NBO);
+    this->shader = shader;
+    this->position = glm::vec3(0.0f, 0.0f, 0.0f);
+	this->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+	this->scale    = glm::vec3(1.0f, 1.0f, 1.0f);
+
+    GetModelMatrixLocation();
+    UpdateModelMatrix();
 }
 
 void Object::SetData(std::vector<glm::vec3> vertices, std::vector<glm::vec3> normals, std::vector<unsigned int> indices) {
@@ -37,4 +44,36 @@ void Object::Draw() const {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
     glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+}
+
+void Object::GetModelMatrixLocation()
+{
+    modelMatrixLocation = glGetUniformLocation(shader->shaderProgram, "m_Matrix");
+    if (modelMatrixLocation == -1) {
+		std::cerr << "Warning: modelMatrix uniform not found!" << std::endl;
+	}
+}
+
+void Object::UpdateModelMatrix() const {
+    if (modelMatrixLocation == -1) return;
+
+    glm::mat4 model = glm::mat4(1.0f);
+
+    model = glm::translate(model, position);
+
+    model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    model = glm::scale(model, scale);
+
+    glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(model));
+}
+
+void Object::ObjectDebugImGUI() {
+    ImGui::Begin("Object data");
+    if (ImGui::SliderFloat3("Position", &position.x, -10.0f, 10.0f)) UpdateModelMatrix();
+    if (ImGui::SliderFloat3("Rotation", &rotation.x, -180.0f, 180.0f)) UpdateModelMatrix();
+    if (ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 10.0f)) UpdateModelMatrix();
+    ImGui::End();
 }

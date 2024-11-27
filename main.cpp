@@ -46,10 +46,10 @@ int main()
 	// Init objects
 	Camera camera = Camera(window, width, height);
 	PlanetShader planetShader = PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
-	Planet mainPlanet = Planet();
+	Planet mainPlanet = Planet(&planetShader);
 
-	glm::dvec2 mousePos{0.0, 0.0};
-	glm::dvec2 mouseDelta{0.0, 0.0};
+	glm::dvec2 mousePos   = glm::dvec2(0.0, 0.0);
+	glm::dvec2 mouseDelta = glm::dvec2(0.0, 0.0);
 
 	glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
 
@@ -72,20 +72,13 @@ int main()
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-
-		// Extremely simple shader reloader (works with one shader)
-		ImGui::Begin("Shader Reloader");
-		ImGui::Text("Reload following shaders...");
-		if (ImGui::Button(planetShader.shaderName)) {
-			Shader newShader(planetShader.vsSource.c_str(), planetShader.fsSource.c_str(), planetShader.shaderName);
-		};
-		ImGui::End();
 		
 		// Render objects
 		mainPlanet.Draw();
 
 		// ImGui debug windows
 		camera.debugDraw();
+		mainPlanet.ObjectDebugImGUI();
 
 		// Render ImGui
 		ImGui::Render();

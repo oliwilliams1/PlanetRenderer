@@ -10,6 +10,8 @@
 // Must be aligned to 16 bytes, or it will NOT work
 struct CameraData {
 	glm::mat4 m_ProjView; // 16 bytes
+	glm::vec3 position;   // 12 bytes
+	float padding;        // 4 bytes
 };
 
 class Camera {

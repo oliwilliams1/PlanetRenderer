@@ -1,18 +1,32 @@
 #version 330 core
 
 in vec3 Normal;
+in vec3 FragPos;
 
 out vec4 colour;
+
+layout(std140) uniform CameraData {
+    mat4 m_ViewProj;
+    vec3 cameraPos;
+    float padding;
+};
+
 uniform vec3 planetColour;
 
 void main() {
-    vec3 viewPos = vec3(0.0, 0.0, 4.0);
+    vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0) - FragPos);
+    vec3 viewDir = normalize(cameraPos - FragPos);
+    
+    vec3 ambient = vec3(0.1) * planetColour;
 
-    vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
+    float diff = max(dot(Normal, lightDir), 0.0);
+    vec3 diffuse = diff * planetColour;
 
-    vec3 ambient = vec3(0.1);
-    vec3 diffuse = vec3(max(dot(Normal, lightDir), 0.0));
+    vec3 reflectDir = reflect(-lightDir, Normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    vec3 specular = vec3(1.0) * spec;
 
-    vec3 result = ambient + diffuse;
-    colour = vec4(result * planetColour, 1.0);
+    vec3 result = ambient + diffuse + specular;
+    
+    colour = vec4(result, 1.0);
 }

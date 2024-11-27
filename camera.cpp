@@ -21,7 +21,7 @@ Camera::Camera(GLFWwindow* window, int width, int height) {
     // Init Camera UBO
 	glGenBuffers(1, &UBO);
 	glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(CameraData), nullptr, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	GLuint bindingPoint = 0;
@@ -82,6 +82,7 @@ void Camera::update(glm::dvec2 mouseDelta)
     glm::mat4 m_Proj = glm::perspective(glm::radians(fov), aspectRatio, zNear, zFar);
 
     cameraData.m_ProjView = m_Proj * m_View;
+    cameraData.position   = this->position;
 
     // Send off to GPU via UBO
     glBindBuffer(GL_UNIFORM_BUFFER, UBO);
