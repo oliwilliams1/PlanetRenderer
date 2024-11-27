@@ -14,16 +14,18 @@ layout(std140) uniform CameraData {
 uniform vec3 planetColour;
 
 void main() {
-    vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0) - FragPos);
+    vec3 norm = normalize(Normal);
+
+    vec3 lightDirection = normalize(vec3(1.0, 1.0, 1.0));
     vec3 viewDir = normalize(cameraPos - FragPos);
     
     vec3 ambient = vec3(0.1) * planetColour;
 
-    float diff = max(dot(Normal, lightDir), 0.0);
+    float diff = max(dot(norm, lightDirection), 0.0);
     vec3 diffuse = diff * planetColour;
 
-    vec3 reflectDir = reflect(-lightDir, Normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    vec3 halfDir = normalize(lightDirection + viewDir);
+    float spec = pow(max(dot(norm, halfDir), 0.0), 32.0);
     vec3 specular = vec3(1.0) * spec;
 
     vec3 result = ambient + diffuse + specular;

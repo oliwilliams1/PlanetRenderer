@@ -74,6 +74,6 @@ void Object::ObjectDebugImGUI() {
     ImGui::Begin("Object data");
     if (ImGui::SliderFloat3("Position", &position.x, -10.0f, 10.0f)) UpdateModelMatrix();
     if (ImGui::SliderFloat3("Rotation", &rotation.x, -180.0f, 180.0f)) UpdateModelMatrix();
-    if (ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 10.0f)) UpdateModelMatrix();
+    if (ImGui::SliderFloat3("Scale", &scale.x, -10.0f, 10.0f)) UpdateModelMatrix();
     ImGui::End();
 }
