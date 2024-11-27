@@ -7,7 +7,6 @@ layout(std140) uniform CameraData {
     mat4 m_ViewProj;
 };
 
-out vec3 FragPos;
 out vec3 Normal;
 
 void main() {
