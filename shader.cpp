@@ -43,9 +43,9 @@ void Shader::AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Sha
     glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
 
     if (!success) {
-        GLchar InfoLog[1024];
-        glGetShaderInfoLog(ShaderObj, 1024, NULL, InfoLog);
-        std::cout << stderr << "Error compiling shader type %d: '%s'\n" << ShaderType << InfoLog;
+        GLchar InfoLog[4096];
+        glGetShaderInfoLog(ShaderObj, 4096, NULL, InfoLog);
+        std::cout << stderr << "Error compiling shader:\n" << pShaderText << std::endl << InfoLog;
         exit(1);
     }
 

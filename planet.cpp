@@ -2,6 +2,27 @@
 
 PlanetShader::PlanetShader(const char* vsSource, const char* fsSource, const char* shaderName)
     : Shader(vsSource, fsSource, shaderName) {
+    std::string tesc, tese;
+    if (!ReadFile("shaders/planet.tesc", tesc)) exit(1);
+    AddShader(shaderProgram, tesc.c_str(), GL_TESS_CONTROL_SHADER);
+
+    if (!ReadFile("shaders/planet.tese", tese)) exit(1);
+    AddShader(shaderProgram, tese.c_str(), GL_TESS_EVALUATION_SHADER);
+    
+    GLint success = 0;
+    GLchar errorLog[1024] = { 0 };
+
+    glLinkProgram(shaderProgram);
+
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (success == 0) {
+        glGetProgramInfoLog(shaderProgram, sizeof(errorLog), nullptr, errorLog);
+        std::cout << "Error linking shader program: " << errorLog << std::endl;
+        exit(1);
+    }
+
+    glUseProgram(shaderProgram);
+
     SetupUniforms();
 }
 
@@ -19,18 +40,19 @@ Planet::Planet(Shader* shader) : Object(shader) {
     std::vector<unsigned int> indices;
     GeneratePlanet(vertices, indices);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
         SubdividePlanet(vertices, indices);
     }
 
-    //SpherisePlanet(vertices);
+    SetData(vertices, std::vector<glm::vec3>(0), indices);
+}
 
-    std::vector<glm::vec3> normals(vertices.size());
-    for (int i = 0; i < normals.size(); i++) {
-        normals[i] = glm::normalize(vertices[i]);
-    }
-
-    SetData(vertices, normals, indices);
+void Planet::Draw()
+{
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glDrawElements(GL_PATCHES, indicesCount, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
 
 void Planet::GeneratePlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices) {

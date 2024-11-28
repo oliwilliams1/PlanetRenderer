@@ -20,6 +20,8 @@ class Planet : public Object {
 public:
     Planet(Shader* shader);
 
+    void Draw() override;
+
 private:
     PlanetShader* shader;
 

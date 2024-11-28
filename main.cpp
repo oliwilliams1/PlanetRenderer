@@ -53,6 +53,8 @@ int main()
 
 	glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
 
+	glPatchParameteri(GL_PATCH_VERTICES, 4);
+
 	while (!glfwWindowShouldClose(window)) {
 		// Pre-frame stuff
 		glfwPollEvents();

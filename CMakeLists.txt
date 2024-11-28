@@ -51,7 +51,7 @@ endif()
 
 # Gather shaders for copying
 set(SHADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")
-file(GLOB SHADERS "${SHADER_DIR}/*.vert" "${SHADER_DIR}/*.frag")
+file(GLOB SHADERS "${SHADER_DIR}/*.vert" "${SHADER_DIR}/*.frag" "${SHADER_DIR}/*.tesc" "${SHADER_DIR}/*.tese")
 
 # Custom command to copy shaders to the build output
 add_custom_command(
