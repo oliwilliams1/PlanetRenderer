@@ -16,7 +16,7 @@ public:
 	Object(Shader* shader);
 	void SetData(std::vector<glm::vec3> vertices, std::vector<glm::vec3> normals, std::vector<unsigned int> indices);
 	virtual void Draw();
-	void ObjectDebugImGUI();
+	virtual void ObjectDebugImGUI();
 
 protected:
 	glm::vec3 position;

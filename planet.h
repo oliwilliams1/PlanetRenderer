@@ -13,19 +13,22 @@ public:
 
 private:
     void SetupUniforms();
-    GLint planetColourLocation;
+    GLint planetColourLocation, planetScaleLocation;
 };
 
 class Planet : public Object {
 public:
-    Planet(Shader* shader);
+    Planet(PlanetShader* shader);
 
     void Draw() override;
+    void ObjectDebugImGUI() override;
 
 private:
+    float planetScale = 100.0f;
+
+    GLint planetScaleLocation;
     PlanetShader* shader;
 
     void GeneratePlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);
     void SubdividePlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);
-    void SpherisePlanet(std::vector<glm::vec3>& vertices);
 };

@@ -35,7 +35,7 @@ void PlanetShader::SetupUniforms() {
     glUniform3f(planetColourLocation, 0.5f, 0.25f, 0.0f);
 }
 
-Planet::Planet(Shader* shader) : Object(shader) {
+Planet::Planet(PlanetShader* shader) : Object(shader) {
     std::vector<glm::vec3> vertices;
     std::vector<unsigned int> indices;
     GeneratePlanet(vertices, indices);
@@ -45,6 +45,13 @@ Planet::Planet(Shader* shader) : Object(shader) {
     }
 
     SetData(vertices, std::vector<glm::vec3>(0), indices);
+
+    planetScaleLocation = glGetUniformLocation(shader->shaderProgram, "planetScale");
+    if (planetScaleLocation == -1) {
+        std::cerr << "Warning: planetScale uniform not found!" << std::endl;
+    }
+
+    glUniform1f(planetScaleLocation, planetScale);
 }
 
 void Planet::Draw()
@@ -119,8 +126,10 @@ void Planet::SubdividePlanet(std::vector<glm::vec3>& vertices, std::vector<unsig
     indices = std::move(newIndices);
 }
 
-void Planet::SpherisePlanet(std::vector<glm::vec3>& vertices) {
-    for (int i = 0; i < vertices.size(); i++) {
-		vertices[i] = glm::normalize(vertices[i]);
-	}
+void Planet::ObjectDebugImGUI() {
+    ImGui::Begin("Object data");
+    if (ImGui::SliderFloat3("Position", &position.x, -10.0f, 10.0f)) UpdateModelMatrix();
+    if (ImGui::SliderFloat3("Rotation", &rotation.x, -180.0f, 180.0f)) UpdateModelMatrix();
+    if (ImGui::SliderFloat("Scale", &planetScale, 1.0f, 100.0f)) glUniform1f(planetScaleLocation, planetScale);
+    ImGui::End();
 }

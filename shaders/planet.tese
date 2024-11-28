@@ -1,6 +1,6 @@
 #version 410 core
 
-layout (quads, equal_spacing, ccw) in;
+layout (quads, fractional_even_spacing, ccw) in;
 
 out vec3 Normal;
 out vec3 FragPos;
@@ -12,6 +12,7 @@ layout(std140) uniform CameraData {
 };
 
 uniform mat4 m_Matrix;
+uniform float planetScale;
 
 void main() {
     float u = gl_TessCoord.x;
@@ -24,7 +25,8 @@ void main() {
 
     vec4 pos = mix(mix(pos0, pos1, u), mix(pos3, pos2, u), v);
     vec3 normalizedPos = normalize(pos.xyz);
-    vec4 mPos = m_Matrix * vec4(normalizedPos, 1.0);
+
+    vec4 mPos = m_Matrix * vec4(normalizedPos * planetScale, 1.0);
 
     gl_Position = m_ViewProj * mPos;
     Normal = normalizedPos;

@@ -9,10 +9,10 @@ Camera::Camera(GLFWwindow* window, int width, int height) {
 
 	this->yaw = -90.0f;
 	this->pitch = 0.0f;
-	this->speed = 0.05f;
+	this->speed = 1.0f;
 	this->sensitivity = 0.2f;
 
-	this->position = glm::vec3(0, 0, 4.0f);
+	this->position = glm::vec3(0, 0, 400.0f);
 
 	this->up = glm::vec3(0, 1, 0);
 	this->right = glm::vec3(1, 0, 0);
