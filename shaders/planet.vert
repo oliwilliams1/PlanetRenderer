@@ -15,8 +15,7 @@ out vec3 Normal;
 out vec3 FragPos;
 
 void main() {
-    vec3 distortedPosition = position + sin(time * 10.0 + position.x * 10.0) * 0.01;
-    vec4 modelPosition = m_Matrix * vec4(distortedPosition, 1.0);
+    vec4 modelPosition = m_Matrix * vec4(position, 1.0);
     
     gl_Position = m_ViewProj * modelPosition;
 

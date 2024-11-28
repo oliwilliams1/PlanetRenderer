@@ -42,7 +42,7 @@ void Object::SetData(std::vector<glm::vec3> vertices, std::vector<glm::vec3> nor
 void Object::Draw() const {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-    glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_QUADS, indicesCount, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 

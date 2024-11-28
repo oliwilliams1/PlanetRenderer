@@ -19,11 +19,11 @@ Planet::Planet(Shader* shader) : Object(shader) {
     std::vector<unsigned int> indices;
     GeneratePlanet(vertices, indices);
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 3; i++) {
         SubdividePlanet(vertices, indices);
     }
-    SpherisePlanet(vertices);
-    InvertPlanet(vertices);
+
+    //SpherisePlanet(vertices);
 
     std::vector<glm::vec3> normals(vertices.size());
     for (int i = 0; i < normals.size(); i++) {
@@ -42,80 +42,63 @@ void Planet::GeneratePlanet(std::vector<glm::vec3>& vertices, std::vector<unsign
         glm::vec3(-1.0f, -1.0f,  1.0f),
         glm::vec3(1.0f, -1.0f,  1.0f),
         glm::vec3(1.0f,  1.0f,  1.0f),
-        glm::vec3(-1.0f,  1.0f,  1.0f)
+        glm::vec3(-1.0f,  1.0f,  1.0)
     };
 
     indices = {
-        0, 1, 2, 0, 2, 3,
-        4, 6, 5, 4, 7, 6,
-        0, 4, 5, 0, 5, 1,
-        3, 2, 6, 3, 6, 7,
-        0, 3, 7, 0, 7, 4,
-        1, 5, 6, 1, 6, 2 
+        0, 3, 2, 1,
+        4, 5, 6, 7,
+        0, 4, 7, 3,
+        1, 2, 6, 5,
+        3, 7, 6, 2,
+        4, 0, 1, 5 
     };
 }
 
+// Thank you chatgpt
 void Planet::SubdividePlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices) {
-    std::vector<glm::vec3> originalVertices = vertices;
-    std::vector<unsigned int> originalIndices = indices;
+    std::vector<glm::vec3> newVertices = vertices;
+    std::vector<unsigned int> newIndices;
+    std::vector<unsigned int> tempIndices;
 
-    vertices.clear();
-    indices.clear();
+    for (size_t j = 0; j < indices.size(); j += 4) {
+        unsigned int a = indices[j];
+        unsigned int b = indices[j + 1];
+        unsigned int c = indices[j + 2];
+        unsigned int d = indices[j + 3];
 
-    for (size_t i = 0; i < originalIndices.size(); i += 3) {
-        unsigned int v0 = originalIndices[i];
-        unsigned int v1 = originalIndices[i + 1];
-        unsigned int v2 = originalIndices[i + 2];
+        glm::vec3 ab = 0.5f * (newVertices[a] + newVertices[b]);
+        glm::vec3 bc = 0.5f * (newVertices[b] + newVertices[c]);
+        glm::vec3 cd = 0.5f * (newVertices[c] + newVertices[d]);
+        glm::vec3 da = 0.5f * (newVertices[d] + newVertices[a]);
+        glm::vec3 m = 0.25f * (newVertices[a] + newVertices[b] + newVertices[c] + newVertices[d]);
 
-        glm::vec3 p0 = originalVertices[v0];
-        glm::vec3 p1 = originalVertices[v1];
-        glm::vec3 p2 = originalVertices[v2];
+        unsigned int ab_index = newVertices.size();
+        unsigned int bc_index = ab_index + 1;
+        unsigned int cd_index = bc_index + 1;
+        unsigned int da_index = cd_index + 1;
+        unsigned int m_index = da_index + 1;
 
-        for (int j = 0; j < 1; ++j) {
-            glm::vec3 m0 = (p0 + p1) * 0.5f;
-            glm::vec3 m1 = (p1 + p2) * 0.5f;
-            glm::vec3 m2 = (p2 + p0) * 0.5f;
+        newVertices.push_back(ab);
+        newVertices.push_back(bc);
+        newVertices.push_back(cd);
+        newVertices.push_back(da);
+        newVertices.push_back(m);
 
-            vertices.push_back(p0);
-            vertices.push_back(p1);
-            vertices.push_back(p2);
-            vertices.push_back(m0);
-            vertices.push_back(m1);
-            vertices.push_back(m2);
-
-            unsigned int baseIndex = vertices.size() - 6;
-
-            indices.push_back(baseIndex);
-            indices.push_back(baseIndex + 3);
-            indices.push_back(baseIndex + 5);
-
-            indices.push_back(baseIndex + 3);
-            indices.push_back(baseIndex + 1);
-            indices.push_back(baseIndex + 4);
-
-            indices.push_back(baseIndex + 5);
-            indices.push_back(baseIndex + 4);
-            indices.push_back(baseIndex + 2);
-
-            indices.push_back(baseIndex + 3);
-            indices.push_back(baseIndex + 4);
-            indices.push_back(baseIndex + 5);
-
-            p0 = vertices.back();
-            p1 = vertices[vertices.size() - 2];
-            p2 = vertices[vertices.size() - 1];
-        }
+        tempIndices.insert(tempIndices.end(), { a, ab_index, m_index, da_index });
+        tempIndices.insert(tempIndices.end(), { ab_index, b, bc_index, m_index });
+        tempIndices.insert(tempIndices.end(), { m_index, bc_index, c, cd_index });
+        tempIndices.insert(tempIndices.end(), { da_index, m_index, cd_index, d });
     }
+
+    newIndices = std::move(tempIndices);
+
+    vertices = std::move(newVertices);
+    indices = std::move(newIndices);
 }
 
 void Planet::SpherisePlanet(std::vector<glm::vec3>& vertices) {
     for (int i = 0; i < vertices.size(); i++) {
 		vertices[i] = glm::normalize(vertices[i]);
-	}
-}
-
-void Planet::InvertPlanet(std::vector<glm::vec3>& vertices) {
-	for (int i = 0; i < vertices.size(); i++) {
-		vertices[i] *= -1.0f;
 	}
 }

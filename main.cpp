@@ -73,6 +73,7 @@ int main()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		// Render objects
 		mainPlanet.Draw();
 
