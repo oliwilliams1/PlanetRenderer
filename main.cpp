@@ -1,5 +1,10 @@
 ﻿#include "PlanetRenderer.h"
 
+static void OnWindowResize(GLFWwindow* window, int width, int height) {
+	Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
+	camera->OnWindowResize(window, width, height);
+}
+
 int main()
 {
 	int width = 800;
@@ -47,6 +52,10 @@ int main()
 	Camera camera = Camera(window, width, height);
 	PlanetShader planetShader = PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
 	Planet mainPlanet = Planet(&planetShader);
+
+	// Set a pointer to camera for OnWindowResize to call from it
+	glfwSetWindowUserPointer(window, &camera);
+	glfwSetFramebufferSizeCallback(window, OnWindowResize);
 
 	glm::dvec2 mousePos   = glm::dvec2(0.0, 0.0);
 	glm::dvec2 mouseDelta = glm::dvec2(0.0, 0.0);
