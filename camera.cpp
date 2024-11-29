@@ -2,21 +2,26 @@
 
 Camera::Camera(GLFWwindow* window, int width, int height) {
 	this->window = window;
-	this->aspectRatio = (float)width / (float)height;
-	this->fov = 70.0f;
-	this->zNear = 0.01f;
-	this->zFar = 1000.0f;
+	aspectRatio = (float)width / (float)height;
+	fov = 70.0f;
+	zNear = 0.01f;
+	zFar = 1000.0f;
 
-	this->yaw = -90.0f;
-	this->pitch = 0.0f;
-	this->speed = 1.0f;
-	this->sensitivity = 0.2f;
+	yaw = -132.0f;
+	pitch = -36.0f;
+	speed = 500.0f;
+	sensitivity = 0.2f;
 
-	this->position = glm::vec3(0, 0, 400.0f);
+	position = glm::vec3(327.0f, 331.0f, 334.0f);
 
-	this->up = glm::vec3(0, 1, 0);
-	this->right = glm::vec3(1, 0, 0);
-	this->forward = glm::vec3(0, 0, -1);
+	up = glm::vec3(0, 1, 0);
+	right = glm::vec3(1, 0, 0);
+	forward = glm::vec3(0, 0, -1);
+
+    frameCount = 0;
+    deltaTime = 0.0f;
+    lastTime = glfwGetTime();
+    lastDeltaTime = glfwGetTime();
 
     // Init Camera UBO
 	glGenBuffers(1, &UBO);
@@ -53,12 +58,12 @@ void Camera::update(glm::dvec2 mouseDelta)
     }
 
     // Movement
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) position += speed * forward;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) position -= speed * forward;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) position += glm::normalize(glm::cross(forward, up)) * speed;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) position -= glm::normalize(glm::cross(forward, up)) * speed;
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) position += up * speed;
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) position -= up * speed;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) position += deltaTime * speed * forward;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) position -= deltaTime * speed * forward;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) position += deltaTime * glm::normalize(glm::cross(forward, up)) * speed;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) position -= deltaTime * glm::normalize(glm::cross(forward, up)) * speed;
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) position += deltaTime * up * speed;
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) position -= deltaTime * up * speed;
 
     // Convert pitch and yaw to radians
     float radYaw = glm::radians(yaw);
@@ -81,9 +86,22 @@ void Camera::update(glm::dvec2 mouseDelta)
     glm::mat4 m_View = glm::lookAt(position, position + forward, up);
     glm::mat4 m_Proj = glm::perspective(glm::radians(fov), aspectRatio, zNear, zFar);
 
+    // Calculate FPS for window name
+    frameCount++;
+    float currentTime = glfwGetTime();
+    if (currentTime - lastTime >= 1.0f) {
+        glfwSetWindowTitle(window, ("Planet Renderer - FPS: " + std::to_string(frameCount)).c_str());
+        frameCount = 0;
+        lastTime = currentTime;
+    }
+
+    // Delta time calc
+    deltaTime = currentTime - lastDeltaTime;
+    lastDeltaTime = currentTime;
+
     cameraData.m_ProjView = m_Proj * m_View;
     cameraData.position   = this->position;
-    cameraData.time       = glfwGetTime();
+    cameraData.deltaTime  = deltaTime;
 
     // Send off to GPU via UBO
     glBindBuffer(GL_UNIFORM_BUFFER, UBO);

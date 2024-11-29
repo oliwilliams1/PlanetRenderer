@@ -8,10 +8,10 @@ out vec3 FragPos;
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
     vec3 cameraPos;
-    float time;
+    float deltaTime;
 };
 
-uniform mat4 m_Matrix;
+uniform mat4 m_Model;
 uniform float planetScale;
 
 void main() {
@@ -26,7 +26,7 @@ void main() {
     vec4 pos = mix(mix(pos0, pos1, u), mix(pos3, pos2, u), v);
     vec3 normalizedPos = normalize(pos.xyz);
 
-    vec4 mPos = m_Matrix * vec4(normalizedPos * planetScale, 1.0);
+    vec4 mPos = m_Model * vec4(normalizedPos * planetScale, 1.0);
 
     gl_Position = m_ViewProj * mPos;
     Normal = normalizedPos;

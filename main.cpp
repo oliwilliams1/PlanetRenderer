@@ -5,8 +5,7 @@ static void OnWindowResize(GLFWwindow* window, int width, int height) {
 	camera->OnWindowResize(window, width, height);
 }
 
-int main()
-{
+int main() {
 	int width = 800;
 	int height = 600;
 	// Init GLFW
@@ -64,6 +63,8 @@ int main()
 
 	glPatchParameteri(GL_PATCH_VERTICES, 4);
 
+	glfwSwapInterval(0);
+
 	while (!glfwWindowShouldClose(window)) {
 		// Pre-frame stuff
 		glfwPollEvents();
@@ -84,7 +85,7 @@ int main()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		// Render objects
 		mainPlanet.Draw();
 

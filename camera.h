@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+#include <string>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -11,7 +13,7 @@
 struct CameraData {
 	glm::mat4 m_ProjView; // 16 bytes
 	glm::vec3 position;   // 12 bytes
-	float time;           // 4 bytes
+	float deltaTime;           // 4 bytes
 };
 
 class Camera {
@@ -45,4 +47,10 @@ private:
 
 	float pitch;
 	float yaw;
+
+	// Frame counter + delta time calc
+	int frameCount = 0;
+	float deltaTime = 0.0f;
+	float lastTime = glfwGetTime();
+	float lastDeltaTime = glfwGetTime();
 };

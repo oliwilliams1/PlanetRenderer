@@ -5,40 +5,60 @@ layout (vertices = 4) out;
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
     vec3 cameraPos;
-    float time;
+    float deltaTime;
 };
 
 uniform float planetScale;
-
-const int MIN_TES = 2;
-const int MAX_TES = 32;
-const float MIN_DIST = 0;
-float MAX_DIST = planetScale * 10.0;
+uniform mat4 m_Model;
 
 void main() {
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
-    float dist0 = length(gl_in[0].gl_Position.xyz - cameraPos);
-    float dist1 = length(gl_in[1].gl_Position.xyz - cameraPos);
-    float dist2 = length(gl_in[2].gl_Position.xyz - cameraPos);
-    float dist3 = length(gl_in[3].gl_Position.xyz - cameraPos);
+    if(gl_InvocationID == 0) {
+        const int MIN_TESS_LEVEL = 4;
+        const int MAX_TESS_LEVEL = 16;
+        float MIN_DISTANCE = planetScale * 0.5;
+        float MAX_DISTANCE = planetScale * 4.0;
+        const float DISTANCE_THRESHOLD = 1000.0;
 
-    dist0 = clamp(dist0, MIN_DIST, MAX_DIST);
-    dist1 = clamp(dist1, MIN_DIST, MAX_DIST);
-    dist2 = clamp(dist2, MIN_DIST, MAX_DIST);
-    dist3 = clamp(dist3, MIN_DIST, MAX_DIST);
+        // Transform vertices to eye space
+        vec4 eyeSpacePos00 = m_ViewProj * m_Model * gl_in[0].gl_Position;
+        vec4 eyeSpacePos01 = m_ViewProj * m_Model * gl_in[1].gl_Position;
+        vec4 eyeSpacePos10 = m_ViewProj * m_Model * gl_in[2].gl_Position;
+        vec4 eyeSpacePos11 = m_ViewProj * m_Model * gl_in[3].gl_Position;
 
-    float decayFactor = 0.2;
-    int tes0 = int(mix(MAX_TES, MIN_TES, pow(dist0 / MAX_DIST, decayFactor)));
-    int tes1 = int(mix(MAX_TES, MIN_TES, pow(dist1 / MAX_DIST, decayFactor)));
-    int tes2 = int(mix(MAX_TES, MIN_TES, pow(dist2 / MAX_DIST, decayFactor)));
-    int tes3 = int(mix(MAX_TES, MIN_TES, pow(dist3 / MAX_DIST, decayFactor)));
+        // Calculate distances
+        float distance00 = clamp((abs(eyeSpacePos00.z) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
+        float distance01 = clamp((abs(eyeSpacePos01.z) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
+        float distance10 = clamp((abs(eyeSpacePos10.z) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
+        float distance11 = clamp((abs(eyeSpacePos11.z) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
 
-    gl_TessLevelOuter[0] = tes0;
-    gl_TessLevelOuter[1] = tes1;
-    gl_TessLevelOuter[2] = tes2;
-    gl_TessLevelOuter[3] = tes3;
+        // Calculate the average distance to the patch
+        float averageDistance = (eyeSpacePos00.z + eyeSpacePos01.z + eyeSpacePos10.z + eyeSpacePos11.z) / 4.0;
 
-    gl_TessLevelInner[0] = max(tes1, tes3);
-    gl_TessLevelInner[1] = max(tes0, tes2);
+        // Check if the average distance exceeds the threshold
+        if (abs(averageDistance) > DISTANCE_THRESHOLD) {
+            gl_TessLevelOuter[0] = 1;
+            gl_TessLevelOuter[1] = 1;
+            gl_TessLevelOuter[2] = 1;
+            gl_TessLevelOuter[3] = 1;
+            gl_TessLevelInner[0] = 1;
+            gl_TessLevelInner[1] = 1;
+            return;
+        }
+
+        // Interpolate tessellation levels based on distances
+        float tessLevel0 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance10, distance00));
+        float tessLevel1 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance00, distance01));
+        float tessLevel2 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance01, distance11));
+        float tessLevel3 = mix(MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance11, distance10));
+
+        gl_TessLevelOuter[0] = tessLevel0;
+        gl_TessLevelOuter[1] = tessLevel1;
+        gl_TessLevelOuter[2] = tessLevel2;
+        gl_TessLevelOuter[3] = tessLevel3;
+
+        gl_TessLevelInner[0] = max(tessLevel1, tessLevel3);
+        gl_TessLevelInner[1] = max(tessLevel0, tessLevel2);
+    }
 }

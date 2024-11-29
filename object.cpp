@@ -50,7 +50,7 @@ void Object::Draw() {
 
 void Object::GetModelMatrixLocation()
 {
-    modelMatrixLocation = glGetUniformLocation(shader->shaderProgram, "m_Matrix");
+    modelMatrixLocation = glGetUniformLocation(shader->shaderProgram, "m_Model");
     if (modelMatrixLocation == -1) {
 		std::cerr << "Warning: modelMatrix uniform not found!" << std::endl;
 	}
