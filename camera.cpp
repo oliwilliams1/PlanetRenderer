@@ -5,14 +5,14 @@ Camera::Camera(GLFWwindow* window, int width, int height) {
 	aspectRatio = (float)width / (float)height;
 	fov = 70.0f;
 	zNear = 0.01f;
-	zFar = 1000.0f;
+	zFar = 10000.0f;
 
-	yaw = -132.0f;
-	pitch = -36.0f;
+	yaw = -135.0f;
+	pitch = -35.0f;
 	speed = 500.0f;
 	sensitivity = 0.2f;
 
-	position = glm::vec3(327.0f, 331.0f, 334.0f);
+	position = glm::vec3(1150.0f, 1150.0f, 1150.0f);
 
 	up = glm::vec3(0, 1, 0);
 	right = glm::vec3(1, 0, 0);

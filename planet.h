@@ -26,7 +26,7 @@ public:
     void ObjectDebugImGUI() override;
 
 private:
-    float planetScale = 100.0f;
+    float planetScale = 600.0f;
 
     GLuint planetScaleLocation, planetTextureLocation, planetTextureID;
     PlanetShader* shader;
