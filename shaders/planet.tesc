@@ -14,6 +14,8 @@ uniform mat4 m_Model;
 void main() {
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
+    //TODO: this wont work, alot of faces are still too small, need to make my own easing function instead of lerping
+
     if(gl_InvocationID == 0) {
         const int MIN_TESS_LEVEL = 4;
         const int MAX_TESS_LEVEL = 96;
