@@ -49,8 +49,8 @@ private:
 	float yaw;
 
 	// Frame counter + delta time calc
-	int frameCount = 0;
-	float deltaTime = 0.0f;
-	float lastTime = glfwGetTime();
-	float lastDeltaTime = glfwGetTime();
+	int frameCount;
+	float deltaTime;
+	float lastTime;
+	float lastDeltaTime;
 };

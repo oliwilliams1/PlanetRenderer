@@ -19,7 +19,7 @@ find_package(GLEW REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 
 # Add source to this project's executable.
-add_executable(PlanetRenderer "main.cpp" "PlanetRenderer.h" "object.cpp" "object.h" "shader.h" "shader.cpp" "camera.h" "camera.cpp" "planet.h" "planet.cpp")
+add_executable(PlanetRenderer "main.cpp" "PlanetRenderer.h" "object.cpp" "object.h" "shader.h" "shader.cpp" "camera.h" "camera.cpp" "planet.h" "planet.cpp" "PerlinNoise.hpp")
 
 # Add imgui files if user is not using VCPKG
 if (NOT MSVC)

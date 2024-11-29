@@ -6,8 +6,8 @@ static void OnWindowResize(GLFWwindow* window, int width, int height) {
 }
 
 int main() {
-	int width = 800;
-	int height = 600;
+	int width = 1000;
+	int height = 700;
 	// Init GLFW
 	if (!glfwInit()) {
 		std::cout << stderr << "Failed to initialize GLFW" << std::endl;
@@ -85,7 +85,7 @@ int main() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		// Render objects
 		mainPlanet.Draw();
 

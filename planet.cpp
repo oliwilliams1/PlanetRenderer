@@ -52,6 +52,15 @@ Planet::Planet(PlanetShader* shader) : Object(shader) {
     }
 
     glUniform1f(planetScaleLocation, planetScale);
+
+    GenerateTexture();
+
+	planetTextureLocation = glGetUniformLocation(shader->shaderProgram, "planetTexture");
+	if (planetTextureLocation == -1) {
+		std::cerr << "Warning: planetTexture uniform not found!" << std::endl;
+	}
+
+	glUniform1i(planetTextureLocation, 0);
 }
 
 void Planet::Draw()
@@ -126,10 +135,57 @@ void Planet::SubdividePlanet(std::vector<glm::vec3>& vertices, std::vector<unsig
     indices = std::move(newIndices);
 }
 
+void Planet::GenerateTexture() {
+    int width = 2048;
+    int height = 1024;
+
+    const siv::PerlinNoise::seed_type seed = 1;
+    const siv::PerlinNoise perlin(seed);
+
+    uint8_t* data = new uint8_t[width * height * 3];
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            float lon = (x / (float)width) * 360 - 180;
+            float lat = (y / (float)height) * 180 - 90;
+
+            float theta = glm::radians(lon);
+            float phi = glm::radians(lat);
+
+            glm::vec3 dir = glm::vec3(glm::cos(phi) * glm::cos(theta),
+                glm::sinh(phi),
+                glm::cos(phi) * glm::sin(theta));
+
+			dir = glm::normalize(dir);
+
+            float contrib = perlin.octave3D_01(dir.x, dir.y, dir.z, 8, 0.5f);
+
+            data[(y * width + x) * 3 + 0] = contrib * 255;
+            data[(y * width + x) * 3 + 1] = contrib * 255;
+            data[(y * width + x) * 3 + 2] = contrib * 255;
+        }
+    }
+
+    // Upload texture
+    glGenTextures(1, &planetTextureID);
+    glBindTexture(GL_TEXTURE_2D, planetTextureID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+}
+
 void Planet::ObjectDebugImGUI() {
     ImGui::Begin("Object data");
     if (ImGui::SliderFloat3("Position", &position.x, -10.0f, 10.0f)) UpdateModelMatrix();
     if (ImGui::SliderFloat3("Rotation", &rotation.x, -180.0f, 180.0f)) UpdateModelMatrix();
     if (ImGui::SliderFloat("Scale", &planetScale, 1.0f, 100.0f)) glUniform1f(planetScaleLocation, planetScale);
     ImGui::End();
+
+    ImGui::Begin("Planet texture viewer");
+	ImGui::Image((void*)(intptr_t)planetTextureID, ImVec2(256, 128));
+	ImGui::End();
 }
