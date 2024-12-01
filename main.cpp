@@ -65,6 +65,8 @@ int main() {
 
 	glfwSwapInterval(0);
 
+	bool wireframe = false;
+
 	while (!glfwWindowShouldClose(window)) {
 		// Pre-frame stuff
 		glfwPollEvents();
@@ -84,6 +86,16 @@ int main() {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
+		ImGui::Begin("Settings");
+		ImGui::Checkbox("Wireframe", &wireframe);
+		if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		if (ImGui::Button("Open shader folder in code editor")) { system("code shaders"); system("vscodium shaders"); }
+		if (ImGui::Button("Reload planet shader")) { 
+			planetShader.Reload(); 
+			mainPlanet.ReloadShaders(&planetShader); 
+		};
+		ImGui::End();
 		
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		// Render objects

@@ -5,7 +5,7 @@ Object::Object(Shader* shader) {
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &IBO);
     glGenBuffers(1, &NBO);
-    this->shader = shader;
+    this->shader   = shader;
     this->position = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->scale    = glm::vec3(1.0f, 1.0f, 1.0f);

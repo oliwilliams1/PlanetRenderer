@@ -2,13 +2,24 @@
 
 PlanetShader::PlanetShader(const char* vsSource, const char* fsSource, const char* shaderName)
     : Shader(vsSource, fsSource, shaderName) {
+    AddAdditionalShaders();
+    SetupUniforms();
+}
+
+void PlanetShader::Reload() {
+    LoadBasicShaders(); // Load vs and fs in basic shader class
+	AddAdditionalShaders(); // Load tesc and tese
+	SetupUniforms();
+}
+
+void PlanetShader::AddAdditionalShaders() {
     std::string tesc, tese;
     if (!ReadFile("shaders/planet.tesc", tesc)) exit(1);
     AddShader(shaderProgram, tesc.c_str(), GL_TESS_CONTROL_SHADER);
 
     if (!ReadFile("shaders/planet.tese", tese)) exit(1);
     AddShader(shaderProgram, tese.c_str(), GL_TESS_EVALUATION_SHADER);
-    
+
     GLint success = 0;
     GLchar errorLog[1024] = { 0 };
 
@@ -22,8 +33,6 @@ PlanetShader::PlanetShader(const char* vsSource, const char* fsSource, const cha
     }
 
     glUseProgram(shaderProgram);
-
-    SetupUniforms();
 }
 
 void PlanetShader::SetupUniforms() {
@@ -61,6 +70,31 @@ Planet::Planet(PlanetShader* shader) : Object(shader) {
 	}
 
 	glUniform1i(planetTextureLocation, 0);
+}
+
+
+void Planet::ReloadShaders(PlanetShader* shader) {
+    // Update local pointer to new shader (incase it somehow changed)
+    this->shader = shader;
+
+    // Retrieve new basic uniform locations from base object class
+    GetModelMatrixLocation();
+    UpdateModelMatrix();
+
+    // Retrieve new shader uniform locations
+    planetScaleLocation = glGetUniformLocation(shader->shaderProgram, "planetScale");
+    if (planetScaleLocation == -1) {
+        std::cerr << "Warning: planetScale uniform not found!" << std::endl;
+    }
+
+    glUniform1f(planetScaleLocation, planetScale);
+
+    planetTextureLocation = glGetUniformLocation(shader->shaderProgram, "planetTexture");
+    if (planetTextureLocation == -1) {
+        std::cerr << "Warning: planetTexture uniform not found!" << std::endl;
+    }
+
+    glUniform1i(planetTextureLocation, 0);
 }
 
 void Planet::Draw()
@@ -179,16 +213,16 @@ void Planet::GenerateTexture() {
 }
 
 void Planet::ObjectDebugImGUI() {
-  ImGui::Begin("Object data");
-  if (ImGui::SliderFloat3("Position", &position.x, -10.0f, 10.0f))
-    UpdateModelMatrix();
-  if (ImGui::SliderFloat3("Rotation", &rotation.x, -180.0f, 180.0f))
-    UpdateModelMatrix();
-  if (ImGui::SliderFloat("Scale", &planetScale, 1.0f, 1000.0f))
-    glUniform1f(planetScaleLocation, planetScale);
-  ImGui::End();
+    ImGui::Begin("Object data");
+    if (ImGui::SliderFloat3("Position", &position.x, -10.0f, 10.0f))
+        UpdateModelMatrix();
+    if (ImGui::SliderFloat3("Rotation", &rotation.x, -180.0f, 180.0f))
+        UpdateModelMatrix();
+    if (ImGui::SliderFloat("Scale", &planetScale, 1.0f, 1000.0f))
+        glUniform1f(planetScaleLocation, planetScale);
+    ImGui::End();
 
-  ImGui::Begin("Planet texture viewer");
-  ImGui::Image((ImTextureID)(uintptr_t)planetTextureID, ImVec2(256, 128));
-  ImGui::End();
+    ImGui::Begin("Planet texture viewer");
+    ImGui::Image((ImTextureID)(uintptr_t)planetTextureID, ImVec2(256, 128));
+    ImGui::End();
 }

@@ -12,6 +12,8 @@
 class PlanetShader : public Shader {
 public:
     PlanetShader(const char* vsSource, const char* fsSource, const char* shaderName);
+    void AddAdditionalShaders();
+    void Reload() override;
 
 private:
     void SetupUniforms();
@@ -24,8 +26,10 @@ public:
 
     void Draw() override;
     void ObjectDebugImGUI() override;
+    void ReloadShaders(PlanetShader* shader);
 
 private:
+    uint8_t* data;
     float planetScale = 600.0f;
 
     GLuint planetScaleLocation, planetTextureLocation, planetTextureID;

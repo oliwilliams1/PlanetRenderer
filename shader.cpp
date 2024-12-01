@@ -57,6 +57,10 @@ Shader::Shader(const char* vsSource, const char* fsSource, const char* shaderNam
     this->vsSource = vsSource;
     this->fsSource = fsSource;
 
+    LoadBasicShaders();
+}
+
+void Shader::LoadBasicShaders() {
     shaderProgram = glCreateProgram();
     if (shaderProgram == 0) {
         std::cout << stderr << "Error creating shader program!" << std::endl;
@@ -65,11 +69,11 @@ Shader::Shader(const char* vsSource, const char* fsSource, const char* shaderNam
 
     std::string vs, fs;
 
-    if (!ReadFile(vsSource, vs)) exit(1);
+    if (!ReadFile(vsSource.c_str(), vs)) exit(1);
     AddShader(shaderProgram, vs.c_str(), GL_VERTEX_SHADER);
 
-    if (!ReadFile(fsSource, fs)) exit(1);
-	AddShader(shaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
+    if (!ReadFile(fsSource.c_str(), fs)) exit(1);
+    AddShader(shaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
 
     GLint success = 0;
     GLchar errorLog[1024] = { 0 };
@@ -88,6 +92,10 @@ Shader::Shader(const char* vsSource, const char* fsSource, const char* shaderNam
 
 Shader::~Shader() {
     glDeleteProgram(shaderProgram);
+}
+
+void Shader::Reload() {
+    LoadBasicShaders();
 }
 
 void Shader::use() const {
