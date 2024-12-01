@@ -27,7 +27,7 @@ void main() {
     float V = (90.0 - latitude) / 180.0;
 
     // Use long and lat to sample texture
-    colour = texture(planetTexture, vec2(U, V));
+    vec3 terrainColour = texture(planetTexture, vec2(U, V)).xyz;
 
     // Phong lighting
     vec3 lightDirection = normalize(vec3(1.0, 1.0, 1.0));
@@ -44,5 +44,5 @@ void main() {
 
     vec3 result = ambient + diffuse + specular;
 
-    colour = vec4(vec3(colour) * result, 1.0);
+    colour = vec4(terrainColour * result, 1.0);
 }

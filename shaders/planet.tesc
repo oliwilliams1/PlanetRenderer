@@ -11,29 +11,39 @@ layout(std140) uniform CameraData {
 uniform float planetScale;
 uniform mat4 m_Model;
 
+float cubicInterpolate(float p0, float p1, float p2, float p3, float t) {
+    return 0.5 * ((p1) + (p2)) + 
+           0.5 * t * ((p2) - (p0) + 
+           t * ((2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) + 
+           t * (3.0 * (p1 - p2) + p3 - p0)));
+}
+
 void main() {
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
-
-    //TODO: this wont work, alot of faces are still too small, need to make my own easing function instead of lerping
 
     if(gl_InvocationID == 0) {
         const int MIN_TESS_LEVEL = 4;
         const int MAX_TESS_LEVEL = 96;
-        float MIN_DISTANCE = planetScale * 1.0;
-        float MAX_DISTANCE = planetScale * 1.5; // Ensure a face never is smaller than 2x2 pixels
+        float MIN_DISTANCE = planetScale * 0.75;
+        float MAX_DISTANCE = planetScale * 2.0; // Ensure a face never is smaller than 2x2 pixels
         const float DISTANCE_THRESHOLD = 4000.0;
 
         // Transform vertices to eye space
-        vec4 eyeSpacePos00 = m_ViewProj * m_Model * gl_in[0].gl_Position;
-        vec4 eyeSpacePos01 = m_ViewProj * m_Model * gl_in[1].gl_Position;
-        vec4 eyeSpacePos10 = m_ViewProj * m_Model * gl_in[2].gl_Position;
-        vec4 eyeSpacePos11 = m_ViewProj * m_Model * gl_in[3].gl_Position;
+        vec4 eyeSpacePos00 = m_ViewProj * m_Model * vec4(normalize(gl_in[0].gl_Position.xyz) * planetScale, 1.0);
+        vec4 eyeSpacePos01 = m_ViewProj * m_Model * vec4(normalize(gl_in[1].gl_Position.xyz) * planetScale, 1.0);
+        vec4 eyeSpacePos10 = m_ViewProj * m_Model * vec4(normalize(gl_in[2].gl_Position.xyz) * planetScale, 1.0);
+        vec4 eyeSpacePos11 = m_ViewProj * m_Model * vec4(normalize(gl_in[3].gl_Position.xyz) * planetScale, 1.0);
 
         // Calculate distances
         float distance00 = clamp((abs(eyeSpacePos00.z) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
         float distance01 = clamp((abs(eyeSpacePos01.z) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
         float distance10 = clamp((abs(eyeSpacePos10.z) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
         float distance11 = clamp((abs(eyeSpacePos11.z) - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE), 0.0, 1.0);
+
+        distance00 = pow(distance00, 0.15);
+        distance01 = pow(distance01, 0.15);
+        distance10 = pow(distance10, 0.15);
+        distance11 = pow(distance11, 0.15);
 
         // Calculate the average distance to the patch
         float averageDistance = (eyeSpacePos00.z + eyeSpacePos01.z + eyeSpacePos10.z + eyeSpacePos11.z) / 4.0;
