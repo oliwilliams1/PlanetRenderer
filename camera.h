@@ -49,6 +49,7 @@ private:
 	float yaw;
 
 	// Frame counter + delta time calc
+	int currentFPS;
 	int frameCount;
 	float deltaTime;
 	float lastTime;

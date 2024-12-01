@@ -1,4 +1,5 @@
 #include "camera.h"
+#include <imgui.h>
 
 Camera::Camera(GLFWwindow* window, int width, int height) {
 	this->window = window;
@@ -18,6 +19,7 @@ Camera::Camera(GLFWwindow* window, int width, int height) {
 	right = glm::vec3(1, 0, 0);
 	forward = glm::vec3(0, 0, -1);
 
+    currentFPS = 0;
     frameCount = 0;
     deltaTime = 0.0f;
     lastTime = glfwGetTime();
@@ -91,6 +93,7 @@ void Camera::update(glm::dvec2 mouseDelta)
     float currentTime = glfwGetTime();
     if (currentTime - lastTime >= 1.0f) {
         glfwSetWindowTitle(window, ("Planet Renderer - FPS: " + std::to_string(frameCount)).c_str());
+        currentFPS = frameCount;
         frameCount = 0;
         lastTime = currentTime;
     }
@@ -112,8 +115,9 @@ void Camera::update(glm::dvec2 mouseDelta)
 void Camera::debugDraw() const
 {
 	ImGui::Begin("Camera data view");
-	ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
-	ImGui::Text("Forward: (%.2f, %.2f, %.2f)", forward.x, forward.y, forward.z);
+    ImGui::Text("FPS: %i", currentFPS);
+    ImGui::Text( "Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
+    ImGui::Text("Forward: (%.2f, %.2f, %.2f)", forward.x, forward.y, forward.z);
 	ImGui::Text("Up: (%.2f, %.2f, %.2f)", up.x, up.y, up.z);
     ImGui::Text("Pitch: %.0fdeg", pitch);
     ImGui::Text("Yaw: %.0fdeg", yaw);
