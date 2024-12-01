@@ -18,6 +18,8 @@ find_package(glm CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 
+include_directories(${CMAKE_SOURCE_DIR}/imgui)
+
 # Add source to this project's executable.
 add_executable(PlanetRenderer "main.cpp" "PlanetRenderer.h" "object.cpp" "object.h" "shader.h" "shader.cpp" "camera.h" "camera.cpp" "planet.h" "planet.cpp" "PerlinNoise.hpp")
 
