@@ -31,19 +31,23 @@ void Object::SetData(std::vector<glm::vec3> vertices, std::vector<glm::vec3> nor
         glEnableVertexAttribArray(1);
     }
 
+    if (indices.size() > 0) {
     // Element buffer
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+        indicesCount = indices.size();
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    indicesCount = indices.size();
 }
 
 void Object::Draw() {
     glBindVertexArray(VAO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    if (indicesCount > 0) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    }
     glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
@@ -52,8 +56,8 @@ void Object::GetModelMatrixLocation()
 {
     modelMatrixLocation = glGetUniformLocation(shader->shaderProgram, "m_Model");
     if (modelMatrixLocation == -1) {
-		std::cerr << "Warning: modelMatrix uniform not found!" << std::endl;
-	}
+      std::cerr << "Warning: m_Model uniform not found!" << std::endl;
+        }
 }
 
 void Object::UpdateModelMatrix() const {

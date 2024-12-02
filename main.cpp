@@ -63,7 +63,7 @@ int main() {
 
 	glPatchParameteri(GL_PATCH_VERTICES, 4);
 
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 
 	bool wireframe = false;
 
@@ -93,7 +93,6 @@ int main() {
 		if (ImGui::Button("Open shader folder in code editor")) { system("code shaders"); system("vscodium shaders"); }
 		if (ImGui::Button("Reload planet shader")) { 
 			planetShader.Reload(); 
-			mainPlanet.ReloadShaders(&planetShader); 
 		};
 		ImGui::End();
 		
