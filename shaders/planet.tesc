@@ -23,7 +23,7 @@ void main() {
 
     if(gl_InvocationID == 0) {
         const int MIN_TESS_LEVEL = 4;
-        const int MAX_TESS_LEVEL = 96;
+        const int MAX_TESS_LEVEL = 64;
         float MIN_DISTANCE = planetScale * 0.75;
         float MAX_DISTANCE = planetScale * 2.0; // Ensure a face never is smaller than 2x2 pixels
         const float DISTANCE_THRESHOLD = 4000.0;

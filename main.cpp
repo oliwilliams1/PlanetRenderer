@@ -36,7 +36,7 @@ int main() {
 	glDepthFunc(GL_LESS);
 
 	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	glCullFace(GL_FRONT);
 
 	glFrontFace(GL_CCW);
 
@@ -48,9 +48,32 @@ int main() {
 	ImGui_ImplOpenGL3_Init("#version 330");
 
 	// Init objects
+	std::vector<glm::vec3> vertices = {
+		glm::vec3(-1.0f, -1.0f, -1.0f),
+		glm::vec3(1.0f, -1.0f, -1.0f),
+		glm::vec3(1.0f,  1.0f, -1.0f),
+		glm::vec3(-1.0f,  1.0f, -1.0f),
+		glm::vec3(-1.0f, -1.0f,  1.0f),
+		glm::vec3(1.0f, -1.0f,  1.0f),
+		glm::vec3(1.0f,  1.0f,  1.0f),
+		glm::vec3(-1.0f,  1.0f,  1.0f) 
+	};
+
+	// Define indices for the triangles of the cube
+	std::vector<unsigned int> indices = {
+		0, 1, 2, 0, 2, 3,
+		4, 6, 5, 4, 7, 6,
+		4, 3, 7, 4, 0, 3,
+		1, 5, 6, 1, 6, 2,
+		4, 5, 1, 4, 1, 0,
+		3, 2, 6, 3, 6, 7
+	};
+
 	Camera camera = Camera(window, width, height);
-	PlanetShader planetShader = PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
-	Planet mainPlanet = Planet(&planetShader);
+	Shader planetShader = Shader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
+	Object mainPlanet = Object(&planetShader);
+
+	mainPlanet.SetData(vertices, std::vector<glm::vec3>(0), indices);
 
 	// Set a pointer to camera for OnWindowResize to call from it
 	glfwSetWindowUserPointer(window, &camera);
@@ -91,10 +114,6 @@ int main() {
 		ImGui::Checkbox("Wireframe", &wireframe);
 		if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		if (ImGui::Button("Open shader folder in code editor")) { system("code shaders"); system("vscodium shaders"); }
-		if (ImGui::Button("Reload planet shader")) { 
-			planetShader.Reload(); 
-			mainPlanet.ReloadShaders(&planetShader); 
-		};
 		ImGui::End();
 		
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

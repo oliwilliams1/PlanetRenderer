@@ -2,13 +2,13 @@
 
 PlanetShader::PlanetShader(const char* vsSource, const char* fsSource, const char* shaderName)
     : Shader(vsSource, fsSource, shaderName) {
-    AddAdditionalShaders();
+    //AddAdditionalShaders();
     SetupUniforms();
 }
 
 void PlanetShader::Reload() {
     LoadBasicShaders(); // Load vs and fs in basic shader class
-	AddAdditionalShaders(); // Load tesc and tese
+	//AddAdditionalShaders(); // Load tesc and tese
 	SetupUniforms();
 }
 
