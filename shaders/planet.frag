@@ -7,6 +7,7 @@ out vec4 colour;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
+    mat4 m_View;
     vec3 cameraPos;
     float deltaTime;
 };

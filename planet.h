@@ -4,6 +4,14 @@
 #include "object.h"
 #include "shader.h"
 
+class PlanetShader : public Shader {
+public:
+	PlanetShader(const char* vsSource, const char* fsSource, const char* shaderName);
+
+private:
+	void AddTesselationShaders();
+};
+
 class Planet : public Object {
 public:
 	Planet(Shader* shader);

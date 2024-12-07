@@ -48,7 +48,7 @@ int main() {
 	ImGui_ImplOpenGL3_Init("#version 330");
 
 	Camera camera = Camera(window, width, height);
-	Shader planetShader = Shader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
+	PlanetShader planetShader = PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
 	Planet mainPlanet = Planet(&planetShader);
 
 	// Set a pointer to camera for OnWindowResize to call from it

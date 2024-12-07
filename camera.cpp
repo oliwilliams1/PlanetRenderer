@@ -104,6 +104,7 @@ void Camera::update(glm::dvec2 mouseDelta) {
     lastDeltaTime = currentTime;
 
     cameraData.m_ProjView = m_Proj * m_View;
+    cameraData.m_View     = m_View;
     cameraData.position   = this->position;
     cameraData.deltaTime  = deltaTime;
 
