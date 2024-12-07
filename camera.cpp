@@ -9,11 +9,11 @@ Camera::Camera(GLFWwindow* window, int width, int height) {
 	zFar = 10000.0f;
 
 	yaw = -135.0f;
-	pitch = -35.0f;
-	speed = 500.0f;
+	pitch = -45.0f;
+	speed = 5.0f;
 	sensitivity = 0.2f;
 
-	position = glm::vec3(1150.0f, 1150.0f, 1150.0f);
+	position = glm::vec3(0.5f, 1.25f, 0.5f);
 
 	up = glm::vec3(0, 1, 0);
 	right = glm::vec3(1, 0, 0);
@@ -24,6 +24,8 @@ Camera::Camera(GLFWwindow* window, int width, int height) {
     deltaTime = 0.0f;
     lastTime = glfwGetTime();
     lastDeltaTime = glfwGetTime();
+
+    vSync = true;
 
     // Init Camera UBO
 	glGenBuffers(1, &UBO);
@@ -47,8 +49,7 @@ void Camera::rotate(glm::dvec2 mouseDelta) {
     if (pitch < -89.0f) pitch = -89.0f;
 }
 
-void Camera::update(glm::dvec2 mouseDelta)
-{
+void Camera::update(glm::dvec2 mouseDelta) {
     // Only rotate if RMB is down
     if ((glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) || (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)) {
         this->rotate(mouseDelta);
@@ -112,20 +113,27 @@ void Camera::update(glm::dvec2 mouseDelta)
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void Camera::debugDraw() const
-{
+void Camera::debugDraw() {
 	ImGui::Begin("Camera data view");
     ImGui::Text("FPS: %i", currentFPS);
+    ImGui::SameLine();
+    ImGui::Checkbox("V-Sync", &vSync);
     ImGui::Text( "Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
     ImGui::Text("Forward: (%.2f, %.2f, %.2f)", forward.x, forward.y, forward.z);
 	ImGui::Text("Up: (%.2f, %.2f, %.2f)", up.x, up.y, up.z);
     ImGui::Text("Pitch: %.0fdeg", pitch);
     ImGui::Text("Yaw: %.0fdeg", yaw);
 	ImGui::End();
+
+    if (vSync) {
+		glfwSwapInterval(1);
+    }
+    else {
+        glfwSwapInterval(0);
+    }
 }
 
-void Camera::OnWindowResize(GLFWwindow* window, int width, int height)
-{
+void Camera::OnWindowResize(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
     aspectRatio = (float)width / (float)height;
 }

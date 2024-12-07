@@ -31,14 +31,16 @@ void Object::SetData(std::vector<glm::vec3> vertices, std::vector<glm::vec3> nor
         glEnableVertexAttribArray(1);
     }
 
-    // Element buffer
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+    if (indices.size() > 0) {
+        // Element buffer
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
 
-    indicesCount = indices.size();
+        indicesCount = indices.size();
+    }
 }
 
 void Object::Draw() {

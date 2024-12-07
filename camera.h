@@ -27,7 +27,7 @@ public:
 	
 	void rotate(glm::dvec2 mouseDelta);
 	void update(glm::dvec2 mouseDelta);
-	void debugDraw() const;
+	void debugDraw();
 	void OnWindowResize(GLFWwindow* window, int width, int height);
 
 private:
@@ -54,4 +54,6 @@ private:
 	float deltaTime;
 	float lastTime;
 	float lastDeltaTime;
+
+	bool vSync;
 };

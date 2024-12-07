@@ -47,33 +47,9 @@ int main() {
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 330");
 
-	// Init objects
-	std::vector<glm::vec3> vertices = {
-		glm::vec3(-1.0f, -1.0f, -1.0f),
-		glm::vec3(1.0f, -1.0f, -1.0f),
-		glm::vec3(1.0f,  1.0f, -1.0f),
-		glm::vec3(-1.0f,  1.0f, -1.0f),
-		glm::vec3(-1.0f, -1.0f,  1.0f),
-		glm::vec3(1.0f, -1.0f,  1.0f),
-		glm::vec3(1.0f,  1.0f,  1.0f),
-		glm::vec3(-1.0f,  1.0f,  1.0f) 
-	};
-
-	// Define indices for the triangles of the cube
-	std::vector<unsigned int> indices = {
-		0, 1, 2, 0, 2, 3,
-		4, 6, 5, 4, 7, 6,
-		4, 3, 7, 4, 0, 3,
-		1, 5, 6, 1, 6, 2,
-		4, 5, 1, 4, 1, 0,
-		3, 2, 6, 3, 6, 7
-	};
-
 	Camera camera = Camera(window, width, height);
 	Shader planetShader = Shader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
-	Object mainPlanet = Object(&planetShader);
-
-	mainPlanet.SetData(vertices, std::vector<glm::vec3>(0), indices);
+	Planet mainPlanet = Planet(&planetShader);
 
 	// Set a pointer to camera for OnWindowResize to call from it
 	glfwSetWindowUserPointer(window, &camera);
@@ -85,8 +61,6 @@ int main() {
 	glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
 
 	glPatchParameteri(GL_PATCH_VERTICES, 4);
-
-	glfwSwapInterval(0);
 
 	bool wireframe = false;
 
