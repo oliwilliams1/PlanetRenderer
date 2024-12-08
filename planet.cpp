@@ -10,22 +10,31 @@ Planet::Planet(Shader* shader) : Object(shader) {
 }
 
 void Planet::GeneratePlanet(std::vector<glm::vec3>& vertices) {
-	int resolution = 6;
+    int resolution = 6;
 
-	float step = 1.0f / resolution;
+    float width = 50.0f;
+    float height = 50.0f;
 
     for (int x = 0; x < resolution; x++) {
         for (int y = 0; y < resolution; y++) {
-            float xPos = -1.0f + x * step;
-            float yPos = -1.0f + y * step;
-
-			vertices.emplace_back(xPos, 0, yPos);
-			vertices.emplace_back(xPos + step, 0, yPos);
-			vertices.emplace_back(xPos + step, 0, yPos + step);
-			vertices.emplace_back(xPos, 0, yPos + step);
+            // Specific order makes it possible for tess control shader to actually work
+            vertices.emplace_back(-width / 2.0f + width * x / (float)resolution, 0, -height / 2.0f + height * (y + 1) / (float)resolution); // Bottom Left
+            vertices.emplace_back(-width / 2.0f + width * (x + 1) / (float)resolution, 0, -height / 2.0f + height * (y + 1) / (float)resolution); // Bottom Right
+            vertices.emplace_back(-width / 2.0f + width * (x + 1) / (float)resolution, 0, -height / 2.0f + height * y / (float)resolution); // Top Right
+            vertices.emplace_back(-width / 2.0f + width * x / (float)resolution, 0, -height / 2.0f + height * y / (float)resolution); // Top Left
         }
     }
 
+    // Worst bug to debug: took hours to find
+    // Flip it around, it cannot be around x axis for some unknown reason not even gods know why
+    glm::mat4 rotateAroundZ = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    // Apply rotation to each vertex
+    for (int i = 0; i < vertices.size(); i++) {
+        vertices[i] = rotateAroundZ * glm::vec4(vertices[i], 1.0f);
+    }
+
+    // For glDrawArrays
 	indicesCount = 4 * resolution * resolution;
 }
 
