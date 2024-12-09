@@ -6,6 +6,8 @@ layout (local_size_x = 16, local_size_y = 16) in;
 
 uniform int seed = 0;
 uniform float scale = 5.0;
+uniform int octaves = 1;
+uniform float persistence = 0.5;
 
 // https://en.wikipedia.org/wiki/Perlin_noise#Permutation
 int perm[256] = int[256](
@@ -129,8 +131,6 @@ void main() {
     normal.z = cos(phi);
 
     // Sample 3D noise with octaves
-    int octaves = 8; // Set the number of octaves
-    float persistence = 0.5; // Amplitude decrease factor
     float noiseValue = OctaveNoise_3D(normal * scale, octaves, persistence);
 
     // Write to image, x = longitude, y = latitude
