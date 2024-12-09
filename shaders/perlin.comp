@@ -40,7 +40,7 @@ void ShuffleArray(int seed) {
     }
 }
 
-// Implentation for fade, gradient, and noise, just converted to glsl: https://github.com/Reputeless/PerlinNoise/blob/master/PerlinNoise.hpp
+// Implentation for fade, gradient, noise, and octaves, just converted to glsl: https://github.com/Reputeless/PerlinNoise/blob/master/PerlinNoise.hpp
 float fade(float t) {
     return t * t * t * (t * (t * 6 - 15) + 10);
 }
@@ -95,15 +95,29 @@ float Noise_3D(vec3 pos) {
     return mix(r0, r1, w) * 0.5 + 0.5; // Normalize to [0, 1]
 }
 
-void main() {
-    ShuffleArray(seed);
+float OctaveNoise_3D(vec3 pos, int octaves, float persistence) {
+    float result = 0.0;
+    float amplitude = 1.0;
+    float maxValue = 0.0;
 
+    for (int i = 0; i < octaves; i++) {
+        result += Noise_3D(pos * (1.0 * pow(2.0, float(i)))) * amplitude;
+        maxValue += amplitude;
+        amplitude *= persistence;
+    }
+
+    return result / maxValue;
+}
+
+void main() {
+    ShuffleArray(seed); // Shuffle the permutation array based on the seed
+    
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
     float width = 2048.0;
     float height = 1024.0;
 
     vec2 uv = vec2(float(coord.x) / width, float(coord.y) / height);
-
+    
     // UV to spherical coords
     float theta = uv.x * 2.0 * 3.14159265359;
     float phi = uv.y * 3.14159265359;
@@ -114,8 +128,10 @@ void main() {
     normal.y = sin(phi) * sin(theta);
     normal.z = cos(phi);
 
-    // Sample 3d noise with normal of sphere
-    float noiseValue = Noise_3D(normal * scale);
+    // Sample 3D noise with octaves
+    int octaves = 8; // Set the number of octaves
+    float persistence = 0.5; // Amplitude decrease factor
+    float noiseValue = OctaveNoise_3D(normal * scale, octaves, persistence);
 
     // Write to image, x = longitude, y = latitude
     vec4 noiseColor = vec4(vec3(noiseValue), 1.0);
