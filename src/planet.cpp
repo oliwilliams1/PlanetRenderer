@@ -25,8 +25,6 @@ void Planet::GeneratePlanet(std::vector<glm::vec3>& vertices) {
         }
     }
 
-    // Worst bug to debug: took hours to find
-    // Flip it around, it cannot be around x axis for some unknown reason not even gods know why
     glm::mat4 rotateAroundZ = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
     // Apply rotation to each vertex

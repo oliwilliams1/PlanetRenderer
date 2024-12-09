@@ -1,8 +1,24 @@
-﻿#include "PlanetRenderer.h"
+﻿// Standard library stuff
+#include <iostream>
+#include <stdio.h>
+#include <filesystem>
 
+// External libraries
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
+// Own stuff
+#include "camera.h"
+#include "planet.h"
+#include "noise.h"
+
+// Callback for window resize
 static void OnWindowResize(GLFWwindow* window, int width, int height) {
 	Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-	camera->OnWindowResize(window, width, height);
+	camera->OnWindowResize(window, width, height); // Changes aspect ratio in camera
 }
 
 int main() {
@@ -32,12 +48,13 @@ int main() {
 
 	std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
 
+	// Enable depth testing
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
+	// Backface culling
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
-
 	glFrontFace(GL_CCW);
 
 	// Init ImGui
@@ -47,9 +64,11 @@ int main() {
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 330");
 
+	// Init basic objects
 	Camera camera = Camera(window, width, height);
 	PlanetShader planetShader = PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
 	Planet mainPlanet = Planet(&planetShader);
+	Noise noiseGen = Noise();
 
 	// Set a pointer to camera for OnWindowResize to call from it
 	glfwSetWindowUserPointer(window, &camera);
@@ -60,6 +79,7 @@ int main() {
 
 	glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
 
+	// Set patch count
 	glPatchParameteri(GL_PATCH_VERTICES, 4);
 
 	bool wireframe = false;
@@ -68,12 +88,12 @@ int main() {
 		// Pre-frame stuff
 		glfwPollEvents();
 
+		// Calculate mouse delta
 		glm::dvec2 currentMousePos;
 		glfwGetCursorPos(window, &currentMousePos.x, &currentMousePos.y);
 
 		mouseDelta = currentMousePos - mousePos;
-		mousePos = currentMousePos;
-
+		mousePos   = currentMousePos;
 		camera.update(mouseDelta);
 
 		// Clear
@@ -84,19 +104,21 @@ int main() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		// Fast debug window
 		ImGui::Begin("Settings");
 		ImGui::Checkbox("Wireframe", &wireframe);
 		if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		if (ImGui::Button("Open shader folder in code editor")) { system("code shaders"); system("vscodium shaders"); }
 		ImGui::End();
-		
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 		// Render objects
+		planetShader.use();
 		mainPlanet.Draw();
 
 		// ImGui debug windows
-		camera.debugDraw();
+		camera.DebugDraw();
 		mainPlanet.ObjectDebugImGUI();
+		noiseGen.DebugDraw();
 
 		// Render ImGui
 		ImGui::Render();

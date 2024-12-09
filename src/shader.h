@@ -1,10 +1,6 @@
 #pragma once
 
-#include <GL/glew.h>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <cstring>
+#include "utils.h"
 
 class Shader {
 public:
@@ -16,8 +12,4 @@ public:
     void use() const;
     const char* shaderName;
     std::string vsSource, fsSource;
-
-protected:
-    bool ReadFile(const char* pFileName, std::string& outFile);
-    void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType);
 };

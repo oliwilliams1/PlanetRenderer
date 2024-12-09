@@ -13,23 +13,47 @@ endif()
 
 project ("PlanetRenderer" CXX)
 
+# Find packages
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 
+# Add imgui include dir for bindings
 include_directories(${CMAKE_SOURCE_DIR}/imgui)
 
-# Add source to this project's executable.
-add_executable(PlanetRenderer "main.cpp" "PlanetRenderer.h" "object.cpp" "object.h" "shader.h" "shader.cpp" "camera.h" "camera.cpp" "planet.h" "planet.cpp" "PerlinNoise.hpp")
+# Add source
+set(SOURCE_FILES
+    "src/main.cpp"
+    "src/object.cpp"
+    "src/shader.cpp"
+    "src/camera.cpp"
+    "src/planet.cpp"
+    "src/noise.cpp"
+    "src/utils.cpp"
+)
 
-# Add imgui files if user is not using VCPKG
+# Add header files
+set(HEADER_FILES
+    
+    "src/object.h"
+    "src/shader.h"
+    "src/camera.h"
+    "src/planet.h"
+    "src/noise.h"
+    "src/utils.h"
+)
+
+# Add executable
+add_executable(PlanetRenderer ${SOURCE_FILES} ${HEADER_FILES})
+
+# Add imgui source files if user is not using VCPKG
 if (NOT MSVC)
     set(CMAKE_C_COMPILER "gcc")
     set(CMAKE_CXX_COMPILER "g++")
     target_sources(PlanetRenderer PRIVATE
-        "imgui_impl_glfw.cpp"
-        "imgui_impl_opengl3.cpp"
+        "imgui/imgui_impl_glfw.cpp"
+        "imgui/imgui_impl_opengl3.cpp"
     )
 endif()
 
@@ -53,7 +77,7 @@ endif()
 
 # Gather shaders for copying
 set(SHADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")
-file(GLOB SHADERS "${SHADER_DIR}/*.vert" "${SHADER_DIR}/*.frag" "${SHADER_DIR}/*.tesc" "${SHADER_DIR}/*.tese")
+file(GLOB SHADERS "${SHADER_DIR}/*.vert" "${SHADER_DIR}/*.frag" "${SHADER_DIR}/*.tesc" "${SHADER_DIR}/*.tese" "${SHADER_DIR}/*.comp")
 
 # Custom command to copy shaders to the build output
 add_custom_command(

@@ -28,7 +28,7 @@ public:
 	
 	void rotate(glm::dvec2 mouseDelta);
 	void update(glm::dvec2 mouseDelta);
-	void debugDraw();
+	void DebugDraw();
 	void OnWindowResize(GLFWwindow* window, int width, int height);
 
 private:

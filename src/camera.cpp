@@ -114,7 +114,7 @@ void Camera::update(glm::dvec2 mouseDelta) {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void Camera::debugDraw() {
+void Camera::DebugDraw() {
 	ImGui::Begin("Camera data view");
     ImGui::Text("FPS: %i", currentFPS);
     ImGui::SameLine();

@@ -3,7 +3,6 @@
 #include <glm/glm.hpp>
 #include "object.h"
 #include "shader.h"
-#include <algorithm>
 
 class PlanetShader : public Shader {
 public:
