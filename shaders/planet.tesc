@@ -19,8 +19,8 @@ void main()
     if(gl_InvocationID == 0) {
         const int MIN_TESS_LEVEL = 4;
         const int MAX_TESS_LEVEL = 8;
-        const float MIN_DISTANCE = 10;
-        const float MAX_DISTANCE = 50;
+        const float MIN_DISTANCE = 0.5;
+        const float MAX_DISTANCE = 2;
 
         vec4 eyeSpacePos00 = m_View * m_Model * gl_in[0].gl_Position;
         vec4 eyeSpacePos01 = m_View * m_Model * gl_in[1].gl_Position;

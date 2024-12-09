@@ -27,7 +27,7 @@ void main() {
 
     vec4 mPos = m_Model * pos;
 
-    gl_Position = m_ViewProj * mPos;
+    gl_Position = m_ViewProj * vec4(normalize(mPos.xyz), 1.0); // Transform into cubesphere
     Normal = normalize(mat3(transpose(inverse(m_Model))) * vec3(0.0, 1.0, 0.0));
     FragPos = mPos.xyz;
 }
