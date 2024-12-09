@@ -33,14 +33,14 @@ Noise::Noise() {
 void Noise::Dispatch() {
 	glUseProgram(shaderProgram);
 	glBindImageTexture(0, noiseTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-	glDispatchCompute(32, 32, 1);
+	glDispatchCompute(128, 64, 1);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 }
 
 void Noise::CreateTexture() {
 	glGenTextures(1, &noiseTexture);
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 512, 512, 0, GL_RGBA, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 2048, 1024, 0, GL_RGBA, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -56,7 +56,7 @@ void Noise::CreateFramebuffer() {
 void Noise::DebugDraw() {
 	ImGui::Begin("Perlin noise data view");
 	if (ImGui::Button("Generate noise")) Dispatch();
-	ImGui::Image((void*)noiseTexture, ImVec2(256, 256));
+	ImGui::Image((void*)noiseTexture, ImVec2(512, 256));
 	ImGui::End();
 }
 
