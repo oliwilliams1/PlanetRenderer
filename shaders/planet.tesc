@@ -17,20 +17,20 @@ void main()
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
     if(gl_InvocationID == 0) {
-        const int MIN_TESS_LEVEL = 4;
-        const int MAX_TESS_LEVEL = 8;
-        const float MIN_DISTANCE = 0.5;
-        const float MAX_DISTANCE = 2;
+        const int MIN_TESS_LEVEL = 8;
+        const int MAX_TESS_LEVEL = 64;
+        float MIN_DISTANCE = 50;
+        float MAX_DISTANCE = 400;
 
         vec4 eyeSpacePos00 = m_View * m_Model * gl_in[0].gl_Position;
         vec4 eyeSpacePos01 = m_View * m_Model * gl_in[1].gl_Position;
         vec4 eyeSpacePos10 = m_View * m_Model * gl_in[2].gl_Position;
         vec4 eyeSpacePos11 = m_View * m_Model * gl_in[3].gl_Position;
 
-        float distance00 = clamp((abs(eyeSpacePos00.z)-MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0);
-        float distance01 = clamp((abs(eyeSpacePos01.z)-MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0);
-        float distance10 = clamp((abs(eyeSpacePos10.z)-MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0);
-        float distance11 = clamp((abs(eyeSpacePos11.z)-MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0);
+        float distance00 = pow(clamp((abs(eyeSpacePos00.z)-MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0), 0.5);
+        float distance01 = pow(clamp((abs(eyeSpacePos01.z)-MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0), 0.5);
+        float distance10 = pow(clamp((abs(eyeSpacePos10.z)-MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0), 0.5);
+        float distance11 = pow(clamp((abs(eyeSpacePos11.z)-MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0), 0.5);
 
         float tessLevel0 = mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance10, distance00) );
         float tessLevel1 = mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance00, distance01) );

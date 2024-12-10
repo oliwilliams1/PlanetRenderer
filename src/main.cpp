@@ -22,8 +22,8 @@ static void OnWindowResize(GLFWwindow* window, int width, int height) {
 }
 
 int main() {
-	int width = 1000;
-	int height = 700;
+	int width = 1600;
+	int height = 900;
 	// Init GLFW
 	if (!glfwInit()) {
 		std::cout << stderr << "Failed to initialize GLFW" << std::endl;
@@ -65,9 +65,11 @@ int main() {
 	ImGui_ImplOpenGL3_Init("#version 330");
 
 	// Init basic objects
+	Noise noiseGen = Noise();
 	Camera camera = Camera(window, width, height);
+
 	PlanetShader planetShader = PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
-	Planet mainPlanet = Planet(&planetShader);
+	Planet mainPlanet = Planet(&planetShader, noiseGen.noiseTexture); // Shaders must be generated sequentially with no other calls inbetween
 
 	// Set a pointer to camera for OnWindowResize to call from it
 	glfwSetWindowUserPointer(window, &camera);
@@ -117,6 +119,7 @@ int main() {
 		// ImGui debug windows
 		camera.DebugDraw();
 		mainPlanet.ObjectDebugImGUI();
+		noiseGen.DebugDraw();
 
 		// Render ImGui
 		ImGui::Render();

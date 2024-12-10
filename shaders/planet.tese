@@ -14,6 +14,7 @@ layout(std140) uniform CameraData {
 
 uniform mat4 m_Model;
 uniform sampler2D u_NoiseTexture;
+uniform float planetScale = 300.0;
 
 void main() {
     float u = gl_TessCoord.x;
@@ -25,24 +26,18 @@ void main() {
     vec4 pos3 = gl_in[3].gl_Position;
 
     vec4 pos = mix(mix(pos0, pos1, u), mix(pos3, pos2, u), v);
-
     vec4 mPos = m_Model * pos;
 
-
     vec3 normal = normalize(mPos.xyz);
-    Normal = normal;
 
-    // Calculate longitude
-    float longitude = atan(normal.z, normal.x) / (2.0 * 3.14159265359) + 0.5; // Normalize to [0, 1]
-
-    // Calculate latitude
-    float latitude = asin(normal.y) / 3.14159265359 + 0.5; // Normalize to [0, 1]
+    float longitude = atan(normal.z, normal.x) / (2.0 * 3.14159265359) + 0.5;
+    float latitude = asin(normal.y) / 3.14159265359 + 0.5;
 
     float height = texture(u_NoiseTexture, vec2(longitude, latitude)).r;
-
-    vec3 displacedPosition = normalize(mPos.xyz) + height * 0.2 * normal;
+    height -= 0.5;
+    vec3 displacedPosition = (normalize(mPos.xyz) * planetScale) + height * 100.0 * normal;
 
     gl_Position = m_ViewProj * vec4(displacedPosition, 1.0); // Transform into cubesphere
-
+    Normal = normal;
     FragPos = mPos.xyz;
 }

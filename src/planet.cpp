@@ -1,25 +1,24 @@
 #include "planet.h"
 
-Planet::Planet(Shader* shader) : Object(shader) {
-	this->shader = shader;
-    noiseGen = Noise();
+Planet::Planet(Shader* shader, GLuint noiseTexture) : Object(shader) {
+    this->shader = shader;
+    this->noiseTexture = noiseTexture;
 
-	std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> vertices;
 
-	GeneratePlanet(vertices);
-	SetData(vertices);
+    GeneratePlanet(vertices);
+    SetData(vertices);
 
     noiseTextureLocation = glGetUniformLocation(shader->shaderProgram, "u_NoiseTexture");
-	if (noiseTextureLocation == -1) {
-		std::cerr << "Warning: u_NoiseTexture uniform not found!" << std::endl;
-	}
+    if (noiseTextureLocation == -1) {
+        std::cerr << "Warning: u_NoiseTexture uniform not found!" << std::endl;
+    }
 
-    // set texture
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, noiseGen.noiseTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, noiseTexture);
 
-	glUseProgram(shader->shaderProgram);
-	glUniform1i(noiseTextureLocation, 0);
+    glUseProgram(shader->shaderProgram);
+    glUniform1i(noiseTextureLocation, 0);
 }
 
 void Planet::GeneratePlanet(std::vector<glm::vec3>& vertices) {
@@ -105,11 +104,11 @@ void Planet::GeneratePlanet(std::vector<glm::vec3>& vertices) {
 	indicesCount = 4 * resolution * resolution * 6;
 }
 
+
 void Planet::Draw() {
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_PATCHES, 0, indicesCount);
 	glBindVertexArray(0);
-    noiseGen.DebugDraw();
 }
 
 PlanetShader::PlanetShader(const char* vsSource, const char* fsSource, const char* shaderName) : Shader(vsSource, fsSource, shaderName) {
