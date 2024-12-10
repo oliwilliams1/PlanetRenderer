@@ -12,7 +12,6 @@ layout(std140) uniform CameraData {
     float deltaTime;
 };
 
-uniform vec3 planetColour;
 const float PI = 3.14159;
 
 void main() {

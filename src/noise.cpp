@@ -2,7 +2,7 @@
 
 Noise::Noise() {
 	this->seed        = 0;
-	this->scale       = 5.0f;
+	this->scale       = 1.0f;
 	this->octaves     = 6;
 	this->persistence = 0.5f;
 	this->needToDispatch = false;

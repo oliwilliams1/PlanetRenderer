@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include "object.h"
 #include "shader.h"
+#include "noise.h"
 
 class PlanetShader : public Shader {
 public:
@@ -18,5 +19,7 @@ public:
 	void Draw() override;
 
 private:
+	GLuint noiseTextureLocation;
+	Noise noiseGen;
 	void GeneratePlanet(std::vector<glm::vec3>& vertices);
 };

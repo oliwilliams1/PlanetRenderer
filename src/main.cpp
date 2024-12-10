@@ -68,7 +68,6 @@ int main() {
 	Camera camera = Camera(window, width, height);
 	PlanetShader planetShader = PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
 	Planet mainPlanet = Planet(&planetShader);
-	Noise noiseGen = Noise();
 
 	// Set a pointer to camera for OnWindowResize to call from it
 	glfwSetWindowUserPointer(window, &camera);
@@ -118,7 +117,6 @@ int main() {
 		// ImGui debug windows
 		camera.DebugDraw();
 		mainPlanet.ObjectDebugImGUI();
-		noiseGen.DebugDraw();
 
 		// Render ImGui
 		ImGui::Render();
