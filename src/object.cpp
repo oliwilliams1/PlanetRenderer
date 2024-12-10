@@ -74,7 +74,7 @@ void Object::UpdateModelMatrix() const {
     glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(model));
 }
 
-void Object::ObjectDebugImGUI() {
+void Object::DebugDraw() {
     ImGui::Begin("Object data");
     if (ImGui::SliderFloat3("Position", &position.x, -10.0f, 10.0f)) UpdateModelMatrix();
     if (ImGui::SliderFloat3("Rotation", &rotation.x, -180.0f, 180.0f)) UpdateModelMatrix();

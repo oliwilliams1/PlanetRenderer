@@ -118,7 +118,7 @@ int main() {
 
 		// ImGui debug windows
 		camera.DebugDraw();
-		mainPlanet.ObjectDebugImGUI();
+		mainPlanet.DebugDraw();
 		noiseGen.DebugDraw();
 
 		// Render ImGui

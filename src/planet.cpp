@@ -3,6 +3,7 @@
 Planet::Planet(Shader* shader, GLuint noiseTexture) : Object(shader) {
     this->shader = shader;
     this->noiseTexture = noiseTexture;
+    planetScale = 300.0f;
 
     std::vector<glm::vec3> vertices;
 
@@ -19,6 +20,12 @@ Planet::Planet(Shader* shader, GLuint noiseTexture) : Object(shader) {
 
     glUseProgram(shader->shaderProgram);
     glUniform1i(noiseTextureLocation, 0);
+
+    planetScaleLocation = glGetUniformLocation(shader->shaderProgram, "u_PlanetScale");
+	if (planetScaleLocation == -1) {
+		std::cerr << "Warning: u_PlanetScale uniform not found!" << std::endl;
+	}
+    glUniform1f(planetScaleLocation, planetScale);
 }
 
 void Planet::GeneratePlanet(std::vector<glm::vec3>& vertices) {
@@ -136,4 +143,12 @@ void PlanetShader::AddTesselationShaders() {
     }
 
     glUseProgram(shaderProgram);
+}
+
+void Planet::DebugDraw() {
+    ImGui::Begin("Object data");
+    if (ImGui::SliderFloat3("Position", &position.x, -10.0f, 10.0f)) UpdateModelMatrix();
+    if (ImGui::SliderFloat3("Rotation", &rotation.x, -180.0f, 180.0f)) UpdateModelMatrix();
+    if (ImGui::SliderFloat("Planet Scale", &planetScale, -1.0f, 1000.0f)) glUniform1f(planetScaleLocation, planetScale);
+	ImGui::End();
 }
