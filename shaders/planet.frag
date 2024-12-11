@@ -2,6 +2,7 @@
 
 in vec3 Normal;
 in vec3 FragPos;
+in vec2 UV;
 
 out vec4 colour;
 
@@ -13,32 +14,28 @@ layout(std140) uniform CameraData {
 };
 
 const float PI = 3.14159;
+uniform sampler2D u_NoiseTexture;
+
+vec3 heightToColour(float h) {
+    if (h <= 0.0) {
+        return vec3(0.0, 0.0, 1.0);   // water
+    } else if (h > 0.0 && h <= 0.2) {
+        return vec3(1.0, 0.9, 0.6);   // sand
+    } else if (h > 0.2 && h <= 0.5) {
+        return vec3(0.0, 1.0, 0.0);   // grass
+    } else if (h > 0.5 && h <= 0.8) {
+        return vec3(0.5, 0.5, 0.5);   // rock
+    } else {
+        return vec3(1.0, 1.0, 1.0);   // snow
+    }
+}
 
 void main() {
     // Normalize interpolated normal
-    vec3 norm = normalize(Normal);
+    vec3 normal = normalize(Normal);
 
-    // Calculate spherical coords from normal
-    float latitude = asin(norm.y) * (180.0 / PI);
-    float longitude = atan(norm.z, norm.x) * (180.0 / PI);
+    float height = texture(u_NoiseTexture, UV).r;
+    height = height * 2.0 - 1.0;
 
-    float U = (longitude + 180.0) / 360.0;
-    float V = (90.0 - latitude) / 180.0;
-
-    // Phong lighting
-    vec3 lightDirection = normalize(vec3(1.0, 1.0, 1.0));
-    vec3 viewDir = normalize(cameraPos - FragPos);
-    
-    vec3 ambient = vec3(0.1);
-
-    float diff = max(dot(norm, lightDirection), 0.0);
-    vec3 diffuse = vec3(diff);
-
-    vec3 halfDir = normalize(lightDirection + viewDir);
-    float spec = pow(max(dot(norm, halfDir), 0.0), 32.0);
-    vec3 specular = vec3(1.0) * spec;
-
-    vec3 result = ambient + diffuse + specular;
-
-    colour = vec4(vec3(1.0) * result, 1.0);
+    colour = vec4(heightToColour(height), 1.0);
 }

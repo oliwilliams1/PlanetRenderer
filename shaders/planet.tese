@@ -4,6 +4,7 @@ layout (quads, fractional_even_spacing, ccw) in;
 
 out vec3 Normal;
 out vec3 FragPos;
+out vec2 UV;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -35,9 +36,11 @@ void main() {
 
     float height = texture(u_NoiseTexture, vec2(longitude, latitude)).r;
     height -= 0.5;
+    height = max(0.0, height);
     vec3 displacedPosition = (normalize(mPos.xyz) * u_PlanetScale) + height * (u_PlanetScale * 0.33)  * normal;
 
     gl_Position = m_ViewProj * vec4(displacedPosition, 1.0); // Transform into cubesphere
     Normal = normal;
     FragPos = mPos.xyz;
+    UV = vec2(longitude, latitude);
 }
