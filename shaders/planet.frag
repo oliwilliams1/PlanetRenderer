@@ -15,6 +15,7 @@ layout(std140) uniform CameraData {
 
 const float PI = 3.14159;
 uniform sampler2D u_NoiseTexture;
+uniform float u_PlanetScale;
 
 vec3 heightToColour(float h) {
     if (h <= 0.0) {
@@ -34,7 +35,18 @@ void main() {
     // Normalize interpolated normal
     vec3 normal = normalize(Normal);
 
-    float height = texture(u_NoiseTexture, UV).r;
+    float height;
+
+    if (abs(FragPos.z - 0.0) < 0.05 * u_PlanetScale) {
+        float longitude = atan(normal.z, normal.x) / (2.0 * 3.14159265359) + 0.5;
+        float latitude = asin(normal.y) / 3.14159265359 + 0.5;
+
+        height = texture(u_NoiseTexture, vec2(longitude, latitude)).r;
+
+    } else {
+        height = texture(u_NoiseTexture, UV).r;
+    }
+    
     height = height * 2.0 - 1.0;
 
     colour = vec4(heightToColour(height), 1.0);
