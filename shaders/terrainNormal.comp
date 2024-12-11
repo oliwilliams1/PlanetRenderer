@@ -1,0 +1,41 @@
+#version 430
+
+layout (binding = 0, rgba32f) uniform image2D outputImage;
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+uniform sampler2D terrainHeightmap;
+
+void main() {
+    ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
+    float width = 2048.0;
+    float height = 1024.0;
+
+    vec2 uv = vec2(float(coord.x) / width, float(coord.y) / height);
+
+    float theta = uv.x * 2.0 * 3.14159265359;
+    float phi = uv.y * 3.14159265359;
+
+    float heightValue = texture(terrainHeightmap, uv).r;
+
+    float offset = 2.0 / float(width);
+
+    float heightLeft   = texture(terrainHeightmap, uv + vec2(-offset, 0)).r;
+    float heightRight  = texture(terrainHeightmap, uv + vec2(offset, 0)).r;
+    float heightDown   = texture(terrainHeightmap, uv + vec2(0, -offset)).r;
+    float heightUp     = texture(terrainHeightmap, uv + vec2(0, offset)).r;
+
+    float slopeX = heightRight - heightLeft;
+    float slopeY = heightUp - heightDown;
+
+    vec3 normal;
+    normal.x = slopeX;
+    normal.y = slopeY;
+    normal.z = 1.0;
+
+    normal = normalize(normal);
+
+    vec3 color = vec3(heightValue);
+
+    imageStore(outputImage, coord, vec4(normal * 0.5 + 0.5, 1.0));
+}

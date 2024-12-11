@@ -15,12 +15,12 @@ private:
 
 class Planet : public Object {
 public:
-	Planet(Shader* shader, GLuint noiseTexture);
+	Planet(Shader* shader, GLuint noiseTexture, GLuint normalTexture);
 	void Draw() override;
 	void DebugDraw() override;
 
 private:
-	GLuint noiseTexture, noiseTextureLocation, planetScaleLocation;
+	GLuint noiseTexture, normalTexture, noiseTextureLocation, normalTextureLocation, planetScaleLocation;
 	float planetScale;
 	void GeneratePlanet(std::vector<glm::vec3>& vertices);
 };

@@ -1,8 +1,9 @@
 #include "planet.h"
 
-Planet::Planet(Shader* shader, GLuint noiseTexture) : Object(shader) {
+Planet::Planet(Shader* shader, GLuint noiseTexture, GLuint normalTexture) : Object(shader) {
     this->shader = shader;
     this->noiseTexture = noiseTexture;
+    this->normalTexture = normalTexture;
     planetScale = 300.0f;
 
     std::vector<glm::vec3> vertices;
@@ -17,14 +18,21 @@ Planet::Planet(Shader* shader, GLuint noiseTexture) : Object(shader) {
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, noiseTexture);
-
-    glUseProgram(shader->shaderProgram);
     glUniform1i(noiseTextureLocation, 0);
 
+    normalTextureLocation = glGetUniformLocation(shader->shaderProgram, "u_NormalTexture");
+    if (normalTextureLocation == -1) {
+        std::cerr << "Warning: u_NormalTexture uniform not found!" << std::endl;
+    }
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, normalTexture);
+    glUniform1i(normalTextureLocation, 1);
+
     planetScaleLocation = glGetUniformLocation(shader->shaderProgram, "u_PlanetScale");
-	if (planetScaleLocation == -1) {
-		std::cerr << "Warning: u_PlanetScale uniform not found!" << std::endl;
-	}
+    if (planetScaleLocation == -1) {
+        std::cerr << "Warning: u_PlanetScale uniform not found!" << std::endl;
+    }
     glUniform1f(planetScaleLocation, planetScale);
 }
 
