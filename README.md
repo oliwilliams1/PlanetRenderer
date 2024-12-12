@@ -1,7 +1,7 @@
 # PlanetRenderer
 This repo is research for my upcoming scholarship project, intending get further understanding and experience in C++ and OpenGL.
 
-The terrain for a planet is generated via dynamic mesh tesselated on the GPU via tesselation shaders, with a heightmap for each vertex to sample its height. Gpu tesselation is a solid choice for my upcoming project as it is extremely performant, but with the cost of a lot of bugs along the way.
+The terrain for a planet is generated via dynamic mesh tesselated on the GPU via tesselation shaders, with a heightmap generated at runtime with compute shaders for each vertex of the planet to sample its height.
 ### Low lod, near planet yet not close enough for little details to matter
 ![no subdivision](images/no%20subdivision.png)
 ### Smooth transition to high lod via tesselation shaders
@@ -18,12 +18,7 @@ As of now, the program features the most simple terrain generation, manipulation
 [glm](https://github.com/icaven/glm) OpenGl mathematics library, used for complex vector and matrix mathematics and easy-to-implement with OpenGL.<br>
 OpenGL is the base framework that allows me to do basically everything I do on the GPU.<br>
 [ImGui](https://github.com/ocornut/imgui) An immediate-mode gui which is for immediate debugging.<br>
-[Perlin Noise](https://github.com/Reputeless/PerlinNoise) Simple library that allows me to generate noise without any hassle.<br>
 All are correctly linked via cmake for both windows with vcpkg and linux with custom package managers.
-
-**Plans**<br>
-I plan for the future to have better tesslation for each use case, i.e. tesselation for approaching the planet is different to the tesselation when on the planet. The plan is to maximise how many fragments each face takes up whilst keeping maximum detail. I also need to find a solution for removing seams across patches in tesselation, as right now I find it too challenging.
-
 ## Building and running
 ### Windows
 On windows, my CMake file has been tested to work with MSVC and [VCPKG](https://github.com/microsoft/vcpkg) (a package manager for windows), installation should be as easy as cloning the repo via MSVC, installing vcpkg to path, and running directly in the MSVC ide, CMake should handle the harder things.

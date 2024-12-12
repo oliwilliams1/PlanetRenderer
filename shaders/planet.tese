@@ -15,6 +15,7 @@ layout(std140) uniform CameraData {
 uniform mat4 m_Model;
 uniform sampler2D u_NoiseTexture;
 uniform float u_PlanetScale;
+uniform float u_Amplitude;
 
 void main() {
     float u = gl_TessCoord.x;
@@ -36,7 +37,7 @@ void main() {
     float height = texture(u_NoiseTexture, vec2(longitude, latitude)).r;
     height -= 0.5;
     height = max(0.0, height);
-    vec3 displacedPosition = (normalize(mPos.xyz) * u_PlanetScale) + height * (u_PlanetScale * 0.33)  * normal;
+    vec3 displacedPosition = (normalize(mPos.xyz) * u_PlanetScale) + height * (u_PlanetScale * u_Amplitude)  * normal;
 
     gl_Position = m_ViewProj * vec4(displacedPosition, 1.0); // Transform into cubesphere
     Normal = normal;

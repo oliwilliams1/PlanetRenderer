@@ -20,7 +20,7 @@ public:
 	void DebugDraw() override;
 
 private:
-	GLuint noiseTexture, normalTexture, noiseTextureLocation, normalTextureLocation, planetScaleLocation;
-	float planetScale;
+	GLuint noiseTexture, normalTexture, noiseTextureLocation, normalTextureLocation, planetScaleLocation, noiseAmplitudeLocation;
+	float planetScale, noiseAmplitude;
 	void GeneratePlanet(std::vector<glm::vec3>& vertices);
 };

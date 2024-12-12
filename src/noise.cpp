@@ -1,39 +1,45 @@
 #include "noise.h"
 
 Noise::Noise() {
-	this->seed        = 0;
-	this->scale       = 1.0f;
-	this->octaves     = 6;
-	this->persistence = 0.5f;
-	this->needToDispatch = false;
+	this->seed             = 0;
+	this->scale            = 1.0f;
+	this->octaves          = 8;
+	this->persistence      = 0.5f;
+	this->sampleOffsetSize = 6.0f;
+	this->needToDispatch   = false;
 
 	noiseShaderProgram = CompileComputeShader("shaders/terrainGen.comp");
 
-	seedLocation = glGetUniformLocation(noiseShaderProgram, "seed");
+	seedLocation = glGetUniformLocation(noiseShaderProgram, "u_Seed");
 	if (seedLocation == -1) {
-		std::cerr << "Warning: seed uniform not found!" << std::endl;
+		std::cerr << "Warning: u_Seed uniform not found!" << std::endl;
 	}
 
-	scaleLocation = glGetUniformLocation(noiseShaderProgram, "scale");
+	scaleLocation = glGetUniformLocation(noiseShaderProgram, "u_Scale");
 	if (scaleLocation == -1) {
 		std::cerr << "Warning: scale uniform not found!" << std::endl;
 	}
 
-	octavesLocation = glGetUniformLocation(noiseShaderProgram, "octaves");
+	octavesLocation = glGetUniformLocation(noiseShaderProgram, "u_Octaves");
 	if (octavesLocation == -1) {
 		std::cerr << "Warning: octaves uniform not found!" << std::endl;
 	}
 
-	persistenceLocation = glGetUniformLocation(noiseShaderProgram, "persistence");
+	persistenceLocation = glGetUniformLocation(noiseShaderProgram, "u_Persistence");
 	if (persistenceLocation == -1) {
 		std::cerr << "Warning: persistence uniform not found!" << std::endl;
 	}
 
 	normalShaderProgram = CompileComputeShader("shaders/terrainNormal.comp");
 
-	normal_TerrainHeightmapLocation = glGetUniformLocation(normalShaderProgram, "terrainHeightmap");
+	normal_TerrainHeightmapLocation = glGetUniformLocation(normalShaderProgram, "u_TerrainHeightmap");
 	if (normal_TerrainHeightmapLocation == -1) {
-		std::cerr << "Warning: terrainHeightmap uniform not found!" << std::endl;
+		std::cerr << "Warning: u_TerrainHeightmap uniform not found!" << std::endl;
+	}
+
+	normal_SampleOffsetSizeLocation = glGetUniformLocation(normalShaderProgram, "u_NormalOffsetSize");
+	if (normal_SampleOffsetSizeLocation == -1) {
+		std::cerr << "Warning: u_NormalOffsetSize uniform not found!" << std::endl;
 	}
 
 	CreateTextures();
@@ -92,6 +98,7 @@ void Noise::Dispatch() {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);
 	glUniform1i(normal_TerrainHeightmapLocation, 0);
+	glUniform1f(normal_SampleOffsetSizeLocation, sampleOffsetSize);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fboNormal);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, normalTexture, 0);
@@ -144,12 +151,13 @@ void Noise::CreateFramebuffers() {
 
 void Noise::DebugDraw() {
 	ImGui::Begin("Perlin noise data view");
-	ImGui::Image((void*)noiseTexture, ImVec2(512, 256));
-	ImGui::Image((void*)normalTexture, ImVec2(512, 256));
+	ImGui::Image((void*)noiseTexture, ImVec2(384, 192));
+	ImGui::Image((void*)normalTexture, ImVec2(384, 192));
 	if (ImGui::SliderInt("Seed", &seed, 0, 1000)) needToDispatch = true;
-	if (ImGui::SliderInt("Octaves", &octaves, 1, 10)) needToDispatch = true;
+	if (ImGui::SliderInt("Octaves", &octaves, 1, 20)) needToDispatch = true;
 	if (ImGui::SliderFloat("Scale", &scale, 1.0f, 10.0f)) needToDispatch = true;
 	if (ImGui::SliderFloat("Persistence", &persistence, 0.0f, 1.0f)) needToDispatch = true;
+	if (ImGui::SliderFloat("Sample offset px", &sampleOffsetSize, 0.1f, 20.0f)) needToDispatch = true;
 	ImGui::End();
 
 	if (needToDispatch) {

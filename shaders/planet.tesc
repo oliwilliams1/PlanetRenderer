@@ -17,7 +17,7 @@ void main()
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 
     if(gl_InvocationID == 0) {
-        const int MIN_TESS_LEVEL = 8;
+        const int MIN_TESS_LEVEL = 4;
         const int MAX_TESS_LEVEL = 64;
         float MIN_DISTANCE = 100;
         float MAX_DISTANCE = 400;

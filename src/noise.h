@@ -19,12 +19,13 @@ public:
 private:
 	int seed, octaves;
 	float scale, persistence;
+	float sampleOffsetSize;
 
 	bool needToDispatch;
 	float lastDispatchTime;
 
 	GLuint noiseShaderProgram, normalShaderProgram, fboNoise, fboNormal;
-	GLuint seedLocation, octavesLocation, scaleLocation, persistenceLocation, normal_TerrainHeightmapLocation;
+	GLuint seedLocation, octavesLocation, scaleLocation, persistenceLocation, normal_TerrainHeightmapLocation, normal_SampleOffsetSizeLocation;
 
 	GLuint CompileComputeShader(const char* source);
 	void CreateTextures();

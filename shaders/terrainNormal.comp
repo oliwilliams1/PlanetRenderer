@@ -4,7 +4,8 @@ layout (binding = 0, rgba32f) uniform image2D outputImage;
 
 layout (local_size_x = 16, local_size_y = 16) in;
 
-uniform sampler2D terrainHeightmap;
+uniform sampler2D u_TerrainHeightmap;
+uniform float u_NormalOffsetSize;
 
 void main() {
     ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
@@ -16,21 +17,21 @@ void main() {
     float theta = uv.x * 2.0 * 3.14159265359;
     float phi = uv.y * 3.14159265359;
 
-    float heightValue = texture(terrainHeightmap, uv).r;
+    float heightValue = texture(u_TerrainHeightmap, uv).r;
 
-    float offset = 12.5 / float(width);
+    float offset = u_NormalOffsetSize / float(width);
 
-    float heightLeft   = texture(terrainHeightmap, uv + vec2(-offset, 0)).r;
-    float heightRight  = texture(terrainHeightmap, uv + vec2(offset, 0)).r;
-    float heightDown   = texture(terrainHeightmap, uv + vec2(0, -offset)).r;
-    float heightUp     = texture(terrainHeightmap, uv + vec2(0, offset)).r;
+    float heightLeft   = texture(u_TerrainHeightmap, uv + vec2(-offset, 0)).r;
+    float heightRight  = texture(u_TerrainHeightmap, uv + vec2(offset, 0)).r;
+    float heightDown   = texture(u_TerrainHeightmap, uv + vec2(0, -offset)).r;
+    float heightUp     = texture(u_TerrainHeightmap, uv + vec2(0, offset)).r;
 
     float slopeX = heightRight - heightLeft;
     float slopeY = heightUp - heightDown;
 
     vec3 normal;
-    normal.x = -slopeX;
-    normal.y = -slopeY;
+    normal.x = slopeX;
+    normal.y = slopeY;
     normal.z = 1.0;
 
     normal = normalize(normal);

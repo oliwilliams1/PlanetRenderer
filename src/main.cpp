@@ -109,7 +109,6 @@ int main() {
 		ImGui::Begin("Settings");
 		ImGui::Checkbox("Wireframe", &wireframe);
 		if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		if (ImGui::Button("Open shader folder in code editor")) { system("code shaders"); system("vscodium shaders"); }
 		ImGui::End();
 
 		// Render objects

@@ -4,10 +4,10 @@ layout (binding = 0, rgba32f) uniform image2D outputImage;
 
 layout (local_size_x = 16, local_size_y = 16) in;
 
-uniform int seed = 0;
-uniform float scale = 5.0;
-uniform int octaves = 1;
-uniform float persistence = 0.5;
+uniform int   u_Seed        = 0;
+uniform float u_Scale       = 5.0;
+uniform int   u_Octaves     = 1;
+uniform float u_Persistence = 0.5;
 
 float smoothStep(float edge0, float edge1, float x) {
     x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
@@ -134,7 +134,7 @@ float OctaveNoise_3D(vec3 pos, int octaves, float persistence) {
 }
 
 void main() {
-	ShuffleArray(seed); // Shuffle the permutation array based on the seed
+	ShuffleArray(u_Seed); // Shuffle the permutation array based on the seed
 	
 	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
 	float width = 2048.0;
@@ -144,7 +144,7 @@ void main() {
 	
 	// UV to spherical coords
 	float theta = uv.x * 2.0 * 3.14159265359;
-	float phi = uv.y * 3.14159265359;
+	float phi   = uv.y * 3.14159265359;
 
 	// Calculate normal
 	vec3 normal;
@@ -153,26 +153,9 @@ void main() {
 	normal.z = cos(phi);
 
 	// Sample 3D noise with octaves
-	float baseNoise = OctaveNoise_3D(normal * scale, octaves, persistence);
-
-	ShuffleArray(seed + 1);
-	// A planetery scale of 1 is good for contenants,
-	// 8 Octaves is enough for fine details
-	// 0.55 Persistance keeps fine details, but not too much
-	float continentalContrib = OctaveNoise_3D(normal * 1.0, 8, 0.55);
-
-	// Run the continentalness function to get bands)
-	continentalContrib = QuantizeSmooth(continentalContrib);
-
-	ShuffleArray(seed + 2);
-	float erosionContrib = OctaveNoise_3D(normal * 0.7, 6, 0.45);
-	erosionContrib = QuantizeSmooth(erosionContrib);
-
-	// Define weights for the contributions
-	float continentalWeight = 0.7; // Adjust as needed
-	float erosionWeight = 0.3;      // Adjust as needed
+	float baseNoise = OctaveNoise_3D(normal * u_Scale, u_Octaves, u_Persistence);
 
 	// Write to image, x = longitude, y = latitude
-	vec4 noiseColor = vec4(vec3(baseNoise), 1.0);
+	vec4 noiseColor = vec4(baseNoise, 0.0, 0.0, 1.0);
 	imageStore(outputImage, coord, noiseColor);
 }

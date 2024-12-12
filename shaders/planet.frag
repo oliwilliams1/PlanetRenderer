@@ -52,17 +52,20 @@ void main() {
     // Sample height in range of [-1, 1]
     float height = texture(u_NoiseTexture, uv).r;
     height = height * 2.0 - 1.0;
+    height = max(0.0, height);
 
-    // Sample normal from noise [-1, 1]
-    vec3 displacedNormal = texture(u_NormalTexture, uv).rgb;
-    displacedNormal = normalize(displacedNormal * 2.0 - 1.0);
+    // If not water-level
+    if (height > 0.0) {
+        // Sample normal from noise [-1, 1]
+        vec3 displacedNormal = texture(u_NormalTexture, uv).rgb;
+        displacedNormal = normalize(displacedNormal * 2.0 - 1.0);
+        // Displace normal properly with correct TBN matrix
+        normal = normalize(TBN * displacedNormal);
+    }
 
     // Convert terrain height to colour
     vec3 terrainColour = heightToColour(height);
     
-    // Displace normal properly with correct TBN matrix
-    normal = normalize(TBN * displacedNormal);
-
     // Phong shadiing model, calculate light dir and view dir
     vec3 lightDir = normalize(vec3(1, 1, 1));
     vec3 viewDir = normalize(cameraPos - FragPos);

@@ -10,7 +10,7 @@ Camera::Camera(GLFWwindow* window, int width, int height) {
 
 	yaw = -90.0;
 	pitch = -0.0f;
-	speed = 50.0f;
+	speed = 200.0f;
 	sensitivity = 0.2f;
 
 	position = glm::vec3(0.0f, 330.0f, 0.0f);
