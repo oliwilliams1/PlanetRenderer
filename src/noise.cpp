@@ -151,8 +151,8 @@ void Noise::CreateFramebuffers() {
 
 void Noise::DebugDraw() {
 	ImGui::Begin("Perlin noise data view");
-	ImGui::Image((void*)noiseTexture, ImVec2(384, 192));
-	ImGui::Image((void*)normalTexture, ImVec2(384, 192));
+	ImGui::Image(noiseTexture, ImVec2(384, 192));
+	ImGui::Image(normalTexture, ImVec2(384, 192));
 	if (ImGui::SliderInt("Seed", &seed, 0, 1000)) needToDispatch = true;
 	if (ImGui::SliderInt("Octaves", &octaves, 1, 20)) needToDispatch = true;
 	if (ImGui::SliderFloat("Scale", &scale, 1.0f, 10.0f)) needToDispatch = true;
