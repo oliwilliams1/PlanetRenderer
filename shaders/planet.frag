@@ -13,7 +13,7 @@ layout(std140) uniform CameraData {
     float deltaTime;
 };
 
-const float PI = 3.14159;
+const float PI = 3.14159265359;
 uniform sampler2D u_NoiseTexture;
 uniform sampler2D u_NormalTexture;
 uniform float u_PlanetScale;
@@ -33,44 +33,52 @@ vec3 heightToColour(float h) {
 }
 
 void main() {
-    // Normalize interpolated normal
     vec3 normal = normalize(Normal);
 
-    float height;
-    vec3 displacedNormal;
+    // Spherical coordinates
+    float theta = atan(normal.z, normal.x);
+    float phi = asin(normal.y);
 
-    if (abs(FragPos.z - 0.0) < 0.05 * u_PlanetScale) {
-        float longitude = atan(normal.z, normal.x) / (2.0 * 3.14159265359) + 0.5;
-        float latitude = asin(normal.y) / 3.14159265359 + 0.5;
+    // Calculate tangent and bitangent vectors
+    vec3 tangent = normalize(vec3(-sin(theta), 0.0, cos(theta)));
+    vec3 bitangent = normalize(cross(normal, tangent));
 
-        height = texture(u_NoiseTexture, vec2(longitude, latitude)).r;
-        displacedNormal = texture(u_NormalTexture, vec2(longitude, latitude)).rgb;
-
-    } else {
-        height = texture(u_NoiseTexture, UV).r;
-        displacedNormal = texture(u_NormalTexture, UV).rgb;
-    }
+    // Construct TBN matrix for displacing normal
+    mat3 TBN = mat3(tangent, bitangent, normal);
     
-    normal = normalize(normal * displacedNormal);
+    // Caluclate uv coords based on sphercial coords to sample textures
+    vec2 uv = vec2(theta / (2.0 * PI) + 0.5, phi / (PI) + 0.5);
 
+    // Sample height in range of [-1, 1]
+    float height = texture(u_NoiseTexture, uv).r;
     height = height * 2.0 - 1.0;
 
-    // Calculate the light direction and view direction
+    // Sample normal from noise [-1, 1]
+    vec3 displacedNormal = texture(u_NormalTexture, uv).rgb;
+    displacedNormal = normalize(displacedNormal * 2.0 - 1.0);
+
+    // Convert terrain height to colour
+    vec3 terrainColour = heightToColour(height);
+    
+    // Displace normal properly with correct TBN matrix
+    normal = normalize(TBN * displacedNormal);
+
+    // Phong shadiing model, calculate light dir and view dir
     vec3 lightDir = normalize(vec3(1, 1, 1));
     vec3 viewDir = normalize(cameraPos - FragPos);
-    
-    // Ambient component
-    float ambient = 0.1;
 
-    // Diffuse component (Lambert's cosine law)
+	float ambient = 0.1;
+
+    // Find how simmilar the light is to the normal
     float diff = max(dot(normal, lightDir), 0.0);
 
-    // Specular component
+    // Calculate specular
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0); // Shininess factor is 32
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
 
-    // Combine components
-    float result = ambient + diff + spec;
+    // Find total contrib
+    float shadingContrib = ambient + diff + spec;
 
-    colour = vec4(result * heightToColour(height), 1.0);
+    // Apply phong contrib to terrain colour
+    colour = vec4(terrainColour * shadingContrib, 1.0);
 }

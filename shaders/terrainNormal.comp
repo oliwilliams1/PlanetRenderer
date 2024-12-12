@@ -18,7 +18,7 @@ void main() {
 
     float heightValue = texture(terrainHeightmap, uv).r;
 
-    float offset = 2.0 / float(width);
+    float offset = 12.5 / float(width);
 
     float heightLeft   = texture(terrainHeightmap, uv + vec2(-offset, 0)).r;
     float heightRight  = texture(terrainHeightmap, uv + vec2(offset, 0)).r;
@@ -29,8 +29,8 @@ void main() {
     float slopeY = heightUp - heightDown;
 
     vec3 normal;
-    normal.x = slopeX;
-    normal.y = slopeY;
+    normal.x = -slopeX;
+    normal.y = -slopeY;
     normal.z = 1.0;
 
     normal = normalize(normal);
