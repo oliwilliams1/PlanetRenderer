@@ -167,6 +167,7 @@ void main() {
     // Sample 3D noise with octaves
     float continent = OctaveNoise_3D(normal * u_Scale, u_Octaves, u_Persistence);
 
+	// Some manipulation to make terrain more traversable, made from blender shader graph
 	continent = max(continent, 0.4);
 	float s = continent - 0.4;
 	continent = s * (1.0 / 0.4);
@@ -174,12 +175,10 @@ void main() {
 	float sm = smoothMin(continent, 0.9, 3.2);
 	sm = clamp(sm * 2.0, 0.0, 1.0);
 
-	continent = pow(continent, 0.3);
+	continent = pow(continent, 0.5);
 	continent *= 0.5;
 
 	continent += sm;
-
-	continent = pow(continent, 2.2);
 
     float additionalNoise = OctaveNoise_3D(normal * 4.4, 8, 0.5);
 

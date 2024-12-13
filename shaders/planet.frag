@@ -70,13 +70,10 @@ void main() {
 
     // Find how simmilar the light is to the normal
     float diff = max(dot(normal, lightDir), 0.0);
-
-    // Calculate specular
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    diff = clamp(diff, 0.0, 0.8);
 
     // Find total contrib
-    float shadingContrib = ambient + diff + spec;
+    float shadingContrib = ambient + diff;
 
     // Apply phong contrib to terrain colour
     colour = vec4(terrainColour * shadingContrib, 1.0);
