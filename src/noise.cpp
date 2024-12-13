@@ -3,8 +3,8 @@
 Noise::Noise() {
 	this->seed             = 0;
 	this->scale            = 1.0f;
-	this->octaves          = 8;
-	this->persistence      = 0.5f;
+	this->octaves          = 4;
+	this->persistence      = 0.25f;
 	this->sampleOffsetSize = 6.0f;
 	this->needToDispatch   = false;
 
@@ -151,8 +151,8 @@ void Noise::CreateFramebuffers() {
 
 void Noise::DebugDraw() {
 	ImGui::Begin("Perlin noise data view");
-	ImGui::Image(noiseTexture, ImVec2(384, 192));
-	ImGui::Image(normalTexture, ImVec2(384, 192));
+	ImGui::Image((ImTextureID)(intptr_t)noiseTexture, ImVec2(384, 192));
+	ImGui::Image((ImTextureID)(intptr_t)normalTexture, ImVec2(384, 192));
 	if (ImGui::SliderInt("Seed", &seed, 0, 1000)) needToDispatch = true;
 	if (ImGui::SliderInt("Octaves", &octaves, 1, 20)) needToDispatch = true;
 	if (ImGui::SliderFloat("Scale", &scale, 1.0f, 10.0f)) needToDispatch = true;

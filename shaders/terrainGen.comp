@@ -9,6 +9,19 @@ uniform float u_Scale       = 5.0;
 uniform int   u_Octaves     = 1;
 uniform float u_Persistence = 0.5;
 
+float cubicBezier(float t, float P0, float P1, float P2, float P3) {
+    float oneMinusT = 1.0 - t;
+    return (oneMinusT * oneMinusT * oneMinusT * P0) +
+           (3.0 * oneMinusT * oneMinusT * t * P1) +
+           (3.0 * oneMinusT * t * t * P2) +
+           (t * t * t * P3);
+}
+
+float smoothMin(float a, float b, float k) {
+    float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+    return mix(b, a, h) - k * h * (1.0 - h);
+}
+
 float smoothStep(float edge0, float edge1, float x) {
     x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
     return x * x * (3.0 - 2.0 * x);
@@ -31,7 +44,6 @@ float QuantizeSmooth(float v) {
     return mix(quantizedValue, nextBandValue, t);
 }
 
-// https://en.wikipedia.org/wiki/Perlin_noise#Permutation
 int perm[256] = int[256](
 	151, 160, 137,  91,  90,  15, 131,  13, 201,  95,  96,  53, 194, 233,   7, 225,
 	140,  36, 103,  30,  69, 142,   8,  99,  37, 240,  21,  10,  23, 190,   6, 148,
@@ -134,28 +146,46 @@ float OctaveNoise_3D(vec3 pos, int octaves, float persistence) {
 }
 
 void main() {
-	ShuffleArray(u_Seed); // Shuffle the permutation array based on the seed
-	
-	ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
-	float width = 2048.0;
-	float height = 1024.0;
+    ShuffleArray(u_Seed); // Shuffle the permutation array based on the seed
 
-	vec2 uv = vec2(float(coord.x) / width, float(coord.y) / height);
-	
-	// UV to spherical coords
-	float theta = uv.x * 2.0 * 3.14159265359;
-	float phi   = uv.y * 3.14159265359;
+    ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
+    float width = 2048.0;
+    float height = 1024.0;
 
-	// Calculate normal
-	vec3 normal;
-	normal.x = sin(phi) * cos(theta);
-	normal.y = sin(phi) * sin(theta);
-	normal.z = cos(phi);
+    vec2 uv = vec2(float(coord.x) / width, float(coord.y) / height);
 
-	// Sample 3D noise with octaves
-	float baseNoise = OctaveNoise_3D(normal * u_Scale, u_Octaves, u_Persistence);
+    // UV to spherical coords
+    float theta = uv.x * 2.0 * 3.14159265359;
+    float phi   = uv.y * 3.14159265359;
 
-	// Write to image, x = longitude, y = latitude
-	vec4 noiseColor = vec4(baseNoise, 0.0, 0.0, 1.0);
-	imageStore(outputImage, coord, noiseColor);
+    // Calculate normal
+    vec3 normal;
+    normal.x = sin(phi) * cos(theta);
+    normal.y = sin(phi) * sin(theta);
+    normal.z = cos(phi);
+
+    // Sample 3D noise with octaves
+    float continent = OctaveNoise_3D(normal * u_Scale, u_Octaves, u_Persistence);
+
+	continent = max(continent, 0.4);
+	float s = continent - 0.4;
+	continent = s * (1.0 / 0.4);
+
+	float sm = smoothMin(continent, 0.9, 3.2);
+	sm = clamp(sm * 2.0, 0.0, 1.0);
+
+	continent = pow(continent, 0.3);
+	continent *= 0.5;
+
+	continent += sm;
+
+	continent = pow(continent, 2.2);
+
+    float additionalNoise = OctaveNoise_3D(normal * 4.4, 8, 0.5);
+
+	additionalNoise = additionalNoise * continent;
+
+    // Write to image, x = longitude, y = latitude
+    vec4 noiseColor = vec4(additionalNoise, 0.0, 0.0, 1.0);
+    imageStore(outputImage, coord, noiseColor);
 }

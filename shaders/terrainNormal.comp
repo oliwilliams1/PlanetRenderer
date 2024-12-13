@@ -26,6 +26,11 @@ void main() {
     float heightDown   = texture(u_TerrainHeightmap, uv + vec2(0, -offset)).r;
     float heightUp     = texture(u_TerrainHeightmap, uv + vec2(0, offset)).r;
 
+    heightLeft *= 2.0 - 0.5;
+	heightRight *= 2.0 - 0.5;
+	heightDown *= 2.0 - 0.5;
+	heightUp *= 2.0 - 0.5;
+
     float slopeX = heightRight - heightLeft;
     float slopeY = heightUp - heightDown;
 

@@ -35,8 +35,8 @@ void main() {
     float latitude = asin(normal.y) / 3.14159265359 + 0.5;
 
     float height = texture(u_NoiseTexture, vec2(longitude, latitude)).r;
-    height -= 0.5;
     height = max(0.0, height);
+
     vec3 displacedPosition = (normalize(mPos.xyz) * u_PlanetScale) + height * (u_PlanetScale * u_Amplitude)  * normal;
 
     gl_Position = m_ViewProj * vec4(displacedPosition, 1.0); // Transform into cubesphere

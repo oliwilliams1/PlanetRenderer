@@ -17,16 +17,15 @@ const float PI = 3.14159265359;
 uniform sampler2D u_NoiseTexture;
 uniform sampler2D u_NormalTexture;
 uniform float u_PlanetScale;
+uniform vec3 u_TerrainLevels;
 
 vec3 heightToColour(float h) {
-    if (h <= 0.0) {
+    if (h <= u_TerrainLevels.x) {
         return vec3(0.0, 0.0, 1.0);   // water
-    } else if (h > 0.0 && h <= 0.1) {
+    } else if (h > u_TerrainLevels.x && h <= u_TerrainLevels.y) {
         return vec3(1.0, 0.9, 0.6);   // sand
-    } else if (h > 0.1 && h <= 0.4) {
-        return vec3(0.0, 1.0, 0.0);   // grass
-    } else if (h > 0.4 && h <= 0.5) {
-        return vec3(0.5, 0.5, 0.6);   // rock
+    } else if (h > u_TerrainLevels.y && h <= u_TerrainLevels.z) {
+        return vec3(0.0, 1.0, 0.0);   // grass and rock
     } else {
         return vec3(1.0, 1.0, 1.0);   // snow
     }
@@ -52,16 +51,13 @@ void main() {
     // Sample height in range of [-1, 1]
     float height = texture(u_NoiseTexture, uv).r;
     height = height * 2.0 - 1.0;
-    height = max(0.0, height);
 
     // If not water-level
-    if (height > 0.0) {
-        // Sample normal from noise [-1, 1]
-        vec3 displacedNormal = texture(u_NormalTexture, uv).rgb;
-        displacedNormal = normalize(displacedNormal * 2.0 - 1.0);
-        // Displace normal properly with correct TBN matrix
-        normal = normalize(TBN * displacedNormal);
-    }
+    // Sample normal from noise [-1, 1]
+    vec3 displacedNormal = texture(u_NormalTexture, uv).rgb;
+    displacedNormal = normalize(displacedNormal * 2.0 - 1.0);
+    // Displace normal properly with correct TBN matrix
+    normal = normalize(TBN * displacedNormal);
 
     // Convert terrain height to colour
     vec3 terrainColour = heightToColour(height);
