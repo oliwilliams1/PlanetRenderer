@@ -67,7 +67,6 @@ void Noise::CreateTextures() {
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA32F, 512, 512, 0, GL_RGBA, GL_FLOAT, nullptr);
 	}
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
 }
 
 void Noise::CreateFramebuffers() {
@@ -76,13 +75,7 @@ void Noise::CreateFramebuffers() {
 	glGenFramebuffers(1, &fboCubemapNoise);
 	glBindFramebuffer(GL_FRAMEBUFFER, fboCubemapNoise);
 
-	for (int i = 0; i < 6; i++) {
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, cubemapNoiseTexture, 0);
-
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-			std::cerr << "Error: cubemap framebuffer is not complete!" << std::endl;
-		}
-	}
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cubemapNoiseTexture, 0);
 }
 
 void Noise::DebugDraw() {
