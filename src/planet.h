@@ -20,7 +20,7 @@ public:
 	void DebugDraw() override;
 
 private:
-	GLuint noiseTexture, normalTexture, noiseTextureLocation, normalTextureLocation, planetScaleLocation, noiseAmplitudeLocation, terrainLevelsLocation;
+	GLuint noiseCubemapTexture, normalTexture, noiseCubemapLocation, normalTextureLocation, planetScaleLocation, noiseAmplitudeLocation, terrainLevelsLocation;
 	float planetScale, noiseAmplitude;
 	glm::vec3 terrainLevels;
 

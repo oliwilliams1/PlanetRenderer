@@ -69,7 +69,7 @@ int main() {
 	Camera camera = Camera(window, width, height);
 
 	PlanetShader planetShader = PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
-	Planet mainPlanet = Planet(&planetShader, noiseGen.noiseTexture, noiseGen.normalTexture); // Shaders must be generated sequentially with no other calls inbetween
+	Planet mainPlanet = Planet(&planetShader, noiseGen.cubemapNoiseTexture, noiseGen.normalTexture); // Shaders must be generated sequentially with no other calls inbetween
 
 	// Set a pointer to camera for OnWindowResize to call from it
 	glfwSetWindowUserPointer(window, &camera);

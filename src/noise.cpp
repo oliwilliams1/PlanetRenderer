@@ -8,39 +8,7 @@ Noise::Noise() {
 	this->sampleOffsetSize = 6.0f;
 	this->needToDispatch   = false;
 
-	noiseShaderProgram = CompileComputeShader("shaders/terrainGen.comp");
-
-	seedLocation = glGetUniformLocation(noiseShaderProgram, "u_Seed");
-	if (seedLocation == -1) {
-		std::cerr << "Warning: u_Seed uniform not found!" << std::endl;
-	}
-
-	scaleLocation = glGetUniformLocation(noiseShaderProgram, "u_Scale");
-	if (scaleLocation == -1) {
-		std::cerr << "Warning: scale uniform not found!" << std::endl;
-	}
-
-	octavesLocation = glGetUniformLocation(noiseShaderProgram, "u_Octaves");
-	if (octavesLocation == -1) {
-		std::cerr << "Warning: octaves uniform not found!" << std::endl;
-	}
-
-	persistenceLocation = glGetUniformLocation(noiseShaderProgram, "u_Persistence");
-	if (persistenceLocation == -1) {
-		std::cerr << "Warning: persistence uniform not found!" << std::endl;
-	}
-
-	normalShaderProgram = CompileComputeShader("shaders/terrainNormal.comp");
-
-	normal_TerrainHeightmapLocation = glGetUniformLocation(normalShaderProgram, "u_TerrainHeightmap");
-	if (normal_TerrainHeightmapLocation == -1) {
-		std::cerr << "Warning: u_TerrainHeightmap uniform not found!" << std::endl;
-	}
-
-	normal_SampleOffsetSizeLocation = glGetUniformLocation(normalShaderProgram, "u_NormalOffsetSize");
-	if (normal_SampleOffsetSizeLocation == -1) {
-		std::cerr << "Warning: u_NormalOffsetSize uniform not found!" << std::endl;
-	}
+	cubemapNoiseShaderProgram = CompileComputeShader("shaders/cubemapNoise.comp");
 
 	CreateTextures();
 	CreateFramebuffers();
@@ -77,35 +45,12 @@ GLuint Noise::CompileComputeShader(const char* source) {
 }
 
 void Noise::Dispatch() {
-	// Calculate terrain heightmap
-	glUseProgram(noiseShaderProgram);
+	// Cubemap noise generation
+	glUseProgram(cubemapNoiseShaderProgram);
 
-	glUniform1i(seedLocation, seed);
-	glUniform1i(octavesLocation, octaves);
-	glUniform1f(scaleLocation, scale);
-	glUniform1f(persistenceLocation, persistence);
+	glBindImageTexture(0, cubemapNoiseTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, fboNoise);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, noiseTexture, 0);
-
-	glBindImageTexture(0, noiseTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-	glDispatchCompute(128, 64, 1);
-	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-	// Calculate normals from heightmap
-	glUseProgram(normalShaderProgram);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, noiseTexture);
-	glUniform1i(normal_TerrainHeightmapLocation, 0);
-	glUniform1f(normal_SampleOffsetSizeLocation, sampleOffsetSize);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, fboNormal);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, normalTexture, 0);
-	
-	glBindImageTexture(0, normalTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-	glDispatchCompute(128, 64, 1);
-	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	glDispatchCompute(32, 32, 6);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -114,45 +59,38 @@ void Noise::Dispatch() {
 }
 
 void Noise::CreateTextures() {
-	glGenTextures(1, &noiseTexture);
-	glBindTexture(GL_TEXTURE_2D, noiseTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 2048, 1024, 0, GL_RGBA, GL_FLOAT, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glGenTextures(1, &cubemapNoiseTexture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapNoiseTexture);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	glGenTextures(1, &normalTexture);
-	glBindTexture(GL_TEXTURE_2D, normalTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 2048, 1024, 0, GL_RGBA, GL_FLOAT, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	for (int i = 0; i < 6; i++) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA32F, 512, 512, 0, GL_RGBA, GL_FLOAT, nullptr);
+	}
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
 }
 
 void Noise::CreateFramebuffers() {
-	glGenFramebuffers(1, &fboNoise);
-	glBindFramebuffer(GL_FRAMEBUFFER, fboNoise);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, noiseTexture, 0);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		std::cerr << "Error: noise framebuffer is not complete!" << std::endl;
-	}
-
-	glGenFramebuffers(1, &fboNormal);
-	glBindFramebuffer(GL_FRAMEBUFFER, fboNormal);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, normalTexture, 0);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		std::cerr << "Error: normal framebuffer is not complete!" << std::endl;
-	}
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glGenFramebuffers(1, &fboCubemapNoise);
+	glBindFramebuffer(GL_FRAMEBUFFER, fboCubemapNoise);
+
+	for (int i = 0; i < 6; i++) {
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, cubemapNoiseTexture, 0);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+			std::cerr << "Error: cubemap framebuffer is not complete!" << std::endl;
+		}
+	}
 }
 
 void Noise::DebugDraw() {
 	ImGui::Begin("Perlin noise data view");
-	ImGui::Image((ImTextureID)(intptr_t)noiseTexture, ImVec2(384, 192));
-	ImGui::Image((ImTextureID)(intptr_t)normalTexture, ImVec2(384, 192));
 	if (ImGui::SliderInt("Seed", &seed, 0, 1000)) needToDispatch = true;
 	if (ImGui::SliderInt("Octaves", &octaves, 1, 20)) needToDispatch = true;
 	if (ImGui::SliderFloat("Scale", &scale, 1.0f, 10.0f)) needToDispatch = true;
@@ -169,11 +107,8 @@ void Noise::DebugDraw() {
 }
 
 Noise::~Noise() {
-	glDeleteTextures(1, &noiseTexture);
-	glDeleteTextures(1, &normalTexture);
-	glDeleteFramebuffers(1, &fboNoise);
-	glDeleteFramebuffers(1, &fboNormal);
+	glDeleteTextures(1, &cubemapNoiseTexture);
+	glDeleteFramebuffers(1, &fboCubemapNoise);
 
-	glDeleteProgram(noiseShaderProgram);
-	glDeleteProgram(normalShaderProgram);
+	glDeleteProgram(cubemapNoiseShaderProgram);
 }

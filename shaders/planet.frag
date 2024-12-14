@@ -14,7 +14,7 @@ layout(std140) uniform CameraData {
 };
 
 const float PI = 3.14159265359;
-uniform sampler2D u_NoiseTexture;
+uniform samplerCube u_NoiseCubemap;
 uniform sampler2D u_NormalTexture;
 uniform float u_PlanetScale;
 uniform vec3 u_TerrainLevels;
@@ -32,49 +32,5 @@ vec3 heightToColour(float h) {
 }
 
 void main() {
-    vec3 normal = normalize(Normal);
-
-    // Spherical coordinates
-    float theta = atan(normal.z, normal.x);
-    float phi = asin(normal.y);
-
-    // Calculate tangent and bitangent vectors
-    vec3 tangent = normalize(vec3(-sin(theta), 0.0, cos(theta)));
-    vec3 bitangent = normalize(cross(normal, tangent));
-
-    // Construct TBN matrix for displacing normal
-    mat3 TBN = mat3(tangent, bitangent, normal);
-    
-    // Caluclate uv coords based on sphercial coords to sample textures
-    vec2 uv = vec2(theta / (2.0 * PI) + 0.5, phi / (PI) + 0.5);
-
-    // Sample height in range of [-1, 1]
-    float height = texture(u_NoiseTexture, uv).r;
-    height = height * 2.0 - 1.0;
-
-    // If not water-level
-    // Sample normal from noise [-1, 1]
-    vec3 displacedNormal = texture(u_NormalTexture, uv).rgb;
-    displacedNormal = normalize(displacedNormal * 2.0 - 1.0);
-    // Displace normal properly with correct TBN matrix
-    normal = normalize(TBN * displacedNormal);
-
-    // Convert terrain height to colour
-    vec3 terrainColour = heightToColour(height);
-    
-    // Phong shadiing model, calculate light dir and view dir
-    vec3 lightDir = normalize(vec3(1, 1, 1));
-    vec3 viewDir = normalize(cameraPos - FragPos);
-
-	float ambient = 0.1;
-
-    // Find how simmilar the light is to the normal
-    float diff = max(dot(normal, lightDir), 0.0);
-    diff = clamp(diff, 0.0, 0.8);
-
-    // Find total contrib
-    float shadingContrib = ambient + diff;
-
-    // Apply phong contrib to terrain colour
-    colour = vec4(terrainColour * shadingContrib, 1.0);
+    colour = vec4(texture(u_NoiseCubemap, normalize(Normal)).rgb, 1.0);
 }
