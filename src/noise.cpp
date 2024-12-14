@@ -6,6 +6,8 @@ Noise::Noise() {
 
 	cubemapNoiseShaderProgram = CompileComputeShader("shaders/cubemapNoise.comp");
 
+	cubemapNormalShaderProgram = CompileComputeShader("shaders/cubemapNormal.comp");
+
 	CreateTextures();
 	CreateFramebuffers();
 	Dispatch();
@@ -47,6 +49,16 @@ void Noise::Dispatch() {
 	glBindImageTexture(0, cubemapNoiseTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
 	glDispatchCompute(32, 32, 6);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glUseProgram(cubemapNormalShaderProgram);
+
+	glBindImageTexture(0, cubemapNormalTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+
+	glDispatchCompute(32, 32, 6);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -55,8 +67,22 @@ void Noise::Dispatch() {
 }
 
 void Noise::CreateTextures() {
+	// Noise texture
 	glGenTextures(1, &cubemapNoiseTexture);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapNoiseTexture);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	for (int i = 0; i < 6; i++) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA32F, 512, 512, 0, GL_RGBA, GL_FLOAT, nullptr);
+	}
+
+	// Normal map texture
+	glGenTextures(1, &cubemapNormalTexture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapNormalTexture);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -70,12 +96,24 @@ void Noise::CreateTextures() {
 }
 
 void Noise::CreateFramebuffers() {
+	// Noise cubemap framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	glGenFramebuffers(1, &fboCubemapNoise);
 	glBindFramebuffer(GL_FRAMEBUFFER, fboCubemapNoise);
 
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cubemapNoiseTexture, 0);
+
+	// Normal cubemap framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	glGenFramebuffers(1, &fboCubemapNormal);
+	glBindFramebuffer(GL_FRAMEBUFFER, fboCubemapNormal);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cubemapNormalTexture, 0);
+
+	// Bind defualt
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Noise::DebugDraw() {

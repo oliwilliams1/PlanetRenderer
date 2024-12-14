@@ -1,9 +1,9 @@
 #include "planet.h"
 
-Planet::Planet(Shader* shader, GLuint noiseCubemapTexture, GLuint normalTexture) : Object(shader) {
+Planet::Planet(Shader* shader, GLuint noiseCubemapTexture, GLuint normalCubemapTexture) : Object(shader) {
     this->shader = shader;
     this->noiseCubemapTexture = noiseCubemapTexture;
-    this->normalTexture = normalTexture;
+    this->normalCubemapTexture = normalCubemapTexture;
     this->noiseAmplitude = 0.1f;
     this->terrainLevels = glm::vec3(-0.96f, -0.9f, 0.13f);
     planetScale = 1000.0f;
@@ -23,14 +23,14 @@ Planet::Planet(Shader* shader, GLuint noiseCubemapTexture, GLuint normalTexture)
     glBindTexture(GL_TEXTURE_CUBE_MAP, noiseCubemapTexture);
     glUniform1i(noiseCubemapLocation, 0);
 
-    normalTextureLocation = glGetUniformLocation(shader->shaderProgram, "u_NormalTexture");
-    if (normalTextureLocation == -1) {
-        std::cerr << "Warning: u_NormalTexture uniform not found!" << std::endl;
+    normalCubemapLocation = glGetUniformLocation(shader->shaderProgram, "u_NormalCubemap");
+    if (normalCubemapLocation == -1) {
+        std::cerr << "Warning: u_NormalCubemap uniform not found!" << std::endl;
     }
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, normalTexture);
-    glUniform1i(normalTextureLocation, 1);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, normalCubemapTexture);
+    glUniform1i(normalCubemapLocation, 1);
 
     planetScaleLocation = glGetUniformLocation(shader->shaderProgram, "u_PlanetScale");
     if (planetScaleLocation == -1) {

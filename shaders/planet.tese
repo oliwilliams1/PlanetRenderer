@@ -14,6 +14,7 @@ layout(std140) uniform CameraData {
 
 uniform mat4 m_Model;
 uniform samplerCube u_NoiseCubemap;
+uniform samplerCube u_NormalCubemap;
 uniform float u_PlanetScale;
 uniform float u_Amplitude;
 
@@ -37,6 +38,6 @@ void main() {
     vec3 displacedPosition = (normalize(mPos.xyz) * u_PlanetScale) + height * (u_PlanetScale * u_Amplitude)  * normal;
 
     gl_Position = m_ViewProj * vec4(displacedPosition, 1.0); // Transform into cubesphere
-    Normal = normal;
+    Normal = transpose(inverse(mat3(m_Model))) * normal;
     FragPos = mPos.xyz;
 }

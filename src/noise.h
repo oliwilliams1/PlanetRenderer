@@ -10,7 +10,7 @@
 
 class Noise {
 public:
-	GLuint noiseTexture, normalTexture, cubemapNoiseTexture;
+	GLuint cubemapNoiseTexture, cubemapNormalTexture;
 	Noise();
 	~Noise();
 	void Dispatch();
@@ -22,8 +22,8 @@ private:
 	bool needToDispatch;
 	float lastDispatchTime;
 
-	GLuint cubemapNoiseShaderProgram, fboCubemapNoise;
-
+	GLuint cubemapNoiseShaderProgram, cubemapNormalShaderProgram;
+	GLuint fboCubemapNoise, fboCubemapNormal;
 	GLuint CompileComputeShader(const char* source);
 	void CreateTextures();
 	void CreateFramebuffers();
