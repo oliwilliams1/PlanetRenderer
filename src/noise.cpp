@@ -1,10 +1,6 @@
 #include "noise.h"
 
 Noise::Noise() {
-	this->seed             = 0;
-	this->scale            = 1.0f;
-	this->octaves          = 4;
-	this->persistence      = 0.25f;
 	this->sampleOffsetSize = 6.0f;
 	this->needToDispatch   = false;
 
@@ -91,10 +87,6 @@ void Noise::CreateFramebuffers() {
 
 void Noise::DebugDraw() {
 	ImGui::Begin("Perlin noise data view");
-	if (ImGui::SliderInt("Seed", &seed, 0, 1000)) needToDispatch = true;
-	if (ImGui::SliderInt("Octaves", &octaves, 1, 20)) needToDispatch = true;
-	if (ImGui::SliderFloat("Scale", &scale, 1.0f, 10.0f)) needToDispatch = true;
-	if (ImGui::SliderFloat("Persistence", &persistence, 0.0f, 1.0f)) needToDispatch = true;
 	if (ImGui::SliderFloat("Sample offset px", &sampleOffsetSize, 0.1f, 20.0f)) needToDispatch = true;
 	ImGui::End();
 

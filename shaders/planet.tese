@@ -13,7 +13,7 @@ layout(std140) uniform CameraData {
 };
 
 uniform mat4 m_Model;
-uniform sampler2D u_NoiseTexture;
+uniform samplerCube u_NoiseCubemap;
 uniform float u_PlanetScale;
 uniform float u_Amplitude;
 
@@ -31,10 +31,7 @@ void main() {
 
     vec3 normal = normalize(mPos.xyz);
 
-    float longitude = atan(normal.z, normal.x) / (2.0 * 3.14159265359) + 0.5;
-    float latitude = asin(normal.y) / 3.14159265359 + 0.5;
-
-    float height = texture(u_NoiseTexture, vec2(longitude, latitude)).r;
+    float height = texture(u_NoiseCubemap, normal).r;
     height = max(0.0, height);
 
     vec3 displacedPosition = (normalize(mPos.xyz) * u_PlanetScale) + height * (u_PlanetScale * u_Amplitude)  * normal;

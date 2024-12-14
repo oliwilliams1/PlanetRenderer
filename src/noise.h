@@ -17,8 +17,6 @@ public:
 	void DebugDraw();
 
 private:
-	int seed, octaves;
-	float scale, persistence;
 	float sampleOffsetSize;
 
 	bool needToDispatch;

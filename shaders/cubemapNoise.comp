@@ -4,6 +4,147 @@ layout (binding = 0, rgba32f) uniform imageCube cubemapTexture;
 
 layout (local_size_x = 16, local_size_y = 16) in;
 
+uniform int   u_Seed        = 0;
+uniform float u_Scale       = 5.0;
+uniform int   u_Octaves     = 1;
+uniform float u_Persistence = 0.5;
+
+float cubicBezier(float t, float P0, float P1, float P2, float P3) {
+    float oneMinusT = 1.0 - t;
+    return (oneMinusT * oneMinusT * oneMinusT * P0) +
+           (3.0 * oneMinusT * oneMinusT * t * P1) +
+           (3.0 * oneMinusT * t * t * P2) +
+           (t * t * t * P3);
+}
+
+float smoothMin(float a, float b, float k) {
+    float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+    return mix(b, a, h) - k * h * (1.0 - h);
+}
+
+float smoothStep(float edge0, float edge1, float x) {
+    x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    return x * x * (3.0 - 2.0 * x);
+}
+
+float QuantizeSmooth(float v) {
+    int bands = 6;
+    float vsq = v * v;
+
+    // Calculate the quantized value
+    float quantizedValue = floor(vsq * float(bands)) / float(bands);
+    
+    // Calculate the next band value
+    float nextBandValue = (floor(vsq * float(bands)) + 1.0) / float(bands);
+    
+    // Calculate the smoothing factor
+    float t = smoothStep(quantizedValue, nextBandValue, vsq * float(bands));
+    
+    // Return the smoothed quantized value
+    return mix(quantizedValue, nextBandValue, t);
+}
+
+int perm[256] = int[256](
+	151, 160, 137,  91,  90,  15, 131,  13, 201,  95,  96,  53, 194, 233,   7, 225,
+	140,  36, 103,  30,  69, 142,   8,  99,  37, 240,  21,  10,  23, 190,   6, 148,
+	247, 120, 234,  75,   0,  26, 197,  62,  94, 252, 219, 203, 117,  35,  11,  32,
+	57,  177,  33,  88, 237, 149,  56,  87, 174,  20, 125, 136, 171, 168,  68, 175,
+	74,  165,  71, 134, 139,  48,  27, 166,  77, 146, 158, 231,  83, 111, 229, 122,
+	60,  211, 133, 230, 220, 105,  92,  41,  55,  46, 245,  40, 244, 102, 143,  54,
+	65,   25,  63, 161,   1, 216,  80,  73, 209,  76, 132, 187, 208,  89,  18, 169,
+	200, 196, 135, 130, 116, 188, 159,  86, 164, 100, 109, 198, 173, 186,   3,  64,
+	52,  217, 226, 250, 124, 123,   5, 202,  38, 147, 118, 126, 255,  82,  85, 212,
+	207, 206,  59, 227,  47,  16,  58,  17, 182, 189,  28,  42, 223, 183, 170, 213,
+	119, 248, 152,   2,  44, 154, 163,  70, 221, 153, 101, 155, 167,  43, 172,   9,
+	129,  22,  39, 253,  19,  98, 108, 110,  79, 113, 224, 232, 178, 185, 112, 104,
+	218, 246,  97, 228, 251,  34, 242, 193, 238, 210, 144,  12, 191, 179, 162, 241,
+	81,   51, 145, 235, 249,  14, 239, 107,  49, 192, 214,  31, 181, 199, 106, 157,
+	184,  84, 204, 176, 115, 121,  50,  45, 127,   4, 150, 254, 138, 236, 205,  93,
+	222, 114,  67,  29,  24,  72, 243, 141, 128, 195,  78,  66, 215,  61, 156, 180
+);
+
+int hash(int x) {
+	return perm[x & 255];
+}
+
+void ShuffleArray(int seed) {
+	for (int i = 255; i > 0; i--) {
+		int j = (seed + i) % (i + 1);
+		int temp = perm[i];
+		perm[i] = perm[j];
+		perm[j] = temp;
+	}
+}
+
+// Implentation for fade, gradient, noise, and octaves, just converted to glsl: https://github.com/Reputeless/PerlinNoise/blob/master/PerlinNoise.hpp
+float fade(float t) {
+	return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+
+float Grad(int hash, float x, float y, float z) {
+	int h = hash & 15;
+	float u = h < 8 ? x : y;
+	float v = h < 4 ? y : (h == 12 || h == 14 ? x : z);
+
+	return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+}
+
+float Noise_3D(vec3 pos) {
+	vec3 i = floor(pos);
+	vec3 f = pos - i;
+
+	float u = fade(f.x);
+	float v = fade(f.y);
+	float w = fade(f.z);
+
+	int ix = int(i.x) & 255;
+	int iy = int(i.y) & 255;
+	int iz = int(i.z) & 255;
+
+	int A = (perm[ix] + iy) & 255;
+	int B = (perm[(ix + 1) & 255] + iy) & 255;
+
+	int AA = (perm[A] + iz) & 255;
+	int AB = (perm[(A + 1) & 255] + iz) & 255;
+
+	int BA = (perm[B] + iz) & 255;
+	int BB = (perm[(B + 1) & 255] + iz) & 255;
+
+	float p0 = Grad(perm[AA], f.x, f.y, f.z);
+	float p1 = Grad(perm[BA], f.x - 1, f.y, f.z);
+	float p2 = Grad(perm[AB], f.x, f.y - 1, f.z);
+	float p3 = Grad(perm[BB], f.x - 1, f.y - 1, f.z);
+	float p4 = Grad(perm[(AA + 1) & 255], f.x, f.y, f.z - 1);
+	float p5 = Grad(perm[(BA + 1) & 255], f.x - 1, f.y, f.z - 1);
+	float p6 = Grad(perm[(AB + 1) & 255], f.x, f.y - 1, f.z - 1);
+	float p7 = Grad(perm[(BB + 1) & 255], f.x - 1, f.y - 1, f.z - 1);
+
+	float q0 = mix(p0, p1, u);
+	float q1 = mix(p2, p3, u);
+	float q2 = mix(p4, p5, u);
+	float q3 = mix(p6, p7, u);
+
+	float r0 = mix(q0, q1, v);
+	float r1 = mix(q2, q3, v);
+
+	return clamp(mix(r0, r1, w) + 0.5, 0.0, 1.0); // Ensure values are [0.0, 1.0], without clamp can be slightly off
+}
+
+float OctaveNoise_3D(vec3 pos, int octaves, float persistence) {
+	float result = 0.0;
+	float amplitude = 1.0;
+	float maxValue = 0.0;
+
+	for (int i = 0; i < octaves; i++) {
+		result += Noise_3D(pos * (1.0 * pow(2.0, float(i)))) * amplitude;
+		maxValue += amplitude;
+		amplitude *= persistence;
+	}
+
+	return result / maxValue;
+}
+
 void main() {
     uvec3 globalID = gl_GlobalInvocationID;
 
@@ -39,8 +180,31 @@ void main() {
             break;
     }
 
+	ShuffleArray(u_Seed);
+
     normal = normalize(normal);
 
-    vec4 normalColor = vec4(normal * 0.5 + 0.5, 1.0); // [-1, 1] -> [0, 1]
-    imageStore(cubemapTexture, ivec3(globalID.x, globalID.y, faceIndex), normalColor);
+	float continent = OctaveNoise_3D(normal * 1.0, 4, 0.25);
+
+	continent = max(continent, 0.4);
+	float s = continent - 0.4;
+	continent = s * (1.0 / 0.4);
+
+	float sm = smoothMin(continent, 0.9, 3.2);
+	sm = clamp(sm * 2.0, 0.0, 1.0);
+
+	continent = pow(continent, 0.5);
+	continent *= 0.5;
+
+	continent += sm;
+
+	ShuffleArray(u_Seed + 1);
+    float totalNoise = OctaveNoise_3D(normal * 4.4, 8, 0.5);
+
+	totalNoise = totalNoise * continent;
+
+	// Rgb = albedo, a = height
+	vec4 noiseColor = vec4(totalNoise, 0.0, 0.0, 1.0);
+
+    imageStore(cubemapTexture, ivec3(globalID.x, globalID.y, faceIndex), noiseColor);
 }
