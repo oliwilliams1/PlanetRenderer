@@ -31,17 +31,18 @@ set(SOURCE_FILES
     "src/planet.cpp"
     "src/noise.cpp"
     "src/utils.cpp"
+    "src/app.cpp"
 )
 
 # Add header files
 set(HEADER_FILES
-    
     "src/object.h"
     "src/shader.h"
     "src/camera.h"
     "src/planet.h"
     "src/noise.h"
     "src/utils.h"
+    "src/app.h"
 )
 
 # Add executable
