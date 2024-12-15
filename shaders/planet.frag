@@ -32,16 +32,18 @@ vec3 heightToColour(float h) {
 
 void main() {
     vec3 sphericalNormal = normalize(Normal);
+
+    // TBN matrix is already applied to normal cubemap
     vec3 normal = texture(u_NormalCubemap, sphericalNormal).rgb;
-    normal *= 2.0;
-    normal += 1.0;
     normal = normalize(normal);
 
+    // Sample height for texturing
     float height = texture(u_NoiseCubemap, sphericalNormal).r;
     height = height * 2.0 - 1.0; // [0, 1] -> [-1, 1]
 
     vec3 terrainColour = heightToColour(height);
 
+    // Most basic shading model in the world
     terrainColour *= 0.1 + clamp(max(dot(normal, normalize(vec3(1.0))), 0.0), 0.0, 0.8);
 
     colour = vec4(terrainColour, 1.0);

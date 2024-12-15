@@ -5,13 +5,6 @@ layout (local_size_x = 16, local_size_y = 16) in;
 
 uniform samplerCube u_TerrainCubemap;
 
-vec3 sphericalToCartesian(float theta, float phi) {
-    float x = sin(phi) * cos(theta);
-    float y = sin(phi) * sin(theta);
-    float z = cos(phi);
-    return vec3(x, y, z);
-}
-
 void main() {
     uvec3 globalID = gl_GlobalInvocationID;
     uint faceIndex = globalID.z;
@@ -46,39 +39,35 @@ void main() {
             break;
     }
 
-    normal.y = -normal.y;
+    normal.y = -normal.y; // Dont know why it works, but it does
     normal = normalize(normal);
 
+    // Calucalte spherical coordinats from normal for TBN
     float theta = atan(normal.z, normal.x); // [-pi/2, pi/2]
     float phi = acos(normal.y);             // [-pi, pi]
 
+    // Calculate TBN
     vec3 tangent = normalize(vec3(-sin(theta), 0.0, cos(theta)));
-vec3 bitangent = normalize(cross(normal, tangent));
-mat3 TBN = mat3(tangent, bitangent, normal);
+    vec3 bitangent = normalize(cross(normal, tangent));
+    mat3 TBN = mat3(tangent, bitangent, normal);
 
-    float thetaOffset = 0.1;
-    float phiOffset = thetaOffset / 2.0;
+    float offset = 0.01;
 
-    float newThetaLeft  = theta - thetaOffset;
-    float newThetaRight = theta + thetaOffset;
-    float newPhiDown    = phi - phiOffset;
-    float newPhiUp      = phi + phiOffset;
+    // Calculate new smapling points via TBN matrix
+    vec3 sampleLeft   = normalize(TBN * vec3(-offset, 0.0, 1.0));
+    vec3 sampleRight  = normalize(TBN * vec3( offset, 0.0, 1.0));
+    vec3 sampleUp     = normalize(TBN * vec3(0.0, -offset, 1.0));
+    vec3 sampleDown   = normalize(TBN * vec3(0.0,  offset, 1.0));
 
-    newPhiDown = max(0.0, newPhiDown);
-    newPhiUp = min(3.14159, newPhiUp);
-
-    vec3 sampleLeft  = sphericalToCartesian(newThetaLeft, phi);
-    vec3 sampleRight = sphericalToCartesian(newThetaRight, phi);
-    vec3 sampleDown  = sphericalToCartesian(theta, newPhiDown);
-    vec3 sampleUp    = sphericalToCartesian(theta, newPhiUp);
-
+    // Sample surrounding heights
     float heightLeft  = texture(u_TerrainCubemap, sampleLeft).r;
     float heightRight = texture(u_TerrainCubemap, sampleRight).r;
-    float heightDown  = texture(u_TerrainCubemap, sampleDown).r;
     float heightUp    = texture(u_TerrainCubemap, sampleUp).r;
+    float heightDown  = texture(u_TerrainCubemap, sampleDown).r;
 
+    // Calculate normal
     vec3 displacedNormal = vec3(heightRight - heightLeft, heightUp - heightDown, 1.0);
-    displacedNormal = normalize(TBN * displacedNormal);
-
-    imageStore(cubemapTexture, ivec3(globalID.x, globalID.y, faceIndex), vec4(displacedNormal, 1.0)); // [0,1]
+    displacedNormal = normalize(TBN * displacedNormal); // Multiply by TBN so calulation doesn't have to be ran in fragment shader
+    
+    imageStore(cubemapTexture, ivec3(globalID.x, globalID.y, faceIndex), vec4(displacedNormal, 1.0)); // [-1, 1], can be stored as float not uchar
 }
