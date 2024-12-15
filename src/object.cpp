@@ -50,12 +50,8 @@ void Object::Draw() {
     glBindVertexArray(0);
 }
 
-void Object::GetModelMatrixLocation()
-{
-    modelMatrixLocation = glGetUniformLocation(shader->shaderProgram, "m_Model");
-    if (modelMatrixLocation == -1) {
-		std::cerr << "Warning: m_Model uniform not found!" << std::endl;
-	}
+void Object::GetModelMatrixLocation() {
+    modelMatrixLocation = GetUniformLocation(shader->shaderProgram, "m_Model");
 }
 
 void Object::UpdateModelMatrix() const {

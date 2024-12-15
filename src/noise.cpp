@@ -5,12 +5,10 @@ Noise::Noise() {
 	this->needToDispatch   = false;
 
 	cubemapNoiseShaderProgram = CompileComputeShader("shaders/cubemapNoise.comp");
-
 	cubemapNormalShaderProgram = CompileComputeShader("shaders/cubemapNormal.comp");
 
 	CreateTextures();
 	CreateFramebuffers();
-	Dispatch();
 }
 
 GLuint Noise::CompileComputeShader(const char* source) {
@@ -129,9 +127,14 @@ void Noise::DebugDraw() {
 	}
 }
 
+// Destroy
 Noise::~Noise() {
 	glDeleteTextures(1, &cubemapNoiseTexture);
+	glDeleteTextures(1, &cubemapNormalTexture);
+
 	glDeleteFramebuffers(1, &fboCubemapNoise);
+	glDeleteFramebuffers(1, &fboCubemapNormal);
 
 	glDeleteProgram(cubemapNoiseShaderProgram);
+	glDeleteProgram(cubemapNormalShaderProgram);
 }

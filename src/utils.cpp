@@ -51,3 +51,11 @@ void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
 
     glAttachShader(ShaderProgram, ShaderObj);
 }
+
+GLuint GetUniformLocation(GLuint shaderProgram, const char* uniformName) {
+    GLuint location = glGetUniformLocation(shaderProgram, uniformName);
+    if (location == -1) {
+        std::cerr << "Warning: " << uniformName << " uniform not found!" << std::endl;
+    }
+    return location;
+}

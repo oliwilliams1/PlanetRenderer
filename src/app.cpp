@@ -1,6 +1,4 @@
 #include "app.h"
-#include "planet.h"
-#include <GLFW/glfw3.h>
 
 App::App() {
     width = 1600;
@@ -11,9 +9,9 @@ App::App() {
     InitImGui();
 
     noise = new Noise();
-    camera = new Camera(window, width, height);
+    camera = new Camera(this);
     planetShader = new PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
-    mainPlanet = new Planet(planetShader, noise->cubemapNoiseTexture, noise->cubemapNormalTexture);
+    mainPlanet = new Planet(this, planetShader);
     
     InitMouseEvents();
 }
@@ -25,7 +23,7 @@ void App::InitWindow() {
 	}
 
 	// Create a window with OpenGL
-	GLFWwindow* window = glfwCreateWindow(width, height, "Planet Renderer", nullptr, nullptr);
+	window = glfwCreateWindow(width, height, "Planet Renderer", nullptr, nullptr);
 	if (!window) {
 		std::cout << stderr << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -53,6 +51,9 @@ void App::InitOpenGLParams() {
 	glCullFace(GL_FRONT);
 	glFrontFace(GL_CCW);
 
+	// Define patch vertex count
+	glPatchParameteri(GL_PATCH_VERTICES, 4);
+
     wireframe = false;
 }
 
@@ -76,6 +77,7 @@ void App::InitMouseEvents() {
 	glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
 }
 
+// Static function for window resizing
 void App::OnWindowResize(GLFWwindow* window, int width, int height) {
     Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
 	camera->OnWindowResize(window, width, height); // Changes aspect ratio in camera
@@ -87,7 +89,7 @@ void App::Mainloop() {
 		glfwPollEvents();
 
 		// Calculate mouse delta
-		glm::dvec2 currentMousePos;
+		glm::dvec2 currentMousePos(0);
 		glfwGetCursorPos(window, &currentMousePos.x, &currentMousePos.y);
 
 		mouseDelta = currentMousePos - mousePos;

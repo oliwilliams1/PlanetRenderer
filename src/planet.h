@@ -1,9 +1,11 @@
 #pragma once
 
+#include "app.h"
 #include <glm/glm.hpp>
-#include "object.h"
 #include "shader.h"
-#include "noise.h"
+#include "object.h"
+
+class App;
 
 class PlanetShader : public Shader {
 public:
@@ -15,11 +17,12 @@ private:
 
 class Planet : public Object {
 public:
-	Planet(Shader* shader, GLuint noiseTexture, GLuint normalTexture);
+	Planet(App* app, Shader* shader);
 	void Draw() override;
 	void DebugDraw() override;
 
 private:
+	App* app;
 	GLuint noiseCubemapTexture, noiseCubemapLocation, normalCubemapLocation, normalCubemapTexture, planetScaleLocation, noiseAmplitudeLocation, terrainLevelsLocation;
 	float planetScale, noiseAmplitude;
 	glm::vec3 terrainLevels;

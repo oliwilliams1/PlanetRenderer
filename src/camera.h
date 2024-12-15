@@ -1,13 +1,8 @@
 #pragma once
 
-#include <iostream>
+#include "app.h"
 #include <string>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
 
 // Must be aligned to 16 bytes, or it will NOT work
 struct CameraData {
@@ -17,13 +12,15 @@ struct CameraData {
 	float deltaTime;      // 4 bytes
 };
 
+class App;
+
 class Camera {
 public:
 	GLuint UBO;
 	glm::vec3 position;
 	CameraData cameraData;
 
-	Camera(GLFWwindow* window, int width, int height);
+	Camera(App* app);
 	~Camera();
 	
 	void rotate(glm::dvec2 mouseDelta);
@@ -32,7 +29,7 @@ public:
 	void OnWindowResize(GLFWwindow* window, int width, int height);
 
 private:
-	GLFWwindow* window;
+	App* app;
 
 	float aspectRatio;
 	float fov;

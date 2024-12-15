@@ -1,3 +1,5 @@
+#pragma once
+
 // Standard library stuff
 #include <iostream>
 
@@ -13,12 +15,18 @@
 #include "planet.h"
 #include "noise.h"
 
+// Forward declarations
+class PlanetShader;
+class Planet;
+class Camera;
+
 class App {
 public:
     App();
     void Mainloop();
     ~App();
 
+    int width, height;
     GLFWwindow* window;
 
     Noise* noise;
@@ -34,7 +42,6 @@ private:
 
     static void OnWindowResize(GLFWwindow* window, int width, int height);
 
-    int width, height;
     glm::dvec2 mousePos, mouseDelta;
     bool wireframe;
 };
