@@ -1,14 +1,16 @@
 #include "noise.h"
 
 Noise::Noise() {
-	this->sampleOffsetSize = 6.0f;
+	this->sampleOffsetSize = 0.05f;
 	this->needToDispatch   = false;
 
 	cubemapNoiseShaderProgram = CompileComputeShader("shaders/cubemapNoise.comp");
 	cubemapNormalShaderProgram = CompileComputeShader("shaders/cubemapNormal.comp");
 
 	normal_NoiseSamplerLocation = GetUniformLocation(cubemapNormalShaderProgram, "u_TerrainCubemap");	
+	normal_SampleOffset = GetUniformLocation(cubemapNormalShaderProgram, "u_Offset");
 
+	glUniform1f(normal_SampleOffset, sampleOffsetSize);
 	CreateTextures();
 	CreateFramebuffers();
 }
@@ -121,10 +123,11 @@ void Noise::CreateFramebuffers() {
 
 void Noise::DebugDraw() {
 	ImGui::Begin("Perlin noise data view");
-	if (ImGui::SliderFloat("Sample offset px", &sampleOffsetSize, 0.1f, 20.0f)) needToDispatch = true;
+	if (ImGui::SliderFloat("Offset", &sampleOffsetSize, 0.001f, 0.05f)) needToDispatch = true;
 	ImGui::End();
 
 	if (needToDispatch) {
+		glUniform1f(normal_SampleOffset, sampleOffsetSize);
 		float currentTime = glfwGetTime();
 		if (currentTime - lastDispatchTime > 0.2f) {
 			Dispatch();

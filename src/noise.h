@@ -24,7 +24,7 @@ private:
 
 	GLuint cubemapNoiseShaderProgram, cubemapNormalShaderProgram;
 	GLuint fboCubemapNoise, fboCubemapNormal;
-	GLuint normal_NoiseSamplerLocation;
+	GLuint normal_NoiseSamplerLocation, normal_SampleOffset;
 
 	GLuint CompileComputeShader(const char* source);
 	void CreateTextures();

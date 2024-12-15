@@ -34,11 +34,14 @@ public:
     PlanetShader* planetShader;
     Planet* mainPlanet;
 
+    GLuint gBuffer, gPosition, gNormal, gAlbedo;
+
 private:
     void InitWindow();
     void InitOpenGLParams();
     void InitImGui();
     void InitMouseEvents();
+    void InitG_Buffer();
 
     static void OnWindowResize(GLFWwindow* window, int width, int height);
 

@@ -4,7 +4,9 @@ in vec3 Normal;
 in vec3 FragPos;
 in vec2 UV;
 
-out vec4 colour;
+layout (location = 0) out vec3 gPosition;
+layout (location = 1) out vec3 gNormal;
+layout (location = 2) out vec4 gAlbedo;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -46,5 +48,7 @@ void main() {
     // Most basic shading model in the world
     terrainColour *= 0.1 + clamp(max(dot(normal, normalize(vec3(1.0))), 0.0), 0.0, 0.8);
 
-    colour = vec4(terrainColour, 1.0);
+    gPosition = FragPos;
+	gNormal = normal;
+	gAlbedo = vec4(terrainColour, 1.0);
 }
