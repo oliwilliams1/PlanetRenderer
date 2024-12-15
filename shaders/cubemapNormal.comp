@@ -1,13 +1,84 @@
 #version 430
 
 layout (binding = 0, rgba32f) uniform imageCube cubemapTexture;
-
 layout (local_size_x = 16, local_size_y = 16) in;
+
+uniform samplerCube u_TerrainCubemap;
+
+vec3 sphericalToCartesian(float theta, float phi) {
+    float x = sin(phi) * cos(theta);
+    float y = sin(phi) * sin(theta);
+    float z = cos(phi);
+    return vec3(x, y, z);
+}
 
 void main() {
     uvec3 globalID = gl_GlobalInvocationID;
-
     uint faceIndex = globalID.z;
 
-    imageStore(cubemapTexture, ivec3(globalID.x, globalID.y, faceIndex), vec4(1.0, 0.0, 1.0, 1.0));
+    float x = (globalID.x / 511.0) * 2.0 - 1.0; // [-1, 1]
+    float y = (globalID.y / 511.0) * 2.0 - 1.0; // [-1, 1]
+    float z;
+
+    vec3 normal;
+
+    switch (faceIndex) {
+        case 0: // pos X
+            normal = vec3(1.0, y, -x);
+            break;
+        case 1: // neg X
+            normal = vec3(-1.0, y, x);
+            break;
+        case 2: // pos Y
+            normal = vec3(x, -1.0, y);
+            break;
+        case 3: // neg Y
+            normal = vec3(x, 1.0, -y);
+            break;
+        case 4: // pos Z
+            normal = vec3(x, y, 1.0);
+            break;
+        case 5: // neg Z
+            normal = vec3(-x, y, -1.0);
+            break;
+        default:
+            normal = vec3(1.0);
+            break;
+    }
+
+    normal.y = -normal.y;
+    normal = normalize(normal);
+
+    float theta = atan(normal.z, normal.x); // [-pi/2, pi/2]
+    float phi = acos(normal.y);             // [-pi, pi]
+
+    vec3 tangent = normalize(vec3(-sin(theta), 0.0, cos(theta)));
+vec3 bitangent = normalize(cross(normal, tangent));
+mat3 TBN = mat3(tangent, bitangent, normal);
+
+    float thetaOffset = 0.1;
+    float phiOffset = thetaOffset / 2.0;
+
+    float newThetaLeft  = theta - thetaOffset;
+    float newThetaRight = theta + thetaOffset;
+    float newPhiDown    = phi - phiOffset;
+    float newPhiUp      = phi + phiOffset;
+
+    newPhiDown = max(0.0, newPhiDown);
+    newPhiUp = min(3.14159, newPhiUp);
+
+    vec3 sampleLeft  = sphericalToCartesian(newThetaLeft, phi);
+    vec3 sampleRight = sphericalToCartesian(newThetaRight, phi);
+    vec3 sampleDown  = sphericalToCartesian(theta, newPhiDown);
+    vec3 sampleUp    = sphericalToCartesian(theta, newPhiUp);
+
+    float heightLeft  = texture(u_TerrainCubemap, sampleLeft).r;
+    float heightRight = texture(u_TerrainCubemap, sampleRight).r;
+    float heightDown  = texture(u_TerrainCubemap, sampleDown).r;
+    float heightUp    = texture(u_TerrainCubemap, sampleUp).r;
+
+    vec3 displacedNormal = vec3(heightRight - heightLeft, heightUp - heightDown, 1.0);
+    displacedNormal = normalize(TBN * displacedNormal);
+
+    imageStore(cubemapTexture, ivec3(globalID.x, globalID.y, faceIndex), vec4(displacedNormal, 1.0)); // [0,1]
 }

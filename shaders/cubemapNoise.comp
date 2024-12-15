@@ -10,38 +10,38 @@ uniform int   u_Octaves     = 1;
 uniform float u_Persistence = 0.5;
 
 float cubicBezier(float t, float P0, float P1, float P2, float P3) {
-    float oneMinusT = 1.0 - t;
-    return (oneMinusT * oneMinusT * oneMinusT * P0) +
-           (3.0 * oneMinusT * oneMinusT * t * P1) +
-           (3.0 * oneMinusT * t * t * P2) +
-           (t * t * t * P3);
+	float oneMinusT = 1.0 - t;
+	return (oneMinusT * oneMinusT * oneMinusT * P0) +
+		   (3.0 * oneMinusT * oneMinusT * t * P1) +
+		   (3.0 * oneMinusT * t * t * P2) +
+		   (t * t * t * P3);
 }
 
 float smoothMin(float a, float b, float k) {
-    float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
-    return mix(b, a, h) - k * h * (1.0 - h);
+	float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+	return mix(b, a, h) - k * h * (1.0 - h);
 }
 
 float smoothStep(float edge0, float edge1, float x) {
-    x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
-    return x * x * (3.0 - 2.0 * x);
+	x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+	return x * x * (3.0 - 2.0 * x);
 }
 
 float QuantizeSmooth(float v) {
-    int bands = 6;
-    float vsq = v * v;
+	int bands = 6;
+	float vsq = v * v;
 
-    // Calculate the quantized value
-    float quantizedValue = floor(vsq * float(bands)) / float(bands);
-    
-    // Calculate the next band value
-    float nextBandValue = (floor(vsq * float(bands)) + 1.0) / float(bands);
-    
-    // Calculate the smoothing factor
-    float t = smoothStep(quantizedValue, nextBandValue, vsq * float(bands));
-    
-    // Return the smoothed quantized value
-    return mix(quantizedValue, nextBandValue, t);
+	// Calculate the quantized value
+	float quantizedValue = floor(vsq * float(bands)) / float(bands);
+	
+	// Calculate the next band value
+	float nextBandValue = (floor(vsq * float(bands)) + 1.0) / float(bands);
+	
+	// Calculate the smoothing factor
+	float t = smoothStep(quantizedValue, nextBandValue, vsq * float(bands));
+	
+	// Return the smoothed quantized value
+	return mix(quantizedValue, nextBandValue, t);
 }
 
 int perm[256] = int[256](
@@ -146,43 +146,44 @@ float OctaveNoise_3D(vec3 pos, int octaves, float persistence) {
 }
 
 void main() {
-    uvec3 globalID = gl_GlobalInvocationID;
+	uvec3 globalID = gl_GlobalInvocationID;
 
-    uint faceIndex = globalID.z;
+	uint faceIndex = globalID.z;
 
-    float x = (globalID.x / 511.0) * 2.0 - 1.0; // [-1, 1]
-    float y = (globalID.y / 511.0) * 2.0 - 1.0; // [-1, 1]
-    float z;
+	float x = (globalID.x / 511.0) * 2.0 - 1.0; // [-1, 1]
+	float y = (globalID.y / 511.0) * 2.0 - 1.0; // [-1, 1]
+	float z;
 
-    vec3 normal;
+	vec3 normal;
 
-    switch (faceIndex) {
-        case 0: // pos X
-            normal = vec3(1.0, y, -x);
-            break;
-        case 1: // neg X
-            normal = vec3(-1.0, y, x);
-            break;
-        case 2: // pos Y
-            normal = vec3(x, -1.0, y);
-            break;
-        case 3: // neg Y
-            normal = vec3(x, 1.0, -y);
-            break;
-        case 4: // pos Z
-            normal = vec3(x, y, 1.0);
-            break;
-        case 5: // neg z
-            normal = vec3(-x, y, -1.0);
-            break;
-        default:
-            normal = vec3(1.0);
-            break;
-    }
+	switch (faceIndex) {
+		case 0: // pos X
+			normal = vec3(1.0, y, -x);
+			break;
+		case 1: // neg X
+			normal = vec3(-1.0, y, x);
+			break;
+		case 2: // pos Y
+			normal = vec3(x, -1.0, y);
+			break;
+		case 3: // neg Y
+			normal = vec3(x, 1.0, -y);
+			break;
+		case 4: // pos Z
+			normal = vec3(x, y, 1.0);
+			break;
+		case 5: // neg z
+			normal = vec3(-x, y, -1.0);
+			break;
+		default:
+			normal = vec3(1.0);
+			break;
+	}
 
 	ShuffleArray(u_Seed);
 
-    normal = normalize(normal);
+	normal.y = -normal.y; // Not sure why, but works
+	normal = normalize(normal);
 
 	float continent = OctaveNoise_3D(normal * 1.0, 4, 0.25);
 
@@ -199,12 +200,12 @@ void main() {
 	continent += sm;
 
 	ShuffleArray(u_Seed + 1);
-    float totalNoise = OctaveNoise_3D(normal * 4.4, 8, 0.5);
+	float totalNoise = OctaveNoise_3D(normal * 4.4, 8, 0.5);
 
 	totalNoise = totalNoise * continent;
 
 	// Rgb = albedo, a = height
 	vec4 noiseColor = vec4(totalNoise, 0.0, 0.0, 1.0);
 
-    imageStore(cubemapTexture, ivec3(globalID.x, globalID.y, faceIndex), noiseColor);
+	imageStore(cubemapTexture, ivec3(globalID.x, globalID.y, faceIndex), noiseColor);
 }

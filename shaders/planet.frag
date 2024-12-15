@@ -15,6 +15,7 @@ layout(std140) uniform CameraData {
 
 const float PI = 3.14159265359;
 uniform samplerCube u_NoiseCubemap;
+uniform samplerCube u_NormalCubemap;
 uniform vec3 u_TerrainLevels;
 
 vec3 heightToColour(float h) {
@@ -30,9 +31,13 @@ vec3 heightToColour(float h) {
 }
 
 void main() {
-    vec3 normal = normalize(Normal);
+    vec3 sphericalNormal = normalize(Normal);
+    vec3 normal = texture(u_NormalCubemap, sphericalNormal).rgb;
+    normal *= 2.0;
+    normal += 1.0;
+    normal = normalize(normal);
 
-    float height = texture(u_NoiseCubemap, normal).r;
+    float height = texture(u_NoiseCubemap, sphericalNormal).r;
     height = height * 2.0 - 1.0; // [0, 1] -> [-1, 1]
 
     vec3 terrainColour = heightToColour(height);

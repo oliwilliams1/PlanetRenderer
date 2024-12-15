@@ -7,6 +7,8 @@ Noise::Noise() {
 	cubemapNoiseShaderProgram = CompileComputeShader("shaders/cubemapNoise.comp");
 	cubemapNormalShaderProgram = CompileComputeShader("shaders/cubemapNormal.comp");
 
+	normal_NoiseSamplerLocation = GetUniformLocation(cubemapNormalShaderProgram, "u_TerrainCubemap");	
+
 	CreateTextures();
 	CreateFramebuffers();
 }
@@ -43,23 +45,26 @@ GLuint Noise::CompileComputeShader(const char* source) {
 void Noise::Dispatch() {
 	// Cubemap noise generation
 	glUseProgram(cubemapNoiseShaderProgram);
-
 	glBindImageTexture(0, cubemapNoiseTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
 	glDispatchCompute(32, 32, 6);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+	// Cubemap normal generation
 	glUseProgram(cubemapNormalShaderProgram);
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapNoiseTexture);
+	glUniform1i(normal_NoiseSamplerLocation, 0);
+
 	glBindImageTexture(0, cubemapNormalTexture, 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+	glUniform1i(normal_NoiseSamplerLocation, 0);
 
 	glDispatchCompute(32, 32, 6);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
+	// Ending
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	needToDispatch = false;
 	lastDispatchTime = glfwGetTime();
 }
