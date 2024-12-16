@@ -32,6 +32,7 @@ set(SOURCE_FILES
     "src/noise.cpp"
     "src/utils.cpp"
     "src/app.cpp"
+    "src/deferredRenderer.cpp"
 )
 
 # Add header files
@@ -43,6 +44,7 @@ set(HEADER_FILES
     "src/noise.h"
     "src/utils.h"
     "src/app.h"
+    "src/deferredRenderer.h"
 )
 
 # Add executable

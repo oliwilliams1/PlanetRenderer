@@ -133,11 +133,6 @@ void Camera::DebugDraw() {
     }
 }
 
-void Camera::OnWindowResize(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
-    aspectRatio = (float)width / (float)height;
-}
-
 Camera::~Camera() {
 	glDeleteBuffers(1, &UBO);
 }

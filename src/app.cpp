@@ -7,8 +7,8 @@ App::App() {
     InitWindow();
     InitOpenGLParams();
     InitImGui();
-	InitG_Buffer();
 
+	deferredRenderer = new DeferredRenderer(this);
     noise = new Noise();
     camera = new Camera(this);
     planetShader = new PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
@@ -68,55 +68,10 @@ void App::InitImGui() {
 }
 
 void App::InitMouseEvents() {
-    // Set a pointer to camera for OnWindowResize to call from it
-	glfwSetWindowUserPointer(window, &camera);
-	glfwSetFramebufferSizeCallback(window, OnWindowResize);
-
 	mousePos   = glm::dvec2(0.0, 0.0);
 	mouseDelta = glm::dvec2(0.0, 0.0);
 
 	glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
-}
-
-// Static function for window resizing
-void App::OnWindowResize(GLFWwindow* window, int width, int height) {
-    Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
-	camera->OnWindowResize(window, width, height); // Changes aspect ratio in camera
-}
-
-void App::InitG_Buffer() {
-	glGenFramebuffers(1, &gBuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-
-	glGenTextures(1, &gPosition);
-	glBindTexture(GL_TEXTURE_2D, gPosition);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
-
-	glGenTextures(1, &gNormal);
-	glBindTexture(GL_TEXTURE_2D, gNormal);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
-
-	glGenTextures(1, &gAlbedo);
-	glBindTexture(GL_TEXTURE_2D, gAlbedo);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
-
-	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-	glDrawBuffers(3, attachments);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		std::cerr << "Framebuffer is not complete!" << std::endl;
-	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 }
 
 void App::Mainloop() {
@@ -135,20 +90,13 @@ void App::Mainloop() {
 		// Clear
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Bind gBuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, gPosition);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, gNormal);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, gAlbedo);
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		deferredRenderer->Bind();
 
 		// Render objects
 		planetShader->use();
 		mainPlanet->Draw();
+
+		deferredRenderer->Render();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -161,14 +109,13 @@ void App::Mainloop() {
 		camera->DebugDraw();
 		mainPlanet->DebugDraw();
 		noise->DebugDraw();
+		deferredRenderer->DebugDraw();
+		deferredRenderer->DisplayViewportImGui();
 
 		// Fast debug window
 		ImGui::Begin("Settings");
 		ImGui::Checkbox("Wireframe", &wireframe);
 		if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		ImGui::Image((ImTextureID)(intptr_t)gPosition, ImVec2(width / 5.0f, height / 5.0f), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-		ImGui::Image((ImTextureID)(intptr_t)gNormal,   ImVec2(width / 5.0f, height / 5.0f), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-		ImGui::Image((ImTextureID)(intptr_t)gAlbedo,   ImVec2(width / 5.0f, height / 5.0f), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
 		ImGui::End();
 
 		// Render ImGui

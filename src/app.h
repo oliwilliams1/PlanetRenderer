@@ -11,11 +11,13 @@
 #include <imgui_impl_opengl3.h>
 
 // Own stuff
+#include "deferredRenderer.h"
 #include "camera.h"
 #include "planet.h"
 #include "noise.h"
 
 // Forward declarations
+class DeferredRenderer;
 class PlanetShader;
 class Planet;
 class Camera;
@@ -29,21 +31,17 @@ public:
     int width, height;
     GLFWwindow* window;
 
+    DeferredRenderer* deferredRenderer;
     Noise* noise;
     Camera* camera;
     PlanetShader* planetShader;
     Planet* mainPlanet;
-
-    GLuint gBuffer, gPosition, gNormal, gAlbedo;
 
 private:
     void InitWindow();
     void InitOpenGLParams();
     void InitImGui();
     void InitMouseEvents();
-    void InitG_Buffer();
-
-    static void OnWindowResize(GLFWwindow* window, int width, int height);
 
     glm::dvec2 mousePos, mouseDelta;
     bool wireframe;

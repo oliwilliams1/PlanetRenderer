@@ -45,9 +45,6 @@ void main() {
 
     vec3 terrainColour = heightToColour(height);
 
-    // Most basic shading model in the world
-    terrainColour *= 0.1 + clamp(max(dot(normal, normalize(vec3(1.0))), 0.0), 0.0, 0.8);
-
     gPosition = FragPos;
 	gNormal = normal;
 	gAlbedo = vec4(terrainColour, 1.0);
