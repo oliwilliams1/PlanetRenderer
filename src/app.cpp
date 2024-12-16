@@ -1,8 +1,11 @@
 #include "app.h"
 
 App::App() {
-    width = 1600;
-    height = 900;
+    windowWidth = 1600;
+    windowHeight = 900;
+
+	viewportWidth = 1200;
+	viewportHeight = 675;
     
     InitWindow();
     InitOpenGLParams();
@@ -24,7 +27,7 @@ void App::InitWindow() {
 	}
 
 	// Create a window with OpenGL
-	window = glfwCreateWindow(width, height, "Planet Renderer", nullptr, nullptr);
+	window = glfwCreateWindow(windowWidth, windowHeight, "Planet Renderer", nullptr, nullptr);
 	if (!window) {
 		std::cout << stderr << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();

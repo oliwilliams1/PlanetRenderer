@@ -2,7 +2,7 @@
 
 Camera::Camera(App* app) {
     this->app = app;
-	aspectRatio = (float)app->width/ (float)app->height;
+	aspectRatio = (float)app->viewportWidth / (float)app->viewportHeight;
 	fov = 70.0f;
 	zNear = 0.01f;
 	zFar = 10000.0f;

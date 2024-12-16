@@ -28,8 +28,8 @@ public:
 	void Mainloop();
 	~App();
 	
-	int width, height;
 	GLFWwindow* window;
+	int viewportWidth, viewportHeight;
 
 	DeferredRenderer* deferredRenderer;
 	Noise* noise;
@@ -38,6 +38,7 @@ public:
 	Planet* mainPlanet;
 
 private:
+	int windowWidth, windowHeight;
 	void InitWindow();
 	void InitOpenGLParams();
 	void InitImGui();
