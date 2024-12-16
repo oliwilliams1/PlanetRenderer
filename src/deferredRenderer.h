@@ -22,9 +22,11 @@ private:
 	Shader* deferredShader;
 	GLuint fboShading, mainTexture;
 	GLuint quadVAO, quadVBO;
+	GLuint gPositionLocation, gNormalLocation, gAlbedoLocation;
 
 	void InitG_Buffer();
-	void InitDefferedShadingBuffer();
+	void InitDeferredShadingBuffer();
+	void InitDeferredShadingUniforms();
 
 	void SetupQuad();
 };

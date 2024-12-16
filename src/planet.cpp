@@ -155,6 +155,7 @@ void PlanetShader::AddTesselationShaders() {
 }
 
 void Planet::DebugDraw() {
+    shader->use();
     ImGui::Begin("Planet data");
     if (ImGui::SliderFloat3("Position", &position.x, -10.0f, 10.0f)) UpdateModelMatrix();
     if (ImGui::SliderFloat3("Rotation", &rotation.x, -180.0f, 180.0f)) UpdateModelMatrix();

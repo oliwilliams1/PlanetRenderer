@@ -4,8 +4,10 @@ DeferredRenderer::DeferredRenderer(App* app) {
 	this->app = app;
 
 	InitG_Buffer();
-	InitDefferedShadingBuffer();
+	InitDeferredShadingBuffer();
+
 	deferredShader = new Shader("shaders/default.vert", "shaders/default.frag", "Deferred Shader");
+	InitDeferredShadingUniforms();
 	SetupQuad();
 }
 
@@ -64,7 +66,7 @@ void DeferredRenderer::InitG_Buffer() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void DeferredRenderer::InitDefferedShadingBuffer() {
+void DeferredRenderer::InitDeferredShadingBuffer() {
 	glGenVertexArrays(1, &quadVAO);
 	glGenFramebuffers(1, &fboShading);
 	glBindFramebuffer(GL_FRAMEBUFFER, fboShading);
@@ -85,6 +87,12 @@ void DeferredRenderer::InitDefferedShadingBuffer() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void DeferredRenderer::InitDeferredShadingUniforms() {
+	gPositionLocation = GetUniformLocation(deferredShader->shaderProgram, "gPosition");
+	gNormalLocation = GetUniformLocation(deferredShader->shaderProgram, "gNormal");
+	gAlbedoLocation = GetUniformLocation(deferredShader->shaderProgram, "gAlbedo");
+}
+
 void DeferredRenderer::Bind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
 	glActiveTexture(GL_TEXTURE0);
@@ -98,23 +106,29 @@ void DeferredRenderer::Bind() {
 }
 
 void DeferredRenderer::Render() {
-	// Bind framebuffer for shading pass
 	glBindFramebuffer(GL_FRAMEBUFFER, fboShading);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear framebuffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Activate the shader
 	deferredShader->use();
 
-	// Bind the texture to sample
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, mainTexture);
 
-	// Draw the quad
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, gPosition);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, gNormal);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, gAlbedo);
+
+	glUniform1i(gPositionLocation, 1);
+	glUniform1i(gNormalLocation, 2);
+	glUniform1i(gAlbedoLocation, 3);
+
 	glBindVertexArray(quadVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 
-	// Unbind framebuffer to draw to the default framebuffer (optional)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

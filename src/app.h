@@ -24,25 +24,25 @@ class Camera;
 
 class App {
 public:
-    App();
-    void Mainloop();
-    ~App();
+	App();
+	void Mainloop();
+	~App();
+	
+	int width, height;
+	GLFWwindow* window;
 
-    int width, height;
-    GLFWwindow* window;
-
-    DeferredRenderer* deferredRenderer;
-    Noise* noise;
-    Camera* camera;
-    PlanetShader* planetShader;
-    Planet* mainPlanet;
+	DeferredRenderer* deferredRenderer;
+	Noise* noise;
+	Camera* camera;
+	PlanetShader* planetShader;
+	Planet* mainPlanet;
 
 private:
-    void InitWindow();
-    void InitOpenGLParams();
-    void InitImGui();
-    void InitMouseEvents();
+	void InitWindow();
+	void InitOpenGLParams();
+	void InitImGui();
+	void InitMouseEvents();
 
-    glm::dvec2 mousePos, mouseDelta;
-    bool wireframe;
+	glm::dvec2 mousePos, mouseDelta;
+	bool wireframe;
 };
