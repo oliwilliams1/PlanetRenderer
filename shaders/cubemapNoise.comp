@@ -203,9 +203,20 @@ void main() {
 	float totalNoise = OctaveNoise_3D(normal * 4.4, 8, 0.5);
 
 	totalNoise = totalNoise * continent;
+	
+	totalNoise = totalNoise * 2.0 - 1.0; // [0, 1] -> [-1, 1]
+	
+	float forestContrib;
+
+	// See if forest can grow on this pixel or not
+	if (totalNoise > -0.7 && totalNoise < -0.2) {
+		forestContrib = 1.0;
+	} else {
+		forestContrib = 0.0;
+	}
 
 	// Rgb = albedo, a = height
-	vec4 noiseColor = vec4(totalNoise, 0.0, 0.0, 1.0);
+	vec4 noiseColor = vec4(totalNoise, forestContrib, 0.0, 1.0);
 
 	imageStore(cubemapTexture, ivec3(globalID.x, globalID.y, faceIndex), noiseColor);
 }

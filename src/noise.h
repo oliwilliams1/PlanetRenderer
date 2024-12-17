@@ -15,6 +15,7 @@ public:
 	~Noise();
 	void Dispatch();
 	void DebugDraw();
+	int cubemapResolution = 512;
 
 private:
 	float sampleOffsetSize;

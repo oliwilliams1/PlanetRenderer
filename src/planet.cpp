@@ -8,8 +8,11 @@ Planet::Planet(App* app, Shader* shader) : Object(shader) {
     this->planetScale = 1000.0f;
 
     app->noise->Dispatch();
+    this->cubemapResolution = app->noise->cubemapResolution;
     this->noiseCubemapTexture  = app->noise->cubemapNoiseTexture;
     this->normalCubemapTexture = app->noise->cubemapNormalTexture;
+
+    this->treesHandler = new TreesHandler(this);
 
     std::vector<glm::vec3> vertices;
 

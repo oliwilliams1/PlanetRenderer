@@ -41,7 +41,6 @@ void main() {
 
     // Sample height for texturing
     float height = texture(u_NoiseCubemap, sphericalNormal).r;
-    height = height * 2.0 - 1.0; // [0, 1] -> [-1, 1]
 
     vec3 terrainColour = heightToColour(height);
 

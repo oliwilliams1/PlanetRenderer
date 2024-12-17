@@ -4,8 +4,10 @@
 #include <glm/glm.hpp>
 #include "shader.h"
 #include "object.h"
+#include "treesHandler.h"
 
 class App;
+class TreesHandler;
 
 class PlanetShader : public Shader {
 public:
@@ -20,10 +22,13 @@ public:
 	Planet(App* app, Shader* shader);
 	void Draw() override;
 	void DebugDraw() override;
+	int cubemapResolution;
+	GLuint noiseCubemapTexture, normalCubemapTexture;
 
 private:
 	App* app;
-	GLuint noiseCubemapTexture, noiseCubemapLocation, normalCubemapLocation, normalCubemapTexture, planetScaleLocation, noiseAmplitudeLocation, terrainLevelsLocation;
+	TreesHandler* treesHandler;
+	GLuint noiseCubemapLocation, normalCubemapLocation, planetScaleLocation, noiseAmplitudeLocation, terrainLevelsLocation;
 	float planetScale, noiseAmplitude;
 	glm::vec3 terrainLevels;
 
