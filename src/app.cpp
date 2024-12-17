@@ -109,11 +109,11 @@ void App::Mainloop() {
 		ImGui::NewFrame();
 
 		// ImGui debug windows
+		deferredRenderer->DisplayViewportImGui();
 		camera->DebugDraw();
 		mainPlanet->DebugDraw();
 		noise->DebugDraw();
 		deferredRenderer->DebugDraw();
-		deferredRenderer->DisplayViewportImGui();
 
 		// Fast debug window
 		ImGui::Begin("Settings");

@@ -128,6 +128,8 @@ void Planet::Draw() {
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_PATCHES, 0, indicesCount);
 	glBindVertexArray(0);
+
+    treesHandler->Draw();
 }
 
 PlanetShader::PlanetShader(const char* vsSource, const char* fsSource, const char* shaderName) : Shader(vsSource, fsSource, shaderName) {

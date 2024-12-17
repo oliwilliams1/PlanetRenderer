@@ -3,16 +3,16 @@
 Camera::Camera(App* app) {
     this->app = app;
 	aspectRatio = (float)app->viewportWidth / (float)app->viewportHeight;
-	fov = 70.0f;
+	fov   = 70.0f;
 	zNear = 0.01f;
-	zFar = 10000.0f;
+	zFar  = 10000.0f;
 
-	pitch = -82.0f;
-	yaw = 37.0;
-	speed = 200.0f;
+	pitch = -34.0f;
+	yaw   = -52.0;
+	speed = 500.0f;
 	sensitivity = 0.2f;
 
-    position = glm::vec3(-166.0f, 2177.0f, -280.0f);
+    position = glm::vec3(-900.0f, 1000.0f, 1200.0f);
 
 	up = glm::vec3(0, 1, 0);
 	right = glm::vec3(1, 0, 0);
