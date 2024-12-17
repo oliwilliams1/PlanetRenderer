@@ -32,6 +32,8 @@ private:
 	void FibonacciSphereSampling(int numPoints);
 	glm::vec4 SampleCubemap(const glm::vec3& direction);
 
-	GLuint treeVAO, treeVBO;
+	GLuint treeVAO, treeVBO, instanceVBO;
 	void SetupBuffers();
+
+	glm::vec3 dir = glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f));
 };

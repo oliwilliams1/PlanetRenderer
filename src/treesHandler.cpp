@@ -6,10 +6,10 @@ TreesHandler::TreesHandler(Planet* planet) {
 
 	cubemapResolution = planet->cubemapResolution;
 
-    SetupBuffers();
 	RetrieveCubemapData();
+    FibonacciSphereSampling(1);
 
-    FibonacciSphereSampling(1000);
+    SetupBuffers();
 }
 
 void TreesHandler::RetrieveCubemapData() {
@@ -71,10 +71,9 @@ void TreesHandler::FibonacciSphereSampling(int numPoints) {
         float result = SampleCubemap(dir).g;
 
         if (result > 0.5f) {
-            glm::vec3 pos = glm::vec3(result * 1000.0f);
+            glm::vec3 pos = dir * (result * 1000.0f);
 
             glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
-
             glm::mat4 m_Matrix = translation;
 
             trees.emplace_back(m_Matrix, pos);
@@ -93,20 +92,38 @@ void TreesHandler::SetupBuffers() {
     };
 
     glGenVertexArrays(1, &treeVAO);
-    glGenBuffers(1, &treeVBO);
-
     glBindVertexArray(treeVAO);
 
+    glGenBuffers(1, &treeVBO);
     glBindBuffer(GL_ARRAY_BUFFER, treeVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    std::vector<glm::mat4> instanceMatrices(trees.size());
+    for (int i = 0; i < trees.size(); i++) {
+        instanceMatrices[i] = trees[i].m_Model;
+    }
+
+    GLuint instanceVBO;
+    glGenBuffers(1, &instanceVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, instanceMatrices.size() * sizeof(glm::mat4), instanceMatrices.data(), GL_STATIC_DRAW);
+
+    for (int i = 0; i < 4; i++) {
+        glEnableVertexAttribArray(i + 1);
+        glVertexAttribPointer(i + 1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
+        glVertexAttribDivisor(i + 1, 1); 
+    }
+
+    glBindVertexArray(0);
 }
 
 void TreesHandler::Draw() {
     shader->use();
 	glBindVertexArray(treeVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, trees.size());
 	glBindVertexArray(0);
 }
 
