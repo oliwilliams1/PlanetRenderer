@@ -18,8 +18,9 @@ private:
 	GLuint computeShaderProgram;
 	std::vector<glm::vec3> vertices;
 
-	void FibonacciSphereSampling(int numPoints);
+	void GenerateTreesViaComputeShader(int numPoints);
+	void FibonacciSphere(int numPoints);
 
-	GLuint VAO, VBO, inputBuffer, outputBuffer;
+	GLuint VAO, VBO, inputBuffer, outputDataTexture;
 	void SetupBuffers();
 };

@@ -4,9 +4,8 @@ layout(std430, binding = 0) buffer InputBuffer {
     vec3 inputVertices[];
 };
 
-layout(std430, binding = 1) buffer OutputBuffer {
-    vec3 outputVertices[];
-};
+layout(binding = 0, rgba8) uniform image2D outputImage;
+layout(binding = 1) uniform samplerCube u_NoiseCubemap;
 
 layout(local_size_x = 256) in;
 
@@ -17,7 +16,15 @@ void main() {
 
     if (id >= u_numPoints) return;
 
-    vec3 vertex = inputVertices[id];
+    float treeBool = texture(u_NoiseCubemap, normalize(inputVertices[id])).g;
 
-    outputVertices[id] = vertex;
+    vec4 color;
+    if (treeBool < 0.5) {
+        color = vec4(0.0, 0.0, 0.0, 1.0);
+    } else {
+        color = vec4(1.0, 1.0, 1.0, 1.0);
+    }
+
+    ivec2 pixelCoords = ivec2(id, 0);
+    imageStore(outputImage, pixelCoords, color);
 }
