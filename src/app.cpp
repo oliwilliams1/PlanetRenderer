@@ -34,6 +34,8 @@ void App::InitWindow() {
 		return;
 	}
 
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+
 	glfwMakeContextCurrent(window);
 
 	GLenum err = glewInit();

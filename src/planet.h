@@ -23,13 +23,13 @@ public:
 	void Draw() override;
 	void DebugDraw() override;
 	int cubemapResolution;
+	float planetScale, noiseAmplitude;
 	GLuint noiseCubemapTexture, normalCubemapTexture;
 
 private:
 	App* app;
 	TreesHandler* treesHandler;
 	GLuint noiseCubemapLocation, normalCubemapLocation, planetScaleLocation, noiseAmplitudeLocation, terrainLevelsLocation;
-	float planetScale, noiseAmplitude;
 	glm::vec3 terrainLevels;
 
 	void GeneratePlanet(std::vector<glm::vec3>& vertices);

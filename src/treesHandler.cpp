@@ -1,66 +1,61 @@
 #include "treesHandler.h"
 
 TreesHandler::TreesHandler(Planet* planet) {
-	this->planet = planet;
+    this->planet = planet;
     this->shader = new Shader("shaders/tree.vert", "shaders/tree.frag", "Trees Shader");
 
-	cubemapResolution = planet->cubemapResolution;
+    int numPoints = 5000;
 
-	RetrieveCubemapData();
-    FibonacciSphereSampling(1);
+    FibonacciSphereSampling(numPoints);
+    for (int i = 0; i < std::min(5, static_cast<int>(vertices.size())); i++) {
+        std::cout << "Vertex " << i << ": " << vertices[i].x << ", " << vertices[i].y << ", " << vertices[i].z << std::endl;
+    }
+    computeShaderProgram = CompileComputeShader("shaders/treeGen.comp");
+
+    glGenBuffers(1, &inputBuffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, inputBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(glm::vec3) * numPoints, vertices.data(), GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    glGenBuffers(1, &outputBuffer);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(glm::vec3) * numPoints, nullptr, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    glUseProgram(computeShaderProgram);
+    glUniform1i(glGetUniformLocation(computeShaderProgram, "u_numPoints"), numPoints);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, inputBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, outputBuffer);
+    glDispatchCompute((numPoints + 255) / 256, 1, 1);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+    GLuint stagingBuffer;
+    glGenBuffers(1, &stagingBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, stagingBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numPoints, nullptr, GL_DYNAMIC_READ);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, outputBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, stagingBuffer);
+    glCopyBufferSubData(GL_SHADER_STORAGE_BUFFER, GL_ARRAY_BUFFER, 0, 0, sizeof(glm::vec3) * numPoints);
+
+    glBindBuffer(GL_ARRAY_BUFFER, stagingBuffer);
+    glm::vec3* data = (glm::vec3*)glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * numPoints, GL_MAP_READ_BIT);
+
+	for (int i = 0; i < numPoints; i++) {
+		vertices.push_back(data[i]);
+	}
+
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glDeleteBuffers(1, &stagingBuffer);
 
     SetupBuffers();
 }
 
-void TreesHandler::RetrieveCubemapData() {
-	cubemapData = std::vector<float>(cubemapResolution * cubemapResolution * 6 * 4);
-
-	glBindTexture(GL_TEXTURE_CUBE_MAP, planet->noiseCubemapTexture);
-
-	for (int i = 0; i < 6; i++) {
-		glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, GL_FLOAT, &cubemapData[static_cast<std::vector<float, std::allocator<float>>::size_type>((GLuint)i) * cubemapResolution * cubemapResolution * 4]);
-	}
-
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-}
-
-glm::vec4 TreesHandler::SampleCubemap(const glm::vec3& direction) {
-    glm::vec3 dir = glm::normalize(direction);
-
-    int face;
-    float s, t;
-
-    if (abs(dir.x) >= abs(dir.y) && abs(dir.x) >= abs(dir.z)) {
-        face = (dir.x > 0) ? 0 : 1;
-        s = -dir.z;
-        t = dir.y;
-    }
-    else if (abs(dir.y) >= abs(dir.x) && abs(dir.y) >= abs(dir.z)) {
-        face = (dir.y > 0) ? 2 : 3;
-        s = dir.x;
-        t = -dir.z;
-    }
-    else {
-        face = (dir.z > 0) ? 4 : 5;
-        s = dir.x;
-        t = dir.y;
-    }
-
-    s = (s + 1.0f) * 0.5f * (cubemapResolution - 1);
-    t = (t + 1.0f) * 0.5f * (cubemapResolution - 1);
-
-    int pixelIndex = (face * cubemapResolution * cubemapResolution + int(t) * cubemapResolution + int(s)) * 4;
-
-    return glm::vec4(
-        cubemapData[pixelIndex],
-        cubemapData[pixelIndex + 1],
-        cubemapData[pixelIndex + 2],
-        cubemapData[pixelIndex + 3]
-    );
-}
-
 void TreesHandler::FibonacciSphereSampling(int numPoints) {
     float goldenAngle = 3.14159265358 * (3.0 - sqrt(5.0));
+
+    vertices.clear();
 
     for (int i = 0; i < numPoints; i++) {
         float theta = goldenAngle * i;
@@ -68,66 +63,34 @@ void TreesHandler::FibonacciSphereSampling(int numPoints) {
 
         glm::vec3 dir(sin(phi) * cos(theta), sin(phi) * sin(theta), cos(phi));
 
-        float result = SampleCubemap(dir).g;
-
-        if (result > 0.5f) {
-            glm::vec3 pos = dir * (result * 1000.0f);
-
-            glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
-            glm::mat4 m_Matrix = translation;
-
-            trees.emplace_back(m_Matrix, pos);
-        }
+        vertices.emplace_back(dir * planet->planetScale);
     }
-};
+}
 
 void TreesHandler::SetupBuffers() {
-    float vertices[18] = {
-        -1.0f, -1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-         1.0f, -1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
-         1.0f,  1.0f, 0.0f,
-         1.0f, -1.0f, 0.0f
-    };
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
 
-    glGenVertexArrays(1, &treeVAO);
-    glBindVertexArray(treeVAO);
+    glBindVertexArray(VAO);
 
-    glGenBuffers(1, &treeVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, treeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    std::vector<glm::mat4> instanceMatrices(trees.size());
-    for (int i = 0; i < trees.size(); i++) {
-        instanceMatrices[i] = trees[i].m_Model;
-    }
-
-    GLuint instanceVBO;
-    glGenBuffers(1, &instanceVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, instanceMatrices.size() * sizeof(glm::mat4), instanceMatrices.data(), GL_STATIC_DRAW);
-
-    for (int i = 0; i < 4; i++) {
-        glEnableVertexAttribArray(i + 1);
-        glVertexAttribPointer(i + 1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
-        glVertexAttribDivisor(i + 1, 1); 
-    }
 
     glBindVertexArray(0);
 }
 
 void TreesHandler::Draw() {
     shader->use();
-	glBindVertexArray(treeVAO);
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, trees.size());
-	glBindVertexArray(0);
+    glBindVertexArray(VAO);
+    glPointSize(10.0f);
+    glDrawArrays(GL_POINTS, 0, vertices.size());
+    glBindVertexArray(0);
 }
 
 TreesHandler::~TreesHandler() {
-	glDeleteVertexArrays(1, &treeVAO);
-	glDeleteBuffers(1, &treeVBO);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
 }

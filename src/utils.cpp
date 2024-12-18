@@ -52,6 +52,35 @@ void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
     glAttachShader(ShaderProgram, ShaderObj);
 }
 
+GLuint CompileComputeShader(const char* source) {
+    GLuint shader = glCreateProgram();
+    if (shader == 0) {
+        std::cout << stderr << "Error creating shader program!" << std::endl;
+        exit(1);
+    }
+
+    std::string cs;
+
+    if (!ReadFile(source, cs)) exit(1);
+    AddShader(shader, cs.c_str(), GL_COMPUTE_SHADER);
+
+    GLint success = 0;
+    GLchar errorLog[1024] = { 0 };
+
+    glLinkProgram(shader);
+
+    glGetProgramiv(shader, GL_LINK_STATUS, &success);
+    if (success == 0) {
+        glGetProgramInfoLog(shader, sizeof(errorLog), nullptr, errorLog);
+        std::cout << "Error linking shader program: " << errorLog << std::endl;
+        exit(1);
+    }
+
+    glUseProgram(shader);
+
+    return shader;
+}
+
 GLuint GetUniformLocation(GLuint shaderProgram, const char* uniformName) {
     GLuint location = glGetUniformLocation(shaderProgram, uniformName);
     if (location == -1) {
