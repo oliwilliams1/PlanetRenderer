@@ -4,7 +4,7 @@ TreesHandler::TreesHandler(Planet* planet) {
 	this->planet = planet;
     this->shader = new Shader("shaders/tree.vert", "shaders/tree.frag", "Trees Shader");
     this->noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
-	int numTrees = 250000;
+	int numTrees = 100000;
 
     PlaceTrees(numTrees);
     SetupBuffers();

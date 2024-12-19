@@ -88,3 +88,35 @@ GLuint GetUniformLocation(GLuint shaderProgram, const char* uniformName) {
     }
     return location;
 }
+
+bool LoadModel(const std::string& path, std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices) {
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(path, aiProcess_FlipUVs);
+
+    // Check if the import was successful
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+        std::cerr << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+        return false;
+    }
+
+    // Process all meshes
+    for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+        aiMesh* mesh = scene->mMeshes[i];
+
+        // Process vertices
+        for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+            aiVector3D vertex = mesh->mVertices[j];
+            vertices.emplace_back(vertex.x, vertex.y, vertex.z);
+        }
+
+        // Process indices
+        for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
+            aiFace face = mesh->mFaces[j];
+            for (unsigned int k = 0; k < face.mNumIndices; k++) {
+                indices.push_back(face.mIndices[k]);
+            }
+        }
+    }
+
+    return true;
+}

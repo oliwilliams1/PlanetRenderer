@@ -3,7 +3,7 @@
     "glew",
     "glfw3",
     "glm",
-    "stb",
+    "assimp",
     {
       "name": "imgui",
       "features": [

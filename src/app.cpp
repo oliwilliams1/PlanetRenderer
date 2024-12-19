@@ -115,13 +115,7 @@ void App::Mainloop() {
 		camera->DebugDraw();
 		mainPlanet->DebugDraw();
 		noise->DebugDraw();
-		deferredRenderer->DebugDraw();
-
-		// Fast debug window
-		ImGui::Begin("Settings");
-		ImGui::Checkbox("Wireframe", &wireframe);
-		if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		ImGui::End();
+		deferredRenderer->DebugDraw();		
 
 		// Render ImGui
 		ImGui::Render();
