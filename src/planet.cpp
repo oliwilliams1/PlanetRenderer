@@ -4,7 +4,7 @@ Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	this->app = app;
 	this->shader = shader;
 	this->noiseAmplitude = 0.1f;
-	this->terrainLevels = glm::vec3(-0.96f, -0.9f, 0.13f);
+	this->terrainLevels = glm::vec3(0.01f, 0.08f, 0.3f);
 	this->planetScale = 1000.0f;
 
 	app->noise->Dispatch();

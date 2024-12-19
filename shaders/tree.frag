@@ -15,7 +15,6 @@ layout(std140) uniform CameraData {
 
 void main() {
 	gPosition = FragPos;
-	if (distance(FragPos, cameraPos) > 1450.0) discard;
 	
 	gAlbedo = vec4(1.0, 0.0, 0.0, 1.0);
 	gNormal = vec3(1.0, 0.0, 0.0);

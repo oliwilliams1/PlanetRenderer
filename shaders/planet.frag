@@ -46,5 +46,5 @@ void main() {
 
     gPosition = FragPos;
 	gNormal = normal;
-	gAlbedo = vec4(0.0, texture(u_NoiseCubemap, sphericalNormal).g, 0.0, 1.0);
+	gAlbedo = vec4(terrainColour, 1.0);
 }

@@ -45,10 +45,12 @@ void TreesHandler::FibonacciSphere(int numPoints) {
 		glm::vec3 dir(sin(phi) * cos(theta), sin(phi) * sin(theta), cos(phi));
 
         glm::vec3 colour = noiseCubemapCPU->Sample(dir);
+        float height = colour.r;
 
         if (colour.g > 0.5f) {
             glm::vec3 normal = glm::normalize(dir);
             glm::vec3 pos = normal * planet->planetScale;
+            pos += height * (planet->planetScale * 0.1f * normal);
 			vertices.emplace_back(pos);
         }
 	}

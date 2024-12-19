@@ -203,13 +203,11 @@ void main() {
 	float totalNoise = OctaveNoise_3D(normal * 4.4, 8, 0.5);
 
 	totalNoise = totalNoise * continent;
-	
-	totalNoise = totalNoise * 2.0 - 1.0; // [0, 1] -> [-1, 1]
-	
+		
 	float forestContrib;
 
 	// See if forest can grow on this pixel or not
-	if (totalNoise > -0.5) {
+	if (totalNoise > 0.15 && totalNoise < 0.27) {
 		forestContrib = 1.0;
 	} else {
 		forestContrib = 0.0;
