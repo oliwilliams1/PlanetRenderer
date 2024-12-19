@@ -18,9 +18,11 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(imgui CONFIG REQUIRED)
+find_package(Stb REQUIRED)
 
 # Add imgui include dir for bindings
 include_directories(${CMAKE_SOURCE_DIR}/imgui)
+include_directories(${Stb_INCLUDE_DIR})
 
 # Add source
 set(SOURCE_FILES

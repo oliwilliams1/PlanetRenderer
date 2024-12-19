@@ -209,7 +209,7 @@ void main() {
 	float forestContrib;
 
 	// See if forest can grow on this pixel or not
-	if (totalNoise > 0.0) {
+	if (totalNoise > -0.3) {
 		forestContrib = 1.0;
 	} else {
 		forestContrib = 0.0;

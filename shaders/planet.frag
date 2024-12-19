@@ -33,7 +33,7 @@ vec3 heightToColour(float h) {
 }
 
 void main() {
-    vec3 sphericalNormal = normalize(Normal);
+    vec3 sphericalNormal = normalize(FragPos);
 
     // TBN matrix is already applied to normal cubemap
     vec3 normal = texture(u_NormalCubemap, sphericalNormal).rgb;

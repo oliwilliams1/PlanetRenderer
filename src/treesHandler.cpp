@@ -1,45 +1,126 @@
 #include "treesHandler.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 
 TreesHandler::TreesHandler(Planet* planet) {
-    this->planet = planet;
+	this->planet = planet;
     this->shader = new Shader("shaders/tree.vert", "shaders/tree.frag", "Trees Shader");
 
-    int numPoints = 500;
+	int numPoints = 5000;
 
-    FibonacciSphere(numPoints);
+	posx = new unsigned char[512 * 512 * 4];
+	negx = new unsigned char[512 * 512 * 4];
+	posy = new unsigned char[512 * 512 * 4];
+	negy = new unsigned char[512 * 512 * 4];
+	posz = new unsigned char[512 * 512 * 4];
+	negz = new unsigned char[512 * 512 * 4];
 
-    computeShaderProgram = CompileComputeShader("shaders/treeGen.comp");
+	glBindTexture(GL_TEXTURE_CUBE_MAP, planet->noiseCubemapTexture);
 
-    glGenBuffers(1, &inputBuffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, inputBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(float) * 3 * numPoints, vertices.data(), GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+	glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, GL_UNSIGNED_BYTE, posx);
+	glGetTexImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, GL_UNSIGNED_BYTE, negx);
+	glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, GL_UNSIGNED_BYTE, posy);
+	glGetTexImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, GL_UNSIGNED_BYTE, negy);
+	glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, GL_UNSIGNED_BYTE, posz);
+	glGetTexImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, GL_UNSIGNED_BYTE, negz);
 
-    glGenTextures(1, &outputDataTexture);
-    glBindTexture(GL_TEXTURE_2D, outputDataTexture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, numPoints, 1, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glUseProgram(computeShaderProgram);
-
-    glBindImageTexture(0, outputDataTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8);
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, planet->noiseCubemapTexture);
-
-    glUniform1i(glGetUniformLocation(computeShaderProgram, "u_numPoints"), numPoints);
-    glUniform1i(glGetUniformLocation(computeShaderProgram, "u_NoiseCubemap"), 1);
-
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, inputBuffer);
-
-    glDispatchCompute((numPoints + 255) / 256, 1, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
+	FibonacciSphere(numPoints);
     SetupBuffers();
+
+    delete[] posx;
+	delete[] negx;
+	delete[] posy;
+	delete[] negy;
+	delete[] posz;
+	delete[] negz;
+}
+
+void TreesHandler::SetupBuffers() {
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
+}
+
+void TreesHandler::Draw() {
+    shader->use();
+    glBindVertexArray(VAO);
+    glPointSize(10.0f);
+    glDrawArrays(GL_POINTS, 0, vertices.size());
+    glBindVertexArray(0);
+}
+
+unsigned char* TreesHandler::SampleCubemap(const glm::vec3& direction) {
+    glm::vec3 dir = glm::normalize(direction);
+
+    unsigned char* selectedFace = nullptr;
+    float u, v;
+
+    if (std::abs(dir.x) >= std::abs(dir.y) && std::abs(dir.x) >= std::abs(dir.z)) {
+        // Positive X face
+        if (dir.x > 0) {
+            selectedFace = posx;
+            u = -dir.z / dir.x;
+            v = -dir.y / dir.x;
+        }
+        else {
+            selectedFace = negx;
+            u = dir.z / -dir.x;
+            v = -dir.y / -dir.x;
+        }
+    }
+    else if (std::abs(dir.y) >= std::abs(dir.x) && std::abs(dir.y) >= std::abs(dir.z)) {
+        // Positive Y face
+        if (dir.y > 0) {
+            selectedFace = posy;
+            u = dir.x / dir.y;
+            v = dir.z / dir.y;
+        }
+        else {
+            selectedFace = negy;
+            u = dir.x / -dir.y;
+            v = dir.z / -dir.y;
+        }
+    }
+    else {
+        // Positive Z face
+        if (dir.z > 0) {
+            selectedFace = posz;
+            u = dir.x / dir.z;
+            v = -dir.y / dir.z;
+        }
+        else {
+            selectedFace = negz;
+            u = dir.x / -dir.z;
+            v = -dir.y / -dir.z;
+        }
+    }
+
+    u = 0.5f * (u + 1.0f) * (512 - 1); // [-1, 1] to [0, 511]
+    v = 0.5f * (v + 1.0f) * (512 - 1); // [-1, 1] to [0, 511]
+
+    int x = std::clamp(static_cast<int>(u), 0, 511);
+    int y = std::clamp(static_cast<int>(v), 0, 511);
+
+    unsigned char* texel = selectedFace + (y * 512 + x) * 4;
+
+    unsigned char* color = new unsigned char[4];
+    color[0] = texel[0];
+    color[1] = texel[1];
+    color[2] = texel[2];
+    color[3] = 255;
+
+    return color; // Must be deleted
 }
 
 void TreesHandler::FibonacciSphere(int numPoints) {
@@ -53,34 +134,14 @@ void TreesHandler::FibonacciSphere(int numPoints) {
 
 		glm::vec3 dir(sin(phi) * cos(theta), sin(phi) * sin(theta), cos(phi));
 
-		vertices.emplace_back(dir * planet->planetScale);
+        unsigned char* color = SampleCubemap(dir);
+
+        if (color[1] > 128) {
+			vertices.emplace_back(glm::normalize(dir) * 900.0f);
+        }
+
+        delete[] color;
 	}
-}
 
-void TreesHandler::SetupBuffers() {
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	glBindVertexArray(0);
-}
-
-void TreesHandler::Draw() {
-	shader->use();
-	glBindVertexArray(VAO);
-	glPointSize(10.0f);
-	glDrawArrays(GL_POINTS, 0, vertices.size());
-	glBindVertexArray(0);
-}
-
-TreesHandler::~TreesHandler() {
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+    std::cout << vertices.size() << std::endl;
 }
