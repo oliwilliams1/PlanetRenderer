@@ -7,12 +7,12 @@ Camera::Camera(App* app) {
 	zNear = 0.01f;
 	zFar  = 10000.0f;
 
-	pitch = -34.0f;
-	yaw   = -52.0;
+	pitch = -90.0f;
+	yaw   = 0.0;
 	speed = 500.0f;
 	sensitivity = 0.2f;
 
-    position = glm::vec3(-900.0f, 1000.0f, 1200.0f);
+    position = glm::vec3(0.0f, 1900.0f, 0.0f);
 
 	up = glm::vec3(0, 1, 0);
 	right = glm::vec3(1, 0, 0);

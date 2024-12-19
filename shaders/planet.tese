@@ -35,7 +35,7 @@ void main() {
     float height = texture(u_NoiseCubemap, normal).r;
     height += 1.0;
 
-    vec3 displacedPosition = (normalize(mPos.xyz) * u_PlanetScale) + height * (u_PlanetScale * u_Amplitude)  * normal;
+    vec3 displacedPosition = (normalize(mPos.xyz) * u_PlanetScale) + height * (u_PlanetScale * u_Amplitude) * normal;
 
     gl_Position = m_ViewProj * vec4(displacedPosition, 1.0); // Transform into cubesphere
     Normal = transpose(inverse(mat3(m_Model))) * normal;
