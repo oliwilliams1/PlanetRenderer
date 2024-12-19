@@ -19,10 +19,10 @@ private:
 	Planet* planet;
 	Shader* shader;
 	Cubemap* noiseCubemapCPU;
-	std::vector<glm::vec3> vertices;
+	std::vector<glm::mat4> m_ModelMatrices;
 
-	GLuint VAO, VBO;
+	GLuint VAO, VBO, instanceVBO;
 
 	void SetupBuffers();
-	void FibonacciSphere(int numPoints);
+	void PlaceTrees(int numPoints);
 };
