@@ -50,7 +50,7 @@ void TreesHandler::FibonacciSphere(int numPoints) {
         if (colour.g > 0.5f) {
             glm::vec3 normal = glm::normalize(dir);
             glm::vec3 pos = normal * planet->planetScale;
-            pos += height * (planet->planetScale * 0.1f * normal);
+            pos += height * (planet->planetScale * planet->planetScale * normal);
 			vertices.emplace_back(pos);
         }
 	}

@@ -17,7 +17,7 @@ public:
 
 private:
 	App* app;
-	GLuint gBuffer, gPosition, gNormal, gAlbedo;
+	GLuint gBuffer, gPosition, gNormal, gAlbedo, gDepth;
 
 	Shader* deferredShader;
 	GLuint fboShading, mainTexture;
