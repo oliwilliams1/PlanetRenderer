@@ -21,7 +21,7 @@ private:
 	Cubemap* noiseCubemapCPU;
 	std::vector<glm::mat4> m_ModelMatrices;
 
-	GLuint VAO, VBO, instanceVBO;
+	GLuint VAO, VBO, IBO;
 
 	void SetupBuffers();
 	void PlaceTrees(int numPoints);

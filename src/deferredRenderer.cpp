@@ -2,6 +2,8 @@
 
 DeferredRenderer::DeferredRenderer(App* app) {
 	this->app = app;
+	this->viewportTexture = 0;
+	this->wireframe = false;
 
 	InitG_Buffer();
 	InitDeferredShadingBuffer();
@@ -146,6 +148,8 @@ void DeferredRenderer::DebugDraw() {
 	int width = 175;
 	int height = (int)(width / aspectRatio);
 
+	ImGui::Combo("G-Buffer", &viewportTexture, "Rendered\0Position\0Normal\0Albedo\0\0");
+
 	ImGui::Image((ImTextureID)(intptr_t)gPosition, ImVec2(width, height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
 	ImGui::SameLine();
 	ImGui::Image((ImTextureID)(intptr_t)gNormal, ImVec2(width, height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
@@ -160,7 +164,17 @@ void DeferredRenderer::DisplayViewportImGui() {
 	ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoMove);
 	ImGui::SetWindowSize(ImVec2(0, 0));
 	ImGui::SetWindowPos(ImVec2(0, 0));
-	ImGui::Image((ImTextureID)(intptr_t)mainTexture, ImVec2(app->viewportWidth, app->viewportHeight), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+	ImGui::Checkbox("Wireframe", &wireframe);
+
+	if (wireframe) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+	else {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+
+	GLuint texture = viewportTexture == 0 ? mainTexture : viewportTexture == 1 ? gPosition : viewportTexture == 2 ? gNormal : gAlbedo;
+	ImGui::Image((ImTextureID)(intptr_t)texture, ImVec2(app->viewportWidth, app->viewportHeight), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
 	ImGui::End();
 }
 

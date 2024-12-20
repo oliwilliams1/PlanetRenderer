@@ -2,6 +2,9 @@
 
 #include "app.h"
 #include <glm/glm.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include "shader.h"
 #include "object.h"
 #include "treesHandler.h"
@@ -32,5 +35,5 @@ private:
 	GLuint noiseCubemapLocation, normalCubemapLocation, planetScaleLocation, noiseAmplitudeLocation, terrainLevelsLocation;
 	glm::vec3 terrainLevels;
 
-	void GeneratePlanet(std::vector<glm::vec3>& vertices);
+	void GeneratePlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);
 };

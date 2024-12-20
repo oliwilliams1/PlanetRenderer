@@ -23,6 +23,8 @@ private:
 	GLuint fboShading, mainTexture;
 	GLuint quadVAO, quadVBO;
 	GLuint gPositionLocation, gNormalLocation, gAlbedoLocation;
+	int viewportTexture;
+	bool wireframe;
 
 	void InitG_Buffer();
 	void InitDeferredShadingBuffer();
