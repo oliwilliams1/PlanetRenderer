@@ -54,44 +54,61 @@ void TreesHandler::PlaceTrees(int numTrees) {
     std::vector<glm::vec3> vertices;
     std::vector<unsigned int> indices;
 
+    // Load an icosphere to subdivide and place trees on
     LoadModel("resources/icosphere.obj", vertices, indices);
 
+    // Iterate through every face, and attempt to place trees on it
     for (int i = 0; i < indices.size(); i += 3) {
         glm::vec3 v1 = glm::vec3(vertices[indices[i]]);
         glm::vec3 v2 = glm::vec3(vertices[indices[i + 1]]);
 		glm::vec3 v3 = glm::vec3(vertices[indices[i + 2]]);
 
-        v1 *= 1000.0f;
-        v2 *= 1000.0f;
-        v3 *= 1000.0f;
-
-        PlaceTreesOnTriangle(10, v1, v2, v3);
+        PlaceTreesOnTriangle(20, v1, v2, v3);
     }
 }
 
 void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3) {
-    glm::vec3 normal = glm::normalize(glm::cross(v2 - v1, v3 - v1));
-
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-
-    glm::vec3 right = glm::normalize(glm::cross(up, normal));
-    up = glm::normalize(glm::cross(normal, right));
-
-    glm::mat4 rotation = glm::mat4(1.0f);
-    rotation[0] = glm::vec4(right, 0.0f);
-    rotation[1] = glm::vec4(up, 0.0f);
-    rotation[2] = glm::vec4(-normal, 0.0f);
-    rotation[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
+    // Find vertical and horizontal offsets relative to the triangle
     glm::vec3 vOffset = (v2 - v1) / (float)points;
     glm::vec3 hOffset = (v3 - v2) / (float)points;
 
+    // Iterate through vertical slices of the triangle
     for (int y = 0; y < points; y++) {
+        // Iterate through horizontal slices of the triangle (based on vertical slices)
         for (int x = 0; x <= y; x++) {
-            glm::vec3 position = v1 + (float)y * vOffset + (float)x * hOffset;
-            glm::mat4 translation = glm::translate(glm::mat4(1.0f), position);
+            // Calculate the normalised direction of the tree from the center of the planet
+            glm::vec3 dir = v1 + (float)y * vOffset + (float)x * hOffset;
+            dir = glm::normalize(dir);
 
-            m_ModelMatrices.push_back(translation * rotation);
+
+            // Sample the cubemap of the planet to see if tree can be there or not
+            glm::vec3 colour = noiseCubemapCPU->Sample(dir);
+            float height = colour.r;
+
+            // If tree can be there, construct a model matrix for it
+            if (colour.g > 0.5f) {
+                // Calculate the position of the tree
+                glm::vec3 normal = glm::normalize(dir);
+                glm::vec3 pos = normal * planet->planetScale;
+                pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
+                glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
+
+                // Caluclate the realtive up coord, so the tree faces away from the planet
+                glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
+                glm::vec3 right = glm::normalize(glm::cross(up, normal));
+                up = glm::cross(normal, right);
+
+                // Constuct a rotation matrix
+                glm::mat4 rotation = glm::mat4(1.0f);
+                rotation[0] = glm::vec4(right, 0.0f);
+                rotation[1] = glm::vec4(up, 0.0f);
+                rotation[2] = glm::vec4(-dir, 0.0f);
+                rotation[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+                // Construct a model matrix
+                glm::mat4 m_Model = translation * rotation;
+                m_ModelMatrices.push_back(m_Model);
+            }
         }
     }
 }
