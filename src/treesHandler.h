@@ -25,4 +25,5 @@ private:
 
 	void SetupBuffers();
 	void PlaceTrees(int numPoints);
+	void PlaceTreesOnTriangle(int numSubdivisons, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3);
 };

@@ -51,37 +51,49 @@ void TreesHandler::Draw() {
 void TreesHandler::PlaceTrees(int numTrees) {
     m_ModelMatrices.clear();
 
-    float goldenAngle = 3.14159265358 * (3.0 - sqrt(5.0));
+    std::vector<glm::vec3> vertices;
+    std::vector<unsigned int> indices;
 
-    for (int i = 0; i < numTrees; i++) {
-        float theta = goldenAngle * i;
-        float phi = acos(1.0 - 2.0 * ((float)i + 0.5) / numTrees);
+    LoadModel("resources/icosphere.obj", vertices, indices);
 
-        glm::vec3 dir(sin(phi) * cos(theta), sin(phi) * sin(theta), cos(phi));
+    for (int i = 0; i < indices.size(); i += 3) {
+        glm::vec3 v1 = glm::vec3(vertices[indices[i]]);
+        glm::vec3 v2 = glm::vec3(vertices[indices[i + 1]]);
+		glm::vec3 v3 = glm::vec3(vertices[indices[i + 2]]);
 
-        glm::vec3 colour = noiseCubemapCPU->Sample(dir);
-        float height = colour.r;
+        v1 *= 1000.0f;
+        v2 *= 1000.0f;
+        v3 *= 1000.0f;
 
-        if (colour.g > 0.5f) {
-            glm::vec3 normal = glm::normalize(dir);
-            glm::vec3 pos = normal * planet->planetScale;
-            pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
-            glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
+        PlaceTreesOnTriangle(10, v1, v2, v3);
+    }
+}
 
-            glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
-            glm::vec3 right = glm::normalize(glm::cross(up, normal));
-            up = glm::cross(normal, right);
+void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3) {
+    glm::vec3 normal = glm::normalize(glm::cross(v2 - v1, v3 - v1));
 
-            glm::mat4 rotation = glm::mat4(1.0f);
-            rotation[0] = glm::vec4(right, 0.0f);
-            rotation[1] = glm::vec4(up, 0.0f);
-            rotation[2] = glm::vec4(-dir, 0.0f);
-            rotation[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-            glm::mat4 m_Model = translation * rotation;
-            m_ModelMatrices.push_back(m_Model);
+    glm::vec3 right = glm::normalize(glm::cross(up, normal));
+    up = glm::normalize(glm::cross(normal, right));
+
+    glm::mat4 rotation = glm::mat4(1.0f);
+    rotation[0] = glm::vec4(right, 0.0f);
+    rotation[1] = glm::vec4(up, 0.0f);
+    rotation[2] = glm::vec4(-normal, 0.0f);
+    rotation[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+    glm::vec3 vOffset = (v2 - v1) / (float)points;
+    glm::vec3 hOffset = (v3 - v2) / (float)points;
+
+    for (int y = 0; y < points; y++) {
+        for (int x = 0; x <= y; x++) {
+            glm::vec3 position = v1 + (float)y * vOffset + (float)x * hOffset;
+            glm::mat4 translation = glm::translate(glm::mat4(1.0f), position);
+
+            m_ModelMatrices.push_back(translation * rotation);
         }
-	}
+    }
 }
 
 TreesHandler::~TreesHandler() {

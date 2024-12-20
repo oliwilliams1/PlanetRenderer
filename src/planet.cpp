@@ -17,7 +17,7 @@ Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	std::vector<glm::vec3> vertices;
 	std::vector<unsigned int> indices;
 
-	GeneratePlanet(vertices, indices);
+	LoadPlanet(vertices, indices);
 	SetData(vertices, std::vector<glm::vec3>(0), indices);
 
 	shader->use();
@@ -41,13 +41,13 @@ Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	glUniform1f(noiseAmplitudeLocation, noiseAmplitude);
 }
 
-void Planet::GeneratePlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices) {
+void Planet::LoadPlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices) {
 	Assimp::Importer importer;
 
 	const aiScene* scene = importer.ReadFile("resources/planet.obj", 0);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-		std::cerr << "Assimp Error: " << importer.GetErrorString() << std::endl;
+		std::cerr << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
 		return;
 	}
 
@@ -55,24 +55,22 @@ void Planet::GeneratePlanet(std::vector<glm::vec3>& vertices, std::vector<unsign
 		aiMesh* mesh = scene->mMeshes[i];
 
 		for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
-			glm::vec3 vertex = glm::vec3(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z);
-			vertices.push_back(vertex);
+			vertices.emplace_back(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z);
 		}
 
 		for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
 			aiFace face = mesh->mFaces[j];
 			if (face.mNumIndices == 4) {
-				indices.push_back(face.mIndices[0]);
-				indices.push_back(face.mIndices[1]);
-				indices.push_back(face.mIndices[2]);
-				indices.push_back(face.mIndices[3]);
+				indices.emplace_back(face.mIndices[0]);
+				indices.emplace_back(face.mIndices[1]);
+				indices.emplace_back(face.mIndices[2]);
+				indices.emplace_back(face.mIndices[3]);
 			}
 		}
 	}
 
 	indicesCount = indices.size();
 }
-
 
 void Planet::Draw() {
 	glBindVertexArray(VAO);

@@ -4,10 +4,7 @@ layout (binding = 0, rgba32f) uniform imageCube cubemapTexture;
 
 layout (local_size_x = 16, local_size_y = 16) in;
 
-uniform int   u_Seed        = 0;
-uniform float u_Scale       = 5.0;
-uniform int   u_Octaves     = 1;
-uniform float u_Persistence = 0.5;
+uniform int u_Seed = 0;
 
 float cubicBezier(float t, float P0, float P1, float P2, float P3) {
 	float oneMinusT = 1.0 - t;
@@ -185,7 +182,7 @@ void main() {
 	normal.y = -normal.y; // Not sure why, but works
 	normal = normalize(normal);
 
-	float continent = OctaveNoise_3D(normal * 1.0, 4, 0.25);
+	float continent = OctaveNoise_3D(normal * 1.0, 6, 0.2);
 
 	continent = max(continent, 0.4);
 	float s = continent - 0.4;

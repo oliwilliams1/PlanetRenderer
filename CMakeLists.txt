@@ -98,3 +98,5 @@ add_custom_command(
 # Ensure shaders are copied
 add_custom_target(copy_shaders ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 add_dependencies(PlanetRenderer copy_shaders)
+
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
