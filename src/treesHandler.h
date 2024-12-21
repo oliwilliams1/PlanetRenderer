@@ -22,8 +22,10 @@ private:
 	std::vector<glm::mat4> m_ModelMatrices;
 
 	GLuint VAO, VBO, IBO;
+	int passCounter;
 
 	void SetupBuffers();
 	void PlaceTrees(int numPoints);
 	void PlaceTreesOnTriangle(int numSubdivisons, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3);
+	void AddTree(glm::vec3 dir, float height);
 };

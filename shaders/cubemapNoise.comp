@@ -205,7 +205,8 @@ void main() {
 
 	// See if forest can grow on this pixel or not
 	if (totalNoise > 0.15 && totalNoise < 0.27) {
-		forestContrib = 1.0;
+		ShuffleArray(u_Seed + 2);
+		forestContrib = OctaveNoise_3D(normal * 2.0, 5, 0.4);
 	} else {
 		forestContrib = 0.0;
 	}

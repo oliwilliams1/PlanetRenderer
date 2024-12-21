@@ -67,6 +67,30 @@ void TreesHandler::PlaceTrees(int numTrees) {
     }
 }
 
+void TreesHandler::AddTree(glm::vec3 dir, float height) {
+    // Calculate the position of the tree
+    glm::vec3 normal = glm::normalize(dir);
+    glm::vec3 pos = normal * planet->planetScale;
+    pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
+    glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
+
+    // Caluclate the realtive up coord, so the tree faces away from the planet
+    glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
+    glm::vec3 right = glm::normalize(glm::cross(up, normal));
+    up = glm::cross(normal, right);
+
+    // Constuct a rotation matrix
+    glm::mat4 rotation = glm::mat4(1.0f);
+    rotation[0] = glm::vec4(right, 0.0f);
+    rotation[1] = glm::vec4(up, 0.0f);
+    rotation[2] = glm::vec4(-dir, 0.0f);
+    rotation[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+    // Construct a model matrix
+    glm::mat4 m_Model = translation * rotation;
+    m_ModelMatrices.push_back(m_Model);
+}
+
 void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3) {
     // Find vertical and horizontal offsets relative to the triangle
     glm::vec3 vOffset = (v2 - v1) / (float)points;
@@ -85,29 +109,33 @@ void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const g
             glm::vec3 colour = noiseCubemapCPU->Sample(dir);
             float height = colour.r;
 
-            // If tree can be there, construct a model matrix for it
-            if (colour.g > 0.5f) {
-                // Calculate the position of the tree
-                glm::vec3 normal = glm::normalize(dir);
-                glm::vec3 pos = normal * planet->planetScale;
-                pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
-                glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
+            // If a tree can be there, consider adding based on density
+            if (colour.g > 0.0f) {
+                if (colour.g > 0.75f) {
+                    // ~100%, density = [0.75->1.0]
+                    AddTree(dir, height);
+                }
+                else if (colour.g > 0.50f) {
+                    // ~75%, density = [0.5->0.75]
+                    if (passCounter % 4 != 0) {
+                        AddTree(dir, height);
+                    }
+                }
+                else if (colour.g > 0.25f) {
+                    // ~50%, density = [0.25->0.5]
+                    if (passCounter % 2 == 0) {
+                        AddTree(dir, height);
+                    }
+                }
+                else {
+                    // ~25%, density = [0->0.25]
+                    if (passCounter % 4 == 0) {
+                        AddTree(dir, height);
+                    }
+                }
 
-                // Caluclate the realtive up coord, so the tree faces away from the planet
-                glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
-                glm::vec3 right = glm::normalize(glm::cross(up, normal));
-                up = glm::cross(normal, right);
-
-                // Constuct a rotation matrix
-                glm::mat4 rotation = glm::mat4(1.0f);
-                rotation[0] = glm::vec4(right, 0.0f);
-                rotation[1] = glm::vec4(up, 0.0f);
-                rotation[2] = glm::vec4(-dir, 0.0f);
-                rotation[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-                // Construct a model matrix
-                glm::mat4 m_Model = translation * rotation;
-                m_ModelMatrices.push_back(m_Model);
+                // Increment the pass counter
+                passCounter++;
             }
         }
     }
