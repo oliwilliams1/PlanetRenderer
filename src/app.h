@@ -32,7 +32,6 @@ public:
 	int viewportWidth, viewportHeight;
 
 	DeferredRenderer* deferredRenderer;
-	Noise* noise;
 	Camera* camera;
 	PlanetShader* planetShader;
 	Planet* mainPlanet;

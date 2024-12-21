@@ -10,6 +10,7 @@
 #include "treesHandler.h"
 
 class App;
+class Noise;
 class TreesHandler;
 
 class PlanetShader : public Shader {
@@ -31,7 +32,14 @@ public:
 
 private:
 	App* app;
+	Noise* noiseGen;
 	TreesHandler* treesHandler;
+
+	int seed;
+	double lastDispatchTime;
+	bool needToDispatch;
+
+	GLuint noise_seedLocation;
 	GLuint noiseCubemapLocation, normalCubemapLocation, planetScaleLocation, noiseAmplitudeLocation, terrainLevelsLocation;
 	glm::vec3 terrainLevels;
 

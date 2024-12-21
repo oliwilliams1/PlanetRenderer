@@ -10,21 +10,24 @@
 
 class Noise {
 public:
-	GLuint cubemapNoiseTexture, cubemapNormalTexture;
-	Noise();
+	GLuint* cubemapNoiseTexture;
+	GLuint* cubemapNormalTexture;
+	Noise(int cubemapResolution, GLuint* cubemapNoiseTexture, GLuint* cubemapNormalTexture);
 	~Noise();
-	void Dispatch();
+	void Dispatch(int seed);
 	void DebugDraw();
-	int cubemapResolution = 512;
+	int cubemapResolution;
+	GLuint cubemapNoiseShaderProgram, cubemapNormalShaderProgram;
 
 private:
 	float sampleOffsetSize;
 
 	bool needToDispatch;
 	float lastDispatchTime;
+	int seed;
 
-	GLuint cubemapNoiseShaderProgram, cubemapNormalShaderProgram;
 	GLuint fboCubemapNoise, fboCubemapNormal;
+	GLuint noise_seedLocation;
 	GLuint normal_NoiseSamplerLocation, normal_SampleOffset;
 
 	void CreateTextures();

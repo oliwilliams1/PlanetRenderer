@@ -6,11 +6,12 @@ Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	this->noiseAmplitude = 0.1f;
 	this->terrainLevels = glm::vec3(0.01f, 0.08f, 0.3f);
 	this->planetScale = 1000.0f;
+	this->cubemapResolution = 512;
+	this->seed = 0;
+	this->needToDispatch = false;
 
-	app->noise->Dispatch();
-	this->cubemapResolution = app->noise->cubemapResolution;
-	this->noiseCubemapTexture  = app->noise->cubemapNoiseTexture;
-	this->normalCubemapTexture = app->noise->cubemapNormalTexture;
+	this->noiseGen = new Noise(cubemapResolution, &noiseCubemapTexture, &normalCubemapTexture);
+	noiseGen->Dispatch(seed);
 
 	this->treesHandler = new TreesHandler(this);
 
@@ -33,6 +34,8 @@ Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	planetScaleLocation = GetUniformLocation(shader->shaderProgram , "u_PlanetScale");
 	noiseAmplitudeLocation = GetUniformLocation(shader->shaderProgram, "u_Amplitude");
 	terrainLevelsLocation = GetUniformLocation(shader->shaderProgram, "u_TerrainLevels");
+
+	noise_seedLocation = GetUniformLocation(noiseGen->cubemapNoiseShaderProgram, "u_Seed");
 
 	glUniform1i(noiseCubemapLocation, 0);
 	glUniform1i(normalCubemapLocation, 1);
@@ -117,5 +120,21 @@ void Planet::DebugDraw() {
 	if (ImGui::SliderFloat("Max water level", &terrainLevels.x, -1.0f, 1.0f, "%.2f")) glUniform3f(terrainLevelsLocation, terrainLevels.x, terrainLevels.y, terrainLevels.z);
 	if (ImGui::SliderFloat("Max sand level",  &terrainLevels.y, -1.0f, 1.0f, "%.2f")) glUniform3f(terrainLevelsLocation, terrainLevels.x, terrainLevels.y, terrainLevels.z);
 	if (ImGui::SliderFloat("Max grass level", &terrainLevels.z, -1.0f, 1.0f, "%.2f")) glUniform3f(terrainLevelsLocation, terrainLevels.x, terrainLevels.y, terrainLevels.z);
+	if (ImGui::SliderInt("Seed", &seed, 0, 1000)) needToDispatch = true;
+
+	if (needToDispatch) {
+		glUseProgram(noiseGen->cubemapNoiseShaderProgram);
+		glUniform1i(noise_seedLocation, seed);
+		glUseProgram(0);
+
+		float currentTime = glfwGetTime();
+		if (currentTime - lastDispatchTime > 0.2f) {
+			noiseGen->Dispatch(seed);
+			needToDispatch = false;
+			lastDispatchTime = glfwGetTime();
+			treesHandler->UpdateTrees();
+		}
+	}
+
 	ImGui::End();
 }

@@ -25,8 +25,6 @@ void Cubemap::FetchCubemapData() {
 	glGetTexImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, GL_UNSIGNED_BYTE, negy);
 	glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, GL_UNSIGNED_BYTE, posz);
 	glGetTexImage(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, GL_UNSIGNED_BYTE, negz);
-
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
 glm::vec4 Cubemap::Sample(const glm::vec3& direction) {

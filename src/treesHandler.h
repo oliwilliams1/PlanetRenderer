@@ -14,6 +14,7 @@ public:
 	~TreesHandler();
 
 	void Draw();
+	void UpdateTrees();
 
 private:
 	Planet* planet;

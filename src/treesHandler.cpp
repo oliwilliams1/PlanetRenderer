@@ -10,6 +10,16 @@ TreesHandler::TreesHandler(Planet* planet) {
     SetupBuffers();
 }
 
+void TreesHandler::UpdateTrees() {
+    delete noiseCubemapCPU;
+    noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
+    PlaceTrees(m_ModelMatrices.size());
+
+    glBindBuffer(GL_ARRAY_BUFFER, IBO);
+    glBufferData(GL_ARRAY_BUFFER, m_ModelMatrices.size() * sizeof(glm::mat4), m_ModelMatrices.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 void TreesHandler::SetupBuffers() {
     float vertices[18] = {
         -1.0f, -1.0f, 0.0f,
@@ -29,7 +39,6 @@ void TreesHandler::SetupBuffers() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    GLuint IBO;
     glGenBuffers(1, &IBO);
     glBindBuffer(GL_ARRAY_BUFFER, IBO);
     glBufferData(GL_ARRAY_BUFFER, m_ModelMatrices.size() * sizeof(glm::mat4), m_ModelMatrices.data(), GL_STATIC_DRAW);

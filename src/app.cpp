@@ -12,7 +12,6 @@ App::App() {
     InitImGui();
 
 	deferredRenderer = new DeferredRenderer(this);
-    noise = new Noise();
     camera = new Camera(this);
     planetShader = new PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
     mainPlanet = new Planet(this, planetShader);
@@ -114,7 +113,6 @@ void App::Mainloop() {
 		deferredRenderer->DisplayViewportImGui();
 		camera->DebugDraw();
 		mainPlanet->DebugDraw();
-		noise->DebugDraw();
 		deferredRenderer->DebugDraw();		
 
 		// Render ImGui
