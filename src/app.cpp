@@ -1,26 +1,26 @@
 #include "app.h"
 
 App::App() {
-    windowWidth = 1600;
-    windowHeight = 900;
+	windowWidth = 1600;
+	windowHeight = 900;
 
 	viewportWidth = 1200;
 	viewportHeight = 675;
-    
-    InitWindow();
-    InitOpenGLParams();
-    InitImGui();
+	
+	InitWindow();
+	InitOpenGLParams();
+	InitImGui();
 
 	deferredRenderer = new DeferredRenderer(this);
-    camera = new Camera(this);
-    planetShader = new PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
-    mainPlanet = new Planet(this, planetShader);
-    
-    InitMouseEvents();
+	camera = new Camera(this);
+	planetShader = new PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
+	mainPlanet = new Planet(this, planetShader);
+	
+	InitMouseEvents();
 }
 
 void App::InitWindow() {
-    if (!glfwInit()) {
+	if (!glfwInit()) {
 		std::cout << stderr << "Failed to initialize GLFW" << std::endl;
 		return;
 	}
@@ -47,7 +47,7 @@ void App::InitWindow() {
 }
 
 void App::InitOpenGLParams() {
-    // Enable depth testing
+	// Enable depth testing
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
@@ -59,11 +59,11 @@ void App::InitOpenGLParams() {
 	// Define patch vertex count
 	glPatchParameteri(GL_PATCH_VERTICES, 4);
 
-    wireframe = false;
+	wireframe = false;
 }
 
 void App::InitImGui() {
-    // Init ImGui
+	// Init ImGui
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
@@ -79,8 +79,8 @@ void App::InitMouseEvents() {
 }
 
 void App::Mainloop() {
-    while (!glfwWindowShouldClose(window)) {
-        // Pre-frame stuff
+	while (!glfwWindowShouldClose(window)) {
+		// Pre-frame stuff
 		glfwPollEvents();
 
 		// Calculate mouse delta
@@ -121,10 +121,10 @@ void App::Mainloop() {
 
 		// Swap buffers
 		glfwSwapBuffers(window);
-    }
+	}
 }
 
 App::~App() {
-    glfwDestroyWindow(window);
-    glfwTerminate();
+	glfwDestroyWindow(window);
+	glfwTerminate();
 }

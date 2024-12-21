@@ -4,16 +4,16 @@ TreesHandler::TreesHandler(Planet* planet) {
 	this->planet = planet;
     this->shader = new Shader("shaders/tree.vert", "shaders/tree.frag", "Trees Shader");
     this->noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
-	int numTrees = 100000;
+	this->numSubdivisions = 50;
 
-    PlaceTrees(numTrees);
+    PlaceTrees(numSubdivisions);
     SetupBuffers();
 }
 
 void TreesHandler::UpdateTrees() {
     delete noiseCubemapCPU;
     noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
-    PlaceTrees(m_ModelMatrices.size());
+    PlaceTrees(numSubdivisions);
 
     glBindBuffer(GL_ARRAY_BUFFER, IBO);
     glBufferData(GL_ARRAY_BUFFER, m_ModelMatrices.size() * sizeof(glm::mat4), m_ModelMatrices.data(), GL_STATIC_DRAW);
@@ -29,6 +29,12 @@ void TreesHandler::SetupBuffers() {
          1.0f,  1.0f, 0.0f,
          1.0f, -1.0f, 0.0f
     };
+
+    float treeScale = 2.0f;
+
+    for (int i = 0; i < 18; i++) {
+        vertices[i] *= treeScale;
+    }
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -72,14 +78,14 @@ void TreesHandler::PlaceTrees(int numTrees) {
         glm::vec3 v2 = glm::vec3(vertices[indices[i + 1]]);
 		glm::vec3 v3 = glm::vec3(vertices[indices[i + 2]]);
 
-        PlaceTreesOnTriangle(20, v1, v2, v3);
+        PlaceTreesOnTriangle(numTrees, v1, v2, v3);
     }
 }
 
 void TreesHandler::AddTree(glm::vec3 dir, float height) {
     // Calculate the position of the tree
     glm::vec3 normal = glm::normalize(dir);
-    glm::vec3 pos = normal * planet->planetScale;
+    glm::vec3 pos = normal * (planet->planetScale + 2.0f);
     pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
 

@@ -25,6 +25,7 @@ private:
 
 	GLuint VAO, VBO, IBO;
 	int passCounter;
+	int numSubdivisions;
 
 	void SetupBuffers();
 	void PlaceTrees(int numPoints);
