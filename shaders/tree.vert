@@ -4,6 +4,7 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in mat4 m_Model;
 
 out vec3 FragPos;
+out vec2 UV;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -17,4 +18,5 @@ void main() {
 
     gl_Position = m_ViewProj * worldPos;
     FragPos = worldPos.xyz;
+    UV = (position.xy + 1.0) / 2.0;
 }

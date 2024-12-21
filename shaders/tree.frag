@@ -5,6 +5,7 @@ layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gAlbedo;
 
 in vec3 FragPos;
+in vec2 UV;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -16,6 +17,6 @@ layout(std140) uniform CameraData {
 void main() {
 	gPosition = FragPos;
 	
-	gAlbedo = vec4(1.0, 0.0, 0.0, 1.0);
+	gAlbedo = vec4(UV, 0.0, 1.0);
 	gNormal = vec3(1.0, 0.0, 0.0);
 }

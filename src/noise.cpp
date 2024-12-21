@@ -10,6 +10,7 @@ Noise::Noise(int cubemapResolution, GLuint* cubemapNoiseTexture, GLuint* cubemap
 	cubemapNoiseShaderProgram = CompileComputeShader("shaders/cubemapNoise.comp");
 	cubemapNormalShaderProgram = CompileComputeShader("shaders/cubemapNormal.comp");
 
+	noise_seedLocation = GetUniformLocation(cubemapNoiseShaderProgram, "u_Seed");
 	normal_NoiseSamplerLocation = GetUniformLocation(cubemapNormalShaderProgram, "u_TerrainCubemap");	
 	normal_SampleOffset = GetUniformLocation(cubemapNormalShaderProgram, "u_Offset");
 

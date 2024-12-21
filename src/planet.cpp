@@ -10,7 +10,7 @@ Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	this->seed = 0;
 	this->needToDispatch = false;
 
-	this->noiseGen = new Noise(cubemapResolution, &noiseCubemapTexture, &normalCubemapTexture);
+	this->noiseGen = new Noise(cubemapResolution, &noiseCubemapTexture, &normalCubemapTexture);	
 	noiseGen->Dispatch(seed);
 
 	this->treesHandler = new TreesHandler(this);
@@ -34,8 +34,6 @@ Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	planetScaleLocation = GetUniformLocation(shader->shaderProgram , "u_PlanetScale");
 	noiseAmplitudeLocation = GetUniformLocation(shader->shaderProgram, "u_Amplitude");
 	terrainLevelsLocation = GetUniformLocation(shader->shaderProgram, "u_TerrainLevels");
-
-	noise_seedLocation = GetUniformLocation(noiseGen->cubemapNoiseShaderProgram, "u_Seed");
 
 	glUniform1i(noiseCubemapLocation, 0);
 	glUniform1i(normalCubemapLocation, 1);
@@ -123,10 +121,6 @@ void Planet::DebugDraw() {
 	if (ImGui::SliderInt("Seed", &seed, 0, 1000)) needToDispatch = true;
 
 	if (needToDispatch) {
-		glUseProgram(noiseGen->cubemapNoiseShaderProgram);
-		glUniform1i(noise_seedLocation, seed);
-		glUseProgram(0);
-
 		float currentTime = glfwGetTime();
 		if (currentTime - lastDispatchTime > 0.2f) {
 			noiseGen->Dispatch(seed);
