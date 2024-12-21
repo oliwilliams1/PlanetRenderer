@@ -6,8 +6,12 @@ TreesHandler::TreesHandler(Planet* planet) {
     this->noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
 	this->numSubdivisions = 50;
 
+    albedoLocation = GetUniformLocation(shader->shaderProgram, "u_Albedo");
+    normalLocation = GetUniformLocation(shader->shaderProgram, "u_Normal");
+
     PlaceTrees(numSubdivisions);
     SetupBuffers();
+    CreateTextures();
 }
 
 void TreesHandler::UpdateTrees() {
@@ -16,7 +20,7 @@ void TreesHandler::UpdateTrees() {
     PlaceTrees(numSubdivisions);
 
     glBindBuffer(GL_ARRAY_BUFFER, IBO);
-    glBufferData(GL_ARRAY_BUFFER, m_ModelMatrices.size() * sizeof(glm::mat4), m_ModelMatrices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -30,12 +34,6 @@ void TreesHandler::SetupBuffers() {
          1.0f, -1.0f, 0.0f
     };
 
-    float treeScale = 2.0f;
-
-    for (int i = 0; i < 18; i++) {
-        vertices[i] *= treeScale;
-    }
-
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
@@ -47,7 +45,7 @@ void TreesHandler::SetupBuffers() {
 
     glGenBuffers(1, &IBO);
     glBindBuffer(GL_ARRAY_BUFFER, IBO);
-    glBufferData(GL_ARRAY_BUFFER, m_ModelMatrices.size() * sizeof(glm::mat4), m_ModelMatrices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
     for (int i = 0; i < 4; i++) {
         glEnableVertexAttribArray(i + 1);
         glVertexAttribPointer(i + 1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
@@ -56,15 +54,28 @@ void TreesHandler::SetupBuffers() {
     glBindVertexArray(0);
 }
 
+void TreesHandler::CreateTextures() {
+    LoadTexture(&texturesTree0.topAlbedo, "resources/trees/tree-0-top-albedo.png");
+    LoadTexture(&texturesTree0.topNormal, "resources/trees/tree-0-top-normal.png");
+}
+
 void TreesHandler::Draw() {
     shader->use();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texturesTree0.topAlbedo);
+    glUniform1i(albedoLocation, 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texturesTree0.topNormal);
+    glUniform1i(normalLocation, 1);
+
     glBindVertexArray(VAO);
-    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, m_ModelMatrices.size());
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instanceData.size());
     glBindVertexArray(0);
 }
 
 void TreesHandler::PlaceTrees(int numTrees) {
-    m_ModelMatrices.clear();
+    instanceData.clear();
 
     std::vector<glm::vec3> vertices;
     std::vector<unsigned int> indices;
@@ -103,7 +114,7 @@ void TreesHandler::AddTree(glm::vec3 dir, float height) {
 
     // Construct a model matrix
     glm::mat4 m_Model = translation * rotation;
-    m_ModelMatrices.push_back(m_Model);
+    instanceData.push_back(m_Model);
 }
 
 void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3) {

@@ -1,5 +1,8 @@
 #include "utils.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 bool ReadFile(const char* pFileName, std::string& outFile) {
     std::ifstream f(pFileName);
 
@@ -119,4 +122,29 @@ bool LoadModel(const std::string& path, std::vector<glm::vec3>& vertices, std::v
     }
 
     return true;
+}
+
+void LoadTexture(GLuint* texture, const char* path) {
+    float* data;
+    int width, height, nrChannels;
+
+    data = (float*)stbi_loadf("resources/trees/tree-0-top-albedo.png", &width, &height, &nrChannels, 0);
+    if (data == nullptr) {
+        std::cerr << "Failed to load texture" << std::endl;
+        return;
+    }
+
+    glGenTextures(1, texture);
+    glBindTexture(GL_TEXTURE_2D, *texture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }

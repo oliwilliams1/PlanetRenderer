@@ -5,6 +5,8 @@ layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gAlbedo;
 
 in vec3 FragPos;
+in vec3 Normal;
+in flat mat3 TBN;
 in vec2 UV;
 
 layout(std140) uniform CameraData {
@@ -14,9 +16,16 @@ layout(std140) uniform CameraData {
     float deltaTime;
 };
 
+uniform sampler2D u_Albedo;
+uniform sampler2D u_Normal;
+
 void main() {
 	gPosition = FragPos;
 	
-	gAlbedo = vec4(UV, 0.0, 1.0);
-	gNormal = vec3(1.0, 0.0, 0.0);
+	vec4 albedo = texture(u_Albedo, UV);
+	if (albedo.a == 0.0) discard;
+
+	gAlbedo = vec4(albedo.rgb, 1.0);
+	gPosition = FragPos;
+	gNormal = TBN * texture(u_Normal, UV).xyz;
 }

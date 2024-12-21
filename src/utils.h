@@ -15,3 +15,4 @@ bool ReadFile(const char* pFileName, std::string& outFile);
 void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType);
 GLuint CompileComputeShader(const char* source);
 GLuint GetUniformLocation(GLuint shaderProgram, const char* uniformName);
+void LoadTexture(GLuint* texture, const char* path);

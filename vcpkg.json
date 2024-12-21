@@ -4,6 +4,7 @@
     "glfw3",
     "glm",
     "assimp",
+    "stb",
     {
       "name": "imgui",
       "features": [
