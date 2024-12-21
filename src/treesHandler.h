@@ -5,6 +5,7 @@
 #include <iostream>
 #include "planet.h"
 #include "cubemap.h"
+#include <random>
 
 class Planet;
 

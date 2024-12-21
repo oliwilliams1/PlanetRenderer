@@ -101,6 +101,11 @@ void TreesHandler::AddTree(glm::vec3 dir, float height) {
 }
 
 void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3) {
+    std::mt19937 gen(planet->seed);
+    std::uniform_real_distribution<> displacement(-0.002f, 0.002f); // Trees are scatterd, but not close enough to intersect
+    
+    std::uniform_real_distribution<> density(0.0f, 1.0f); // Random killing for tree density
+
     // Find vertical and horizontal offsets relative to the triangle
     glm::vec3 vOffset = (v2 - v1) / (float)points;
     glm::vec3 hOffset = (v3 - v2) / (float)points;
@@ -111,8 +116,10 @@ void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const g
         for (int x = 0; x <= y; x++) {
             // Calculate the normalised direction of the tree from the center of the planet
             glm::vec3 dir = v1 + (float)y * vOffset + (float)x * hOffset;
-            dir = glm::normalize(dir);
 
+            // Apply the random offsets
+            dir += glm::vec3(displacement(gen), displacement(gen), displacement(gen));
+            dir = glm::normalize(dir);
 
             // Sample the cubemap of the planet to see if tree can be there or not
             glm::vec3 colour = noiseCubemapCPU->Sample(dir);
@@ -120,28 +127,11 @@ void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const g
 
             // If a tree can be there, consider adding based on density
             if (colour.g > 0.0f) {
-                if (colour.g > 0.75f) {
-                    // ~100%, density = [0.75->1.0]
-                    AddTree(dir, height);
-                }
-                else if (colour.g > 0.50f) {
-                    // ~75%, density = [0.5->0.75]
-                    if (passCounter % 4 != 0) {
-                        AddTree(dir, height);
-                    }
-                }
-                else if (colour.g > 0.25f) {
-                    // ~50%, density = [0.25->0.5]
-                    if (passCounter % 2 == 0) {
-                        AddTree(dir, height);
-                    }
-                }
-                else {
-                    // ~25%, density = [0->0.25]
-                    if (passCounter % 4 == 0) {
-                        AddTree(dir, height);
-                    }
-                }
+                float densityValue = density(gen);
+
+                if (densityValue < colour.g) {
+					AddTree(dir, height);
+				}
 
                 // Increment the pass counter
                 passCounter++;

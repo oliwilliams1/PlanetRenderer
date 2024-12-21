@@ -29,13 +29,13 @@ public:
 	int cubemapResolution;
 	float planetScale, noiseAmplitude;
 	GLuint noiseCubemapTexture, normalCubemapTexture;
+	int seed;
 
 private:
 	App* app;
 	Noise* noiseGen;
 	TreesHandler* treesHandler;
 
-	int seed;
 	double lastDispatchTime;
 	bool needToDispatch;
 
