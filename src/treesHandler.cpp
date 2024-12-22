@@ -93,10 +93,10 @@ void TreesHandler::PlaceTrees(int numTrees) {
     }
 }
 
-void TreesHandler::AddTree(glm::vec3 dir, float height) {
+void TreesHandler::AddTree(glm::vec3 dir, float height, float treeHeightRand) {
     // Calculate the position of the tree
     glm::vec3 normal = glm::normalize(dir);
-    glm::vec3 pos = normal * (planet->planetScale + 2.0f);
+    glm::vec3 pos = normal * (planet->planetScale + 10.0f + treeHeightRand);
     pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
 
@@ -122,6 +122,7 @@ void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const g
     std::uniform_real_distribution<> displacement(-0.002f, 0.002f); // Trees are scatterd, but not close enough to intersect
     
     std::uniform_real_distribution<> density(0.0f, 1.0f); // Random killing for tree density
+    std::uniform_real_distribution<> treeHeight(-5.0f, 5.0f); // Random tree height
 
     // Find vertical and horizontal offsets relative to the triangle
     glm::vec3 vOffset = (v2 - v1) / (float)points;
@@ -147,7 +148,7 @@ void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const g
                 float densityValue = density(gen);
 
                 if (densityValue < colour.g) {
-					AddTree(dir, height);
+					AddTree(dir, height, treeHeight(gen));
 				}
 
                 // Increment the pass counter

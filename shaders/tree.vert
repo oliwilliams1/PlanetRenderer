@@ -15,7 +15,7 @@ layout(std140) uniform CameraData {
 };
 
 void main() {
-    vec4 worldPos = m_Model * vec4(position * 2.0, 1.0);
+    vec4 worldPos = m_Model * vec4(position * 5.0, 1.0);
 
     vec3 normal = normalize(worldPos.xyz);
 
