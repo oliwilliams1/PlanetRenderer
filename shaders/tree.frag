@@ -20,6 +20,7 @@ uniform sampler2D u_Normal;
 
 vec2 imposterSampler(vec2 uv, int row, int col) {
     const int gridSize = 8;
+    row = gridSize - row - 1;
 
     vec2 imposterSize = vec2(1.0 / gridSize);
     vec2 imposterOffset = vec2(col, row) * imposterSize;
@@ -33,7 +34,9 @@ void main() {
     vec4 albedo = texture(u_Albedo, uv);
     if (albedo.a < 0.5) discard;
 
+    vec3 normal = texture(u_Normal, uv).rgb * 2.0 - 1.0;
+
 	gPosition = FragPos;
-	gNormal = vec3(1.0, 0.0, 0.0);
+	gNormal = normal;
     gAlbedo = vec4(albedo.rgb, 1.0);
 }

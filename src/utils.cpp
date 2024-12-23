@@ -125,6 +125,7 @@ bool LoadModel(const std::string& path, std::vector<glm::vec3>& vertices, std::v
 }
 
 void LoadTexture(GLuint* texture, const char* path) {
+	stbi_set_flip_vertically_on_load(true);
 
 	int width, height, channels;
 	unsigned char* data = stbi_load(path, &width, &height, &channels, 0);
