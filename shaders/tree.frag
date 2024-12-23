@@ -5,9 +5,8 @@ layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gAlbedo;
 
 in vec3 FragPos;
-in vec3 Normal;
-in flat mat3 TBN;
 in vec2 UV;
+in flat int imposterRow;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -19,16 +18,22 @@ layout(std140) uniform CameraData {
 uniform sampler2D u_Albedo;
 uniform sampler2D u_Normal;
 
+vec2 imposterSampler(vec2 uv, int row, int col) {
+    const int gridSize = 8;
+
+    vec2 imposterSize = vec2(1.0 / gridSize);
+    vec2 imposterOffset = vec2(col, row) * imposterSize;
+    vec2 sampledUV = imposterOffset + uv * imposterSize;
+
+    return sampledUV;
+}
+
 void main() {
-	vec4 albedo = texture(u_Albedo, UV);
-	if (albedo.a == 0.0) discard;
+    vec2 uv = imposterSampler(UV, imposterRow, 0);
+    vec4 albedo = texture(u_Albedo, uv);
+    if (albedo.a < 0.5) discard;
 
-	vec3 normal = texture(u_Normal, UV).xyz * 2.0 - 1.0;
-	normal.xy = -normal.xy;
-	normal = normalize(normal);
-	normal = TBN * normal;
-
-	gAlbedo = vec4(albedo.rgb, 1.0);
 	gPosition = FragPos;
-	gNormal = normal;
+	gNormal = vec3(1.0, 0.0, 0.0);
+    gAlbedo = vec4(albedo.rgb, 1.0);
 }

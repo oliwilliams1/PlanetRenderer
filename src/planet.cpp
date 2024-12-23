@@ -130,5 +130,7 @@ void Planet::DebugDraw() {
 		}
 	}
 
+	treesHandler->DebugDraw();
+
 	ImGui::End();
 }

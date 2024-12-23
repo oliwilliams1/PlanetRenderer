@@ -20,6 +20,7 @@ public:
 
 	void Draw();
 	void UpdateTrees();
+	void DebugDraw();
 
 	TreeTextures texturesTree0;
 
@@ -33,7 +34,8 @@ private:
 	int passCounter;
 	int numSubdivisions;
 
-	GLuint albedoLocation, normalLocation;
+	GLuint albedoLocation, normalLocation, treeScaleLocation;
+	float treeScale;
 
 	void SetupBuffers();
 	void PlaceTrees(int numPoints);
