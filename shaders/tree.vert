@@ -6,6 +6,7 @@ layout(location = 1) in mat4 m_Model;
 out vec3 FragPos;
 out vec2 UV;
 out flat int imposterRow;
+out flat mat3 TBN;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -21,7 +22,7 @@ void main() {
     vec4 centerWorldPos = m_Model * vec4(vec3(0.0), 1.0);
 
     vec3 toCamera = normalize(cameraPos - centerWorldPos.xyz);
-    vec3 up = vec3(0.0, 1.0, 0.0);
+    vec3 up = normalize(centerWorldPos.xyz);
     vec3 right = normalize(cross(up, toCamera));
     up = normalize(cross(toCamera, right));
 
@@ -31,6 +32,8 @@ void main() {
         vec4(toCamera, 0.0),
         vec4(0.0, 0.0, 0.0, 1.0)
     );
+
+    TBN = mat3(rotation);
 
     vec4 worldPos = m_Model * rotation * vec4(position * u_TreeScale, 1.0);
 

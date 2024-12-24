@@ -7,6 +7,7 @@ layout (location = 2) out vec4 gAlbedo;
 in vec3 FragPos;
 in vec2 UV;
 in flat int imposterRow;
+in flat mat3 TBN;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -35,6 +36,7 @@ void main() {
     if (albedo.a < 0.5) discard;
 
     vec3 normal = texture(u_Normal, uv).rgb * 2.0 - 1.0;
+    normal = normalize(TBN * normalize(normal));
 
 	gPosition = FragPos;
 	gNormal = normal;
