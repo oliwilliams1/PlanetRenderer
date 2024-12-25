@@ -10,7 +10,7 @@ The terrain for a planet is generated via dynamic mesh tesselated on the GPU via
 ![on surface](images/on%20surface.png)
 
 **Features**<br>
-As of now, the program features the most simple terrain generation, manipulation of position, rotation, and scale of the planet, and my personal favourite: hot reload for shaders, allowing you to edit shaders and see the result in the cick of a button without running the program from scratch again.
+As of now, there is features for generating the planet with complex noise manipulation, distance-based dynamic tesselation for the planet, compute shaders for generating the planet in realtime (can generate the terrain data for around 20 planets per second), deffered shading which opens up into a performant PBR pipeline, flipbook imposters for trees, realtime planet changing etc.
 
 **Libraries**<br>
 [GLFW](https://github.com/glfw/glfw) Used for window management across platforms, and linking an OpenGL context to it.<br>
