@@ -5,10 +5,14 @@ layout(location = 1) in mat4 m_Model;
 
 out vec3 FragPos;
 out vec2 UV;
-out flat int lowerRow;
-out flat int upperRow;
-out flat float blendFactor;
 out flat mat3 TBN;
+
+out flat int LowerRow;
+out flat int UpperRow;
+out flat float RowBlendFactor;
+out flat int LowerCol;
+out flat int UpperCol;
+out flat float ColBlendFactor;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -23,9 +27,9 @@ const float PI = 3.141592653589;
 void main() {
     vec4 centerWorldPos = m_Model * vec4(vec3(0.0), 1.0);
     vec3 toCamera = normalize(cameraPos - centerWorldPos.xyz);
-    vec3 up = normalize(centerWorldPos.xyz);
-    vec3 right = normalize(cross(up, toCamera));
-    up = normalize(cross(toCamera, right));
+    vec3 treeUp = normalize(centerWorldPos.xyz);
+    vec3 right = normalize(cross(treeUp, toCamera));
+    vec3 up = normalize(cross(toCamera, right));
 
     mat4 rotation = mat4(
         vec4(right, 0.0),
@@ -35,19 +39,21 @@ void main() {
     );
 
     TBN = mat3(rotation);
+
     vec4 worldPos = m_Model * rotation * vec4(position * u_TreeScale, 1.0);
 
-    float treeDotProduct = dot(normalize(worldPos.xyz), toCamera);
-    treeDotProduct = clamp(treeDotProduct, 0.2, 1.0); // to work with my crazy implementation
-    float angle = acos(treeDotProduct);
-    angle /= (PI / 2.0);
+    vec3 treeDir = normalize(worldPos.xyz - cameraPos);
+    float phi = acos(dot(treeDir, treeUp)) / PI;
 
-    lowerRow = int(angle * (8.0 - 1.0));
-    upperRow = min(lowerRow + 1, 8 - 1);
-    blendFactor = (angle * (8.0 - 1.0)) - float(lowerRow);
+    float theta = atan(treeDir.x, treeDir.z);
+
+    LowerRow = int(phi * (8.0 - 1.0));
+    UpperRow = min(LowerRow + 1, 8 - 1);
+    RowBlendFactor = (phi * (8.0 - 1.0)) - float(LowerRow);
 
     vec2 uv = (position.xy + 1.0) / 2.0;
     gl_Position = m_ViewProj * worldPos;
     FragPos = worldPos.xyz;
     UV = uv;
+    ColBlendFactor = theta / (2.0 * PI);
 }

@@ -9,7 +9,7 @@ Camera::Camera(App* app) {
 
 	pitch = -30.0f;
 	yaw   = -145.0;
-	speed = 50.0f;
+	speed = 500.0f;
 	sensitivity = 0.2f;
 
 	position = glm::vec3(400.0f, 1000.0f, 450.0f);
@@ -60,7 +60,7 @@ void Camera::update(glm::dvec2 mouseDelta) {
 	}
 
 	if (glfwGetKey(app->window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed = 10.0f;
-	else speed = 50.0f;
+	else speed = 500.0f;
 
 	// Movement
 	if (glfwGetKey(app->window, GLFW_KEY_W) == GLFW_PRESS) position += deltaTime * speed * forward;
