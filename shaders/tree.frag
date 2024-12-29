@@ -11,6 +11,7 @@ in flat mat3 TBN;
 in flat int LowerRow;
 in flat int UpperRow;
 in flat float RowBlendFactor;
+in flat vec3 D;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -47,5 +48,5 @@ void main() {
 
 	gPosition = FragPos;
 	gNormal = finalNormal;
-	gAlbedo = vec4(finalAlbedo.rgb, 1.0);
+	gAlbedo = vec4(D, 1.0);
 }

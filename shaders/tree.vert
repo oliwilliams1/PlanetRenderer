@@ -10,6 +10,7 @@ out flat mat3 TBN;
 out flat int LowerRow;
 out flat int UpperRow;
 out flat float RowBlendFactor;
+out flat vec3 D;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -24,22 +25,22 @@ const float PI = 3.141592653589;
 void main() {
     vec4 centerWorldPos = m_Model * vec4(vec3(0.0), 1.0);
     vec3 toCamera = normalize(cameraPos - centerWorldPos.xyz);
-    vec3 treeUp = normalize(centerWorldPos.xyz);
-    vec3 right = normalize(cross(treeUp, toCamera));
-    vec3 up = normalize(cross(toCamera, right));
+    vec3 up = normalize(centerWorldPos.xyz);
+    vec3 right = normalize(cross(up, toCamera));
+    up = normalize(cross(toCamera, right));
 
-    mat4 rotation = mat4(
-        vec4(right, 0.0),
-        vec4(up, 0.0),
-        vec4(toCamera, 0.0),
-        vec4(0.0, 0.0, 0.0, 1.0)
-    );
-
-    TBN = mat3(rotation);
+    TBN = mat3(right, up, toCamera);
 
     vec4 worldPos = m_Model * m_CameraRotation * vec4(position * u_TreeScale, 1.0);
 
-    float phi = acos(dot(normalize(worldPos.xyz), toCamera)) / PI;
+    float d = dot(up, normalize(m_CameraRotation * vec4(up, 0.0)).xyz);
+    d = clamp(d, -1.0, 1.0);
+    d = acos(d) / PI;
+	D = vec3(d);
+
+    vec3 normal = normalize(worldPos.xyz);
+
+    float phi = acos(dot(normal, toCamera)) / PI;
 
     LowerRow = int(phi * (8.0 - 1.0));
     UpperRow = min(LowerRow + 1, 8 - 1);
