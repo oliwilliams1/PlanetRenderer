@@ -91,6 +91,13 @@ void Camera::update(glm::dvec2 mouseDelta) {
 	glm::mat4 m_View = glm::lookAt(position, position + forward, up);
 	glm::mat4 m_Proj = glm::perspective(glm::radians(fov), aspectRatio, zNear, zFar);
 
+	// Construct camera rotation matrix
+	glm::mat4 m_CameraRotation = glm::mat4(1.0f);
+	m_CameraRotation[0] = glm::vec4(right, 0.0f);
+	m_CameraRotation[1] = glm::vec4(up, 0.0f);
+	m_CameraRotation[2] = glm::vec4(forward, 0.0f);
+	m_CameraRotation[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
 	// Calculate FPS for window name
 	frameCount++;
 	float currentTime = glfwGetTime();
@@ -105,10 +112,10 @@ void Camera::update(glm::dvec2 mouseDelta) {
 	deltaTime = currentTime - lastDeltaTime;
 	lastDeltaTime = currentTime;
 
-	cameraData.m_ProjView = m_Proj * m_View;
-	cameraData.m_View     = m_View;
-	cameraData.position   = this->position;
-	cameraData.deltaTime  = deltaTime;
+	cameraData.m_ProjView       = m_Proj * m_View;
+	cameraData.m_CameraRotation = m_CameraRotation;
+	cameraData.position         = this->position;
+	cameraData.deltaTime        = deltaTime;
 
 	// Send off to GPU via UBO
 	glBindBuffer(GL_UNIFORM_BUFFER, UBO);

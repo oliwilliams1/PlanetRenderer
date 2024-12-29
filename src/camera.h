@@ -6,10 +6,10 @@
 
 // Must be aligned to 16 bytes, or it will NOT work
 struct CameraData {
-	glm::mat4 m_ProjView; // 64 bytes
-	glm::mat4 m_View;     // 64 bytes
-	glm::vec3 position;   // 12 bytes
-	float deltaTime;      // 4 bytes
+	glm::mat4 m_ProjView;        // 64 bytes
+	glm::mat4 m_CameraRotation;  // 64 bytes
+	glm::vec3 position;          // 12 bytes
+	float deltaTime;             // 4 bytes
 };
 
 class App;
@@ -26,7 +26,6 @@ public:
 	void rotate(glm::dvec2 mouseDelta);
 	void update(glm::dvec2 mouseDelta);
 	void DebugDraw();
-	void OnWindowResize(GLFWwindow* window, int width, int height);
 
 private:
 	App* app;

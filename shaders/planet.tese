@@ -7,7 +7,7 @@ out vec3 FragPos;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
-    mat4 m_View;
+    mat4 m_CameraRotation;
     vec3 cameraPos;
     float deltaTime;
 };

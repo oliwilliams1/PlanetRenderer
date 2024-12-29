@@ -4,7 +4,7 @@ layout (vertices=4) out;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
-    mat4 m_View;
+    mat4 m_CameraRotation;
     vec3 cameraPos;
     float deltaTime;
 };
@@ -22,10 +22,10 @@ void main()
         float MIN_DISTANCE = 200;
         float MAX_DISTANCE = 1200;
 
-        vec4 eyeSpacePos00 = m_View * m_Model * gl_in[0].gl_Position;
-        vec4 eyeSpacePos01 = m_View * m_Model * gl_in[1].gl_Position;
-        vec4 eyeSpacePos10 = m_View * m_Model * gl_in[2].gl_Position;
-        vec4 eyeSpacePos11 = m_View * m_Model * gl_in[3].gl_Position;
+        vec4 eyeSpacePos00 = m_ViewProj * m_Model * gl_in[0].gl_Position;
+        vec4 eyeSpacePos01 = m_ViewProj * m_Model * gl_in[1].gl_Position;
+        vec4 eyeSpacePos10 = m_ViewProj * m_Model * gl_in[2].gl_Position;
+        vec4 eyeSpacePos11 = m_ViewProj * m_Model * gl_in[3].gl_Position;
 
         float distance00 = pow(clamp((abs(eyeSpacePos00.z)-MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0), 0.2);
         float distance01 = pow(clamp((abs(eyeSpacePos01.z)-MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0), 0.2);

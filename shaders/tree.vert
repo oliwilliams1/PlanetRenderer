@@ -10,13 +10,10 @@ out flat mat3 TBN;
 out flat int LowerRow;
 out flat int UpperRow;
 out flat float RowBlendFactor;
-out flat int LowerCol;
-out flat int UpperCol;
-out flat float ColBlendFactor;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
-    mat4 m_View;
+    mat4 m_CameraRotation;
     vec3 cameraPos;
     float deltaTime;
 };
@@ -40,12 +37,9 @@ void main() {
 
     TBN = mat3(rotation);
 
-    vec4 worldPos = m_Model * rotation * vec4(position * u_TreeScale, 1.0);
+    vec4 worldPos = m_Model * m_CameraRotation * vec4(position * u_TreeScale, 1.0);
 
-    vec3 treeDir = normalize(worldPos.xyz - cameraPos);
-    float phi = acos(dot(treeDir, treeUp)) / PI;
-
-    float theta = atan(treeDir.x, treeDir.z);
+    float phi = acos(dot(normalize(worldPos.xyz), toCamera)) / PI;
 
     LowerRow = int(phi * (8.0 - 1.0));
     UpperRow = min(LowerRow + 1, 8 - 1);
@@ -55,5 +49,4 @@ void main() {
     gl_Position = m_ViewProj * worldPos;
     FragPos = worldPos.xyz;
     UV = uv;
-    ColBlendFactor = theta / (2.0 * PI);
 }

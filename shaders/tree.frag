@@ -11,15 +11,12 @@ in flat mat3 TBN;
 in flat int LowerRow;
 in flat int UpperRow;
 in flat float RowBlendFactor;
-in flat int LowerCol;
-in flat int UpperCol;
-in flat float ColBlendFactor;
 
 layout(std140) uniform CameraData {
-	mat4 m_ViewProj;
-	mat4 m_View;
-	vec3 cameraPos;
-	float deltaTime;
+    mat4 m_ViewProj;
+    mat4 m_CameraRotation;
+    vec3 cameraPos;
+    float deltaTime;
 };
 
 uniform sampler2D u_Albedo;
@@ -50,5 +47,5 @@ void main() {
 
 	gPosition = FragPos;
 	gNormal = finalNormal;
-	gAlbedo = vec4(vec3(ColBlendFactor), 1.0);
+	gAlbedo = vec4(finalAlbedo.rgb, 1.0);
 }
