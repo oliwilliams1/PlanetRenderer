@@ -8,10 +8,8 @@ in vec3 FragPos;
 in vec2 UV;
 in flat mat3 TBN;
 
-in flat int LowerRow;
-in flat int UpperRow;
-in flat float RowBlendFactor;
-in flat vec3 D;
+in flat float LowerRow;
+in flat int Col;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -33,11 +31,15 @@ vec2 imposterSampler(vec2 uv, int row, int col) {
 }
 
 void main() {
-	vec2 uvLower = imposterSampler(UV, LowerRow, 0);
+	int lowerRow = int(LowerRow);
+    int upperRow = min(lowerRow + 1, 8 - 1);
+	float RowBlendFactor = LowerRow - lowerRow;
+
+	vec2 uvLower = imposterSampler(UV, lowerRow, Col);
 	vec4 albedoLower = texture(u_Albedo, uvLower);
 	vec3 normalLower = texture(u_Normal, uvLower).rgb * 2.0 - 1.0;
 
-	vec2 uvUpper = imposterSampler(UV, UpperRow, 0);
+	vec2 uvUpper = imposterSampler(UV, upperRow, Col);
 	vec4 albedoUpper = texture(u_Albedo, uvUpper);
 	vec3 normalUpper = texture(u_Normal, uvUpper).rgb * 2.0 - 1.0;
 
@@ -48,5 +50,5 @@ void main() {
 
 	gPosition = FragPos;
 	gNormal = finalNormal;
-	gAlbedo = vec4(D, 1.0);
+	gAlbedo = vec4(finalAlbedo.rgb, 1.0);
 }
