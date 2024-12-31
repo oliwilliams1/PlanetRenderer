@@ -1,7 +1,6 @@
 #version 430 core
 
 layout(location = 0) in vec3 position;
-layout(location = 1) in mat4 m_Model;
 
 out vec3 FragPos;
 out vec2 UV;
@@ -17,6 +16,10 @@ layout(std140) uniform CameraData {
     float deltaTime;
 };
 
+layout(std140) buffer InstanceData {
+	vec4 InstancedPos[];
+};
+
 uniform float u_TreeScale;
 const float PI = 3.141592653589;
 
@@ -30,15 +33,16 @@ int pseudoRandom(int seed) {
 }
 
 void main() {
-    vec4 centerWorldPos = m_Model * vec4(vec3(0.0), 1.0);
-    vec3 toCamera = normalize(cameraPos - centerWorldPos.xyz);
-    vec3 up = normalize(centerWorldPos.xyz);
+    vec3 instancedPos = InstancedPos[gl_InstanceID].xyz;
+    vec3 toCamera = normalize(cameraPos - instancedPos);
+    vec3 up = normalize(instancedPos);
     vec3 right = normalize(cross(up, toCamera));
     up = normalize(cross(toCamera, right));
 
     TBN = mat3(right, up, toCamera);
 
-    vec4 worldPos = m_Model * m_CameraRotation * vec4(position * u_TreeScale, 1.0);
+    vec4 worldPos = m_CameraRotation * vec4(position * u_TreeScale, 1.0);
+    worldPos += vec4(instancedPos, 0.0);
     vec3 normal = normalize(worldPos.xyz);
     float phi = acos(dot(normal, toCamera)) / PI;
     LowerRow = phi * (8.0 - 1.0);

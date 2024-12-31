@@ -28,7 +28,7 @@ private:
 	Planet* planet;
 	Shader* shader;
 	Cubemap* noiseCubemapCPU;
-	std::vector<glm::mat4> instanceData;
+	std::vector<glm::vec4> instanceData;
 
 	GLuint VAO, VBO, IBO;
 	int passCounter;

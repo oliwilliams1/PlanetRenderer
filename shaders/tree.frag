@@ -46,7 +46,7 @@ void main() {
 	vec4 finalAlbedo = mix(albedoLower, albedoUpper, RowBlendFactor);
 	vec3 finalNormal = normalize(TBN * normalize(mix(normalLower, normalUpper, RowBlendFactor)));
 
-	if (finalAlbedo.r < 0.1) discard;
+	if (finalAlbedo.a < 0.5) discard;
 
 	gPosition = FragPos;
 	gNormal = finalNormal;

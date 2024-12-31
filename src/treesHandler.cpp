@@ -54,13 +54,11 @@ void TreesHandler::SetupBuffers() {
 	glEnableVertexAttribArray(0);
 
 	glGenBuffers(1, &IBO);
-	glBindBuffer(GL_ARRAY_BUFFER, IBO);
-	glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
-	for (int i = 0; i < 4; i++) {
-		glEnableVertexAttribArray(i + 1);
-		glVertexAttribPointer(i + 1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
-		glVertexAttribDivisor(i + 1, 1);
-	}
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, IBO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(glm::vec4), instanceData.data(), GL_STATIC_DRAW);
+	
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, IBO);
+
 	glBindVertexArray(0);
 }
 
@@ -71,6 +69,7 @@ void TreesHandler::CreateTextures() {
 
 void TreesHandler::Draw() {
 	shader->use();
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, IBO);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texturesTree0.topAlbedo);
 	glUniform1i(albedoLocation, 0);
@@ -108,26 +107,8 @@ void TreesHandler::AddTree(glm::vec3 dir, float height) {
 	glm::vec3 normal = glm::normalize(dir);
 	glm::vec3 pos = normal * (planet->planetScale + treeScale);
 	pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
-	glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
 
-	/*
-	// Caluclate the realtive up coord, so the tree faces away from the planet
-	glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
-	glm::vec3 right = glm::normalize(glm::cross(up, normal));
-	up = glm::cross(normal, right);
-
-	// Constuct a rotation matrix
-	glm::mat4 rotation = glm::mat4(1.0f);
-	rotation[0] = glm::vec4(right, 0.0f);
-	rotation[1] = glm::vec4(up, 0.0f);
-	rotation[2] = glm::vec4(-dir, 0.0f);
-	rotation[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	glm::mat4 m_Model = translation * rotation;
-	*/
-
-	// Construct a model matrix
-	glm::mat4 m_Model = translation;
-	instanceData.push_back(m_Model);
+	instanceData.emplace_back(pos, 0.0f);
 }
 
 void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3) {
