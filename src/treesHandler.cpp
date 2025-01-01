@@ -12,8 +12,11 @@ TreesHandler::TreesHandler(Planet* planet) {
 	treeScaleLocation = GetUniformLocation(shader->shaderProgram, "u_TreeScale");
 	glUniform1f(treeScaleLocation, treeScale);
 
+	cullingComputeShader = CompileComputeShader("shaders/tree.comp");
+
 	PlaceTrees(numSubdivisions);
 	SetupBuffers();
+	CullTrees();
 	CreateTextures();
 }
 
@@ -21,10 +24,6 @@ void TreesHandler::UpdateTrees() {
 	delete noiseCubemapCPU;
 	noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
 	PlaceTrees(numSubdivisions);
-
-	glBindBuffer(GL_ARRAY_BUFFER, IBO);
-	glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void TreesHandler::DebugDraw() {
@@ -53,13 +52,29 @@ void TreesHandler::SetupBuffers() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glGenBuffers(1, &IBO);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, IBO);
+	glGenBuffers(1, &TreeInputBuffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, TreeInputBuffer);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(glm::vec4), instanceData.data(), GL_STATIC_DRAW);
-	
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, IBO);
+
+	glGenBuffers(1, &TreeOutputBuffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, TreeOutputBuffer);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(glm::vec4), NULL, GL_DYNAMIC_DRAW);
+
+	glGenBuffers(1, &AtomicCounterBuffer);
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, AtomicCounterBuffer);
+	glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), (unsigned int*)0, GL_DYNAMIC_DRAW);
 
 	glBindVertexArray(0);
+}
+
+void TreesHandler::CullTrees() {
+	glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), (unsigned int*)0, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, TreeOutputBuffer);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, TreeInputBuffer);
+	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 2, AtomicCounterBuffer);
+
+	glUseProgram(cullingComputeShader);
+	glDispatchCompute((instanceData.size() + 31) / 32, 1, 1);
 }
 
 void TreesHandler::CreateTextures() {
@@ -69,7 +84,7 @@ void TreesHandler::CreateTextures() {
 
 void TreesHandler::Draw() {
 	shader->use();
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, IBO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, TreeOutputBuffer);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texturesTree0.topAlbedo);
 	glUniform1i(albedoLocation, 0);
@@ -78,8 +93,13 @@ void TreesHandler::Draw() {
 	glBindTexture(GL_TEXTURE_2D, texturesTree0.topNormal);
 	glUniform1i(normalLocation, 1);
 
+	GLuint* counterData = (GLuint*)glMapBuffer(GL_ATOMIC_COUNTER_BUFFER, GL_READ_ONLY);
+	visibleTrees = counterData[0];
+	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
+
 	glBindVertexArray(VAO);
-	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instanceData.size());
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, visibleTrees);
+	
 	glBindVertexArray(0);
 }
 

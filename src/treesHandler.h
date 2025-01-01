@@ -13,6 +13,13 @@ struct TreeTextures {
 	GLuint topAlbedo, topNormal;
 };
 
+struct GLDrawArraysIndirectCommand {
+	GLuint count;          // Number of vertices to draw
+	GLuint instanceCount;  // Number of instances to draw
+	GLuint first;          // Offset in the vertex array
+	GLuint baseInstance;   // Instance ID
+};
+
 class TreesHandler {
 public:
 	TreesHandler(Planet* planet);
@@ -21,6 +28,7 @@ public:
 	void Draw();
 	void UpdateTrees();
 	void DebugDraw();
+	void CullTrees();
 
 	TreeTextures texturesTree0;
 
@@ -30,7 +38,10 @@ private:
 	Cubemap* noiseCubemapCPU;
 	std::vector<glm::vec4> instanceData;
 
-	GLuint VAO, VBO, IBO;
+	GLuint cullingComputeShader;
+	GLuint TreeInputBuffer, TreeOutputBuffer, AtomicCounterBuffer, indirectDrawBuffer;
+	GLuint visibleTrees;
+	GLuint VAO, VBO;
 	int passCounter;
 	int numSubdivisions;
 
