@@ -12,8 +12,8 @@ layout(std430, binding = 1) buffer InputInstanceData {
 
 layout(binding = 2) uniform atomic_uint atomicCount;
 
-bool test(uint a) {
-	return a % 2 == 0;
+bool test(vec4 v) {
+	return (dot(v.xyz, vec3(1.0, 0.0, 0.0)) > 0.0);
 }
 
 void main() {
@@ -21,7 +21,7 @@ void main() {
 
     uint index = atomicCounterIncrement(atomicCount);
 
-    if (test(id)) {
-        OutputInstances[index] = InputInstances[id] + vec4(0.0, 10.0, 0.0, 1.0);
+    if (test(InputInstances[id])) {
+        OutputInstances[index] = InputInstances[id];
     }
 }

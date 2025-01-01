@@ -69,6 +69,12 @@ void TreesHandler::SetupBuffers() {
 
 void TreesHandler::CullTrees() {
 	glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), (unsigned int*)0, GL_DYNAMIC_DRAW);
+
+	GLuint* counterPtr = (GLuint*)glMapBuffer(GL_ATOMIC_COUNTER_BUFFER, GL_WRITE_ONLY);
+	*counterPtr = 0;
+
+	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
+
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, TreeOutputBuffer);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, TreeInputBuffer);
 	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 2, AtomicCounterBuffer);
