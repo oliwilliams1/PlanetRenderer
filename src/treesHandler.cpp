@@ -14,7 +14,7 @@ TreesHandler::TreesHandler(Planet* planet) {
 
 	cullingComputeShader = CompileComputeShader("shaders/tree.comp");
 
-	PlaceTrees(numSubdivisions);
+	PlaceTrees(1);
 	SetupBuffers();
 	CullTrees();
 	CreateTextures();
@@ -54,11 +54,11 @@ void TreesHandler::SetupBuffers() {
 
 	glGenBuffers(1, &TreeInputBuffer);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, TreeInputBuffer);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(glm::vec4), instanceData.data(), GL_STATIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(Tree), instanceData.data(), GL_STATIC_DRAW);
 
 	glGenBuffers(1, &TreeOutputBuffer);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, TreeOutputBuffer);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(glm::vec4), NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(Tree), NULL, GL_DYNAMIC_DRAW);
 
 	glGenBuffers(1, &AtomicCounterBuffer);
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, AtomicCounterBuffer);
@@ -128,20 +128,21 @@ void TreesHandler::PlaceTrees(int numTrees) {
 	}
 }
 
-void TreesHandler::AddTree(glm::vec3 dir, float height) {
+void TreesHandler::AddTree(glm::vec3 dir, float height, int randRotation) {
 	// Calculate the position of the tree
 	glm::vec3 normal = glm::normalize(dir);
 	glm::vec3 pos = normal * (planet->planetScale + treeScale);
 	pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
 
-	instanceData.emplace_back(pos, 0.0f);
+	instanceData.emplace_back(glm::vec4(pos, 0.0f), randRotation, 1);
 }
 
 void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3) {
 	std::mt19937 gen(planet->seed);
+
 	std::uniform_real_distribution<> displacement(-0.002f, 0.002f); // Trees are scatterd, but not close enough to intersect
-	
 	std::uniform_real_distribution<> density(0.0f, 1.0f); // Random killing for tree density
+	std::uniform_int_distribution<>  rotation(0, 7);       // Random rotation for each tree
 
 	// Find vertical and horizontal offsets relative to the triangle
 	glm::vec3 vOffset = (v2 - v1) / (float)points;
@@ -167,7 +168,7 @@ void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const g
 				float densityValue = density(gen);
 
 				if (densityValue < colour.g) {
-					AddTree(dir, height);
+					AddTree(dir, height, rotation(gen));
 				}
 
 				// Increment the pass counter

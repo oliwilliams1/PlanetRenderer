@@ -2,26 +2,43 @@
 
 layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 
+struct Tree {
+    vec4 pos;
+    uint treeRot;
+    uint treeType;
+    uint padding[2];
+};
+
+layout(std140) uniform CameraData {
+    mat4 m_ViewProj;
+    mat4 m_CameraRotation;
+    vec3 cameraPos;
+    float deltaTime;
+};
+
 layout(std430, binding = 0) buffer OutputInstanceData {
-    vec4 OutputInstances[];
+    Tree OutputInstances[];
 };
 
 layout(std430, binding = 1) buffer InputInstanceData {
-    vec4 InputInstances[];
+    Tree InputInstances[];
 };
 
 layout(binding = 2) uniform atomic_uint atomicCount;
 
-bool test(vec4 v) {
-	return (dot(v.xyz, vec3(1.0, 0.0, 0.0)) > 0.0);
+
+bool cullTest(vec3 v) {
+    return (dot(normalize(v), normalize(cameraPos)) > 0.5);
 }
 
 void main() {
     uint id = gl_GlobalInvocationID.x;
 
+    Tree currentTree = InputInstances[id];
+
     uint index = atomicCounterIncrement(atomicCount);
 
-    if (test(InputInstances[id])) {
-        OutputInstances[index] = InputInstances[id];
+    if (cullTest(currentTree.pos.xyz)) {
+        OutputInstances[index] = currentTree;
     }
 }

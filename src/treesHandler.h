@@ -13,11 +13,12 @@ struct TreeTextures {
 	GLuint topAlbedo, topNormal;
 };
 
-struct GLDrawArraysIndirectCommand {
-	GLuint count;          // Number of vertices to draw
-	GLuint instanceCount;  // Number of instances to draw
-	GLuint first;          // Offset in the vertex array
-	GLuint baseInstance;   // Instance ID
+// Must be aligned to 16 bytes
+struct Tree {
+	glm::vec4 pos;           // 16 bytes
+	unsigned int treeRot;    // 4 bytes ]
+	unsigned int treeType;   // 4 bytes ] -> 8 bytes
+	unsigned int padding[2]; // 8 bytes
 };
 
 class TreesHandler {
@@ -36,7 +37,7 @@ private:
 	Planet* planet;
 	Shader* shader;
 	Cubemap* noiseCubemapCPU;
-	std::vector<glm::vec4> instanceData;
+	std::vector<Tree> instanceData;
 
 	GLuint cullingComputeShader;
 	GLuint TreeInputBuffer, TreeOutputBuffer, AtomicCounterBuffer, indirectDrawBuffer;
@@ -51,6 +52,6 @@ private:
 	void SetupBuffers();
 	void PlaceTrees(int numPoints);
 	void PlaceTreesOnTriangle(int numSubdivisons, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3);
-	void AddTree(glm::vec3 dir, float height);
+	void AddTree(glm::vec3 dir, float height, int randRotation);
 	void CreateTextures();
 };

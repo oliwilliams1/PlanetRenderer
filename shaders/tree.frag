@@ -9,7 +9,7 @@ in vec2 UV;
 in flat mat3 TBN;
 
 in flat float LowerRow;
-in flat int Col;
+in flat uint Col;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -21,7 +21,7 @@ layout(std140) uniform CameraData {
 uniform sampler2D u_Albedo;
 uniform sampler2D u_Normal;
 
-vec2 imposterSampler(vec2 uv, int row, int col) {
+vec2 imposterSampler(vec2 uv, uint row, uint col) {
 	const int gridSize = 8;
 	row = gridSize - row - 1;
 

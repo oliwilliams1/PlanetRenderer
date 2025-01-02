@@ -7,7 +7,7 @@ out vec2 UV;
 out flat mat3 TBN;
 
 out flat float LowerRow;
-out flat int Col;
+out flat uint Col;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -16,8 +16,15 @@ layout(std140) uniform CameraData {
     float deltaTime;
 };
 
+struct Tree {
+    vec4 pos;
+    uint treeRot;
+    uint treeType;
+    uint padding[2];
+};
+
 layout(std140) buffer InstanceData {
-	vec4 InstancedPos[];
+	Tree InstancedPos[];
 };
 
 uniform float u_TreeScale;
@@ -33,7 +40,7 @@ int pseudoRandom(int seed) {
 }
 
 void main() {
-    vec3 instancedPos = InstancedPos[gl_InstanceID].xyz;
+    vec3 instancedPos = InstancedPos[gl_InstanceID].pos.xyz;
     vec3 toCamera = normalize(cameraPos - instancedPos);
     vec3 up = normalize(instancedPos);
     vec3 right = normalize(cross(up, toCamera));
@@ -47,7 +54,7 @@ void main() {
     float phi = acos(dot(normal, toCamera)) / PI;
     LowerRow = phi * (8.0 - 1.0);
 
-    Col = pseudoRandom(gl_InstanceID);
+    Col = InstancedPos[gl_InstanceID].treeRot;
 
     gl_Position = m_ViewProj * worldPos;
     FragPos = worldPos.xyz;
