@@ -24,7 +24,6 @@ private:
 class Planet : public Object {
 public:
 	Planet(App* app, Shader* shader);
-	void DispatchTreeCulling();
 	void Draw() override;
 	void DebugDraw() override;
 	int cubemapResolution;

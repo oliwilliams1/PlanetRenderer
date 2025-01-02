@@ -81,10 +81,6 @@ void Planet::Draw() {
 	treesHandler->Draw();
 }
 
-void Planet::DispatchTreeCulling() {
-	treesHandler->CullTrees();
-}
-
 PlanetShader::PlanetShader(const char* vsSource, const char* fsSource, const char* shaderName) : Shader(vsSource, fsSource, shaderName) {
 	AddTesselationShaders();
 }

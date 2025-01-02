@@ -13,14 +13,6 @@ struct TreeTextures {
 	GLuint topAlbedo, topNormal;
 };
 
-// Must be aligned to 16 bytes
-struct Tree {
-	glm::vec4 pos;           // 16 bytes
-	unsigned int treeRot;    // 4 bytes ]
-	unsigned int treeType;   // 4 bytes ] -> 8 bytes
-	unsigned int padding[2]; // 8 bytes
-};
-
 class TreesHandler {
 public:
 	TreesHandler(Planet* planet);
@@ -29,7 +21,6 @@ public:
 	void Draw();
 	void UpdateTrees();
 	void DebugDraw();
-	void CullTrees();
 
 	TreeTextures texturesTree0;
 
@@ -37,12 +28,9 @@ private:
 	Planet* planet;
 	Shader* shader;
 	Cubemap* noiseCubemapCPU;
-	std::vector<Tree> instanceData;
+	std::vector<glm::mat4> instanceData;
 
-	GLuint cullingComputeShader;
-	GLuint TreeInputBuffer, TreeOutputBuffer, AtomicCounterBuffer, indirectDrawBuffer;
-	GLuint visibleTrees;
-	GLuint VAO, VBO;
+	GLuint VAO, VBO, IBO;
 	int passCounter;
 	int numSubdivisions;
 
@@ -52,6 +40,6 @@ private:
 	void SetupBuffers();
 	void PlaceTrees(int numPoints);
 	void PlaceTreesOnTriangle(int numSubdivisons, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3);
-	void AddTree(glm::vec3 dir, float height, int randRotation);
+	void AddTree(glm::vec3 dir, float height);
 	void CreateTextures();
 };

@@ -12,11 +12,8 @@ TreesHandler::TreesHandler(Planet* planet) {
 	treeScaleLocation = GetUniformLocation(shader->shaderProgram, "u_TreeScale");
 	glUniform1f(treeScaleLocation, treeScale);
 
-	cullingComputeShader = CompileComputeShader("shaders/tree.comp");
-
-	PlaceTrees(1);
+	PlaceTrees(numSubdivisions);
 	SetupBuffers();
-	CullTrees();
 	CreateTextures();
 }
 
@@ -24,6 +21,10 @@ void TreesHandler::UpdateTrees() {
 	delete noiseCubemapCPU;
 	noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
 	PlaceTrees(numSubdivisions);
+
+	glBindBuffer(GL_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void TreesHandler::DebugDraw() {
@@ -52,35 +53,15 @@ void TreesHandler::SetupBuffers() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glGenBuffers(1, &TreeInputBuffer);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, TreeInputBuffer);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(Tree), instanceData.data(), GL_STATIC_DRAW);
-
-	glGenBuffers(1, &TreeOutputBuffer);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, TreeOutputBuffer);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(Tree), NULL, GL_DYNAMIC_DRAW);
-
-	glGenBuffers(1, &AtomicCounterBuffer);
-	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, AtomicCounterBuffer);
-	glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), (unsigned int*)0, GL_DYNAMIC_DRAW);
-
+	glGenBuffers(1, &IBO);
+	glBindBuffer(GL_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
+	for (int i = 0; i < 4; i++) {
+		glEnableVertexAttribArray(i + 1);
+		glVertexAttribPointer(i + 1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
+		glVertexAttribDivisor(i + 1, 1);
+	}
 	glBindVertexArray(0);
-}
-
-void TreesHandler::CullTrees() {
-	glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), (unsigned int*)0, GL_DYNAMIC_DRAW);
-
-	GLuint* counterPtr = (GLuint*)glMapBuffer(GL_ATOMIC_COUNTER_BUFFER, GL_WRITE_ONLY);
-	*counterPtr = 0;
-
-	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
-
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, TreeOutputBuffer);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, TreeInputBuffer);
-	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 2, AtomicCounterBuffer);
-
-	glUseProgram(cullingComputeShader);
-	glDispatchCompute((instanceData.size() + 31) / 32, 1, 1);
 }
 
 void TreesHandler::CreateTextures() {
@@ -90,7 +71,6 @@ void TreesHandler::CreateTextures() {
 
 void TreesHandler::Draw() {
 	shader->use();
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, TreeOutputBuffer);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texturesTree0.topAlbedo);
 	glUniform1i(albedoLocation, 0);
@@ -99,13 +79,8 @@ void TreesHandler::Draw() {
 	glBindTexture(GL_TEXTURE_2D, texturesTree0.topNormal);
 	glUniform1i(normalLocation, 1);
 
-	GLuint* counterData = (GLuint*)glMapBuffer(GL_ATOMIC_COUNTER_BUFFER, GL_READ_ONLY);
-	visibleTrees = counterData[0];
-	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
-
 	glBindVertexArray(VAO);
-	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, visibleTrees);
-	
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instanceData.size());
 	glBindVertexArray(0);
 }
 
@@ -128,21 +103,38 @@ void TreesHandler::PlaceTrees(int numTrees) {
 	}
 }
 
-void TreesHandler::AddTree(glm::vec3 dir, float height, int randRotation) {
+void TreesHandler::AddTree(glm::vec3 dir, float height) {
 	// Calculate the position of the tree
 	glm::vec3 normal = glm::normalize(dir);
 	glm::vec3 pos = normal * (planet->planetScale + treeScale);
 	pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
+	glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
 
-	instanceData.emplace_back(glm::vec4(pos, 0.0f), randRotation, 1);
+	/*
+	// Caluclate the realtive up coord, so the tree faces away from the planet
+	glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
+	glm::vec3 right = glm::normalize(glm::cross(up, normal));
+	up = glm::cross(normal, right);
+
+	// Constuct a rotation matrix
+	glm::mat4 rotation = glm::mat4(1.0f);
+	rotation[0] = glm::vec4(right, 0.0f);
+	rotation[1] = glm::vec4(up, 0.0f);
+	rotation[2] = glm::vec4(-dir, 0.0f);
+	rotation[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	glm::mat4 m_Model = translation * rotation;
+	*/
+
+	// Construct a model matrix
+	glm::mat4 m_Model = translation;
+	instanceData.push_back(m_Model);
 }
 
 void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3) {
 	std::mt19937 gen(planet->seed);
-
 	std::uniform_real_distribution<> displacement(-0.002f, 0.002f); // Trees are scatterd, but not close enough to intersect
+	
 	std::uniform_real_distribution<> density(0.0f, 1.0f); // Random killing for tree density
-	std::uniform_int_distribution<>  rotation(0, 7);       // Random rotation for each tree
 
 	// Find vertical and horizontal offsets relative to the triangle
 	glm::vec3 vOffset = (v2 - v1) / (float)points;
@@ -168,7 +160,7 @@ void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const g
 				float densityValue = density(gen);
 
 				if (densityValue < colour.g) {
-					AddTree(dir, height, rotation(gen));
+					AddTree(dir, height);
 				}
 
 				// Increment the pass counter

@@ -9,7 +9,7 @@ in vec2 UV;
 in flat mat3 TBN;
 
 in flat float LowerRow;
-in flat uint Col;
+in flat int Col;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -21,34 +21,67 @@ layout(std140) uniform CameraData {
 uniform sampler2D u_Albedo;
 uniform sampler2D u_Normal;
 
-vec2 imposterSampler(vec2 uv, uint row, uint col) {
-	const int gridSize = 8;
-	row = gridSize - row - 1;
+const int gridSize = 8;
+const float ditherPattern[64] = float[](
+    0.0,   0.125, 0.875, 0.75,  0.5,   0.625, 0.375, 0.25,
+    0.5,   0.625, 0.375, 0.25,  0.75,  0.875, 0.125, 0.0,
+    0.875, 0.75,  0.0,   0.125, 0.25,  0.375, 0.625, 0.5,
+    0.25,  0.375, 0.625, 0.5,   0.0,   0.125, 0.875, 0.75,
+    0.5,   0.625, 0.375, 0.25,  0.75,  0.875, 0.125, 0.0,
+    0.75,  0.875, 0.125, 0.0,   0.25,  0.375, 0.625, 0.5,
+    0.125, 0.0,   0.5,   0.625, 0.875, 0.75,  0.0,   0.125,
+    0.0,   0.125, 0.875, 0.75,  0.5,   0.625, 0.375, 0.25
+);
 
-	vec2 imposterSize = vec2(1.0 / gridSize);
-	vec2 imposterOffset = vec2(col, row) * imposterSize;
-	return imposterOffset + uv * imposterSize;
+vec2 imposterSampler(vec2 uv, int row, int col) {
+    row = gridSize - row - 1;
+    vec2 imposterSize = vec2(1.0 / gridSize);
+    vec2 imposterOffset = vec2(col, row) * imposterSize;
+    return imposterOffset + uv * imposterSize;
 }
 
+bool shouldDiscardPixel(ivec2 pixelCoords, float v) {
+    int index = (pixelCoords.x % gridSize) + (pixelCoords.y % gridSize) * gridSize;
+    return v < ditherPattern[index];
+}
+
+void alphaDitherBasedOnDistance() {
+    float d = distance(cameraPos, FragPos);
+    float v = 1.0;
+    float maxDist = 200.0;
+    float minDist = 150.0;
+
+    if (d < minDist) {
+        discard;
+    } else if (d <= maxDist) {
+        float t = (d - minDist) / (maxDist - minDist);
+        v = smoothstep(0.0, 1.0, t);
+    }
+
+    ivec2 pixelCoords = ivec2(gl_FragCoord.xy);
+    if (shouldDiscardPixel(pixelCoords, v)) discard;
+    }
+
 void main() {
-	int lowerRow = int(LowerRow);
-    int upperRow = min(lowerRow + 1, 8 - 1);
-	float RowBlendFactor = LowerRow - lowerRow;
+    alphaDitherBasedOnDistance();
+    int lowerRow = int(LowerRow);
+    int upperRow = min(lowerRow + 1, gridSize - 1);
+    float rowBlendFactor = LowerRow - lowerRow;
 
-	vec2 uvLower = imposterSampler(UV, lowerRow, Col);
-	vec4 albedoLower = texture(u_Albedo, uvLower);
-	vec3 normalLower = texture(u_Normal, uvLower).rgb * 2.0 - 1.0;
+    vec2 uvLower = imposterSampler(UV, lowerRow, Col);
+    vec4 albedoLower = texture(u_Albedo, uvLower);
+    vec3 normalLower = texture(u_Normal, uvLower).rgb * 2.0 - 1.0;
 
-	vec2 uvUpper = imposterSampler(UV, upperRow, Col);
-	vec4 albedoUpper = texture(u_Albedo, uvUpper);
-	vec3 normalUpper = texture(u_Normal, uvUpper).rgb * 2.0 - 1.0;
+    vec2 uvUpper = imposterSampler(UV, upperRow, Col);
+    vec4 albedoUpper = texture(u_Albedo, uvUpper);
+    vec3 normalUpper = texture(u_Normal, uvUpper).rgb * 2.0 - 1.0;
 
-	vec4 finalAlbedo = mix(albedoLower, albedoUpper, RowBlendFactor);
-	vec3 finalNormal = normalize(TBN * normalize(mix(normalLower, normalUpper, RowBlendFactor)));
+    vec4 finalAlbedo = mix(albedoLower, albedoUpper, rowBlendFactor);
+    vec3 finalNormal = normalize(TBN * normalize(mix(normalLower, normalUpper, rowBlendFactor)));
 
-	if (finalAlbedo.a < 0.5) discard;
+    if (finalAlbedo.r < 0.1) discard;
 
-	gPosition = FragPos;
-	gNormal = finalNormal;
-	gAlbedo = vec4(finalAlbedo.rgb, 1.0);
+    gPosition = FragPos;
+    gNormal = finalNormal;
+    gAlbedo = vec4(finalAlbedo.rgb, 1.0);
 }
