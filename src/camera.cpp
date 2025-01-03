@@ -1,19 +1,19 @@
 #include "camera.h"
 
-Camera::Camera(GLFWwindow* window, float* deltaTime, int width, int height, GLuint InputUBO) {
+Camera::Camera(GLFWwindow* window, float* deltaTime, int width, int height, CamInitData initData, GLuint InputUBO ) {
 	this->window = window;
 	this->deltaTime = deltaTime;
 	aspectRatio = (float)width / (float)height;
-	fov   = 70.0f;
+	fov   = initData.fov;
 	zNear = 0.01f;
 	zFar  = 10000.0f;
 
-	pitch = -30.0f;
-	yaw   = -145.0;
-	speed = 500.0f;
+	pitch = initData.pitch;
+	yaw   = initData.yaw;
+	speed = initData.speed;
 	sensitivity = 0.2f;
 
-	position = glm::vec3(400.0f, 1000.0f, 450.0f);
+	position = initData.position;
 
 	up = glm::vec3(0, 1, 0);
 	right = glm::vec3(1, 0, 0);

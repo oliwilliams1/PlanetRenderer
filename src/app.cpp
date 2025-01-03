@@ -18,8 +18,15 @@ App::App() {
 	InitOpenGLParams();
 	InitImGui();
 
+	CamInitData camInitData{};
+	camInitData.fov = 70.0f;
+	camInitData.pitch = -30.0f;
+	camInitData.yaw = -145.0f;
+	camInitData.speed = 300.0f;
+	camInitData.position = glm::vec3(400.0f, 1000.0f, 450.0f);
+
 	deferredRenderer = new DeferredRenderer(viewportWidth, viewportHeight);
-	camera = new Camera(window, &deltaTime, viewportWidth, viewportHeight);
+	camera = new Camera(window, &deltaTime, viewportWidth, viewportHeight, camInitData);
 	planetShader = new PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
 	mainPlanet = new Planet(this, planetShader);
 	imposterRenderer = new ImposterRenderer(this, camera->UBO);

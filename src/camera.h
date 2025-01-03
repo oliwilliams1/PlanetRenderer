@@ -12,6 +12,14 @@ struct CameraData {
 	float deltaTime;             // 4 bytes
 };
 
+struct CamInitData {
+	glm::vec3 position;
+	float yaw;
+	float pitch;
+	float fov;
+	float speed;
+};
+
 class App;
 
 class Camera {
@@ -20,7 +28,7 @@ public:
 	glm::vec3 position;
 	CameraData cameraData;
 
-	Camera(GLFWwindow* window, float* deltaTime, int width, int height, GLuint UBO = 0);
+	Camera(GLFWwindow* window, float* deltaTime, int width, int height, CamInitData initData, GLuint InputUBO = 0);
 	~Camera();
 	
 	void UpdateBuffers();

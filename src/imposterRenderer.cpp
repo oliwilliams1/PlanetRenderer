@@ -3,7 +3,15 @@
 ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
     this->app = app;
     deferredRenderer = new DeferredRenderer(512, 512);
-    camera = new Camera(app->window, &app->deltaTime, 512, 512, UBO);
+
+    CamInitData camInitData{};
+    camInitData.fov = 70.0f;
+    camInitData.pitch = 0.0f;
+    camInitData.yaw = 90.0f;
+    camInitData.speed = 10.0f;
+    camInitData.position = glm::vec3(0.0f, 0.0f, -5.0f);
+
+    camera = new Camera(app->window, &app->deltaTime, 512, 512, camInitData, UBO);
     imposterShader = new Shader("shaders/default.vert", "shaders/default.frag", "Imposter Shader");
     imposterObject = new ImposterObject(imposterShader);
 }
@@ -22,7 +30,7 @@ void ImposterRenderer::Render() {
 void ImposterRenderer::DebugDraw() {
     ImGui::Begin("Imposter Renderer");
 
-    ImGui::SetWindowSize(ImVec2(938, 0));
+    ImGui::SetWindowSize(ImVec2(938, 596));
     ImGui::Columns(2, "GridLayout");
     ImGui::SetColumnWidth(0, 544);
 

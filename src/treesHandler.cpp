@@ -110,21 +110,6 @@ void TreesHandler::AddTree(glm::vec3 dir, float height) {
 	pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
 	glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
 
-	/*
-	// Caluclate the realtive up coord, so the tree faces away from the planet
-	glm::vec3 up = glm::vec3(0.0, 1.0, 0.0);
-	glm::vec3 right = glm::normalize(glm::cross(up, normal));
-	up = glm::cross(normal, right);
-
-	// Constuct a rotation matrix
-	glm::mat4 rotation = glm::mat4(1.0f);
-	rotation[0] = glm::vec4(right, 0.0f);
-	rotation[1] = glm::vec4(up, 0.0f);
-	rotation[2] = glm::vec4(-dir, 0.0f);
-	rotation[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	glm::mat4 m_Model = translation * rotation;
-	*/
-
 	// Construct a model matrix
 	glm::mat4 m_Model = translation;
 	instanceData.push_back(m_Model);
