@@ -7,7 +7,7 @@ class Shader;
 
 class DeferredRenderer {
 public:
-	DeferredRenderer(App* app);
+	DeferredRenderer(int width, int height);
 	~DeferredRenderer();
 
 	void Bind();
@@ -16,7 +16,7 @@ public:
 	void Render();
 
 private:
-	App* app;
+	int width, height;
 	GLuint gBuffer, gPosition, gNormal, gAlbedo, gDepth;
 
 	Shader* deferredShader;

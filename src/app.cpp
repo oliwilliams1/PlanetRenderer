@@ -6,15 +6,23 @@ App::App() {
 
 	viewportWidth = 1200;
 	viewportHeight = 675;
-	
+	imposterRenderingWindowOpen = true;
+
+	currentFPS = 0;
+	frameCount = 0;
+	deltaTime = 0.0f;
+	lastTime = glfwGetTime();
+	lastDeltaTime = glfwGetTime();
+
 	InitWindow();
 	InitOpenGLParams();
 	InitImGui();
 
-	deferredRenderer = new DeferredRenderer(this);
-	camera = new Camera(this);
+	deferredRenderer = new DeferredRenderer(viewportWidth, viewportHeight);
+	camera = new Camera(window, &deltaTime, viewportWidth, viewportHeight);
 	planetShader = new PlanetShader("shaders/planet.vert", "shaders/planet.frag", "Planet Shader");
 	mainPlanet = new Planet(this, planetShader);
+	imposterRenderer = new ImposterRenderer(this, camera->UBO);
 	
 	InitMouseEvents();
 }
@@ -80,6 +88,19 @@ void App::InitMouseEvents() {
 
 void App::Mainloop() {
 	while (!glfwWindowShouldClose(window)) {
+		frameCount++;
+		float currentTime = glfwGetTime();
+		if (currentTime - lastTime >= 1.0f) {
+			glfwSetWindowTitle(window, ("Planet Renderer - FPS: " + std::to_string(frameCount)).c_str());
+			currentFPS = frameCount;
+			frameCount = 0;
+			lastTime = currentTime;
+		}
+
+		// Delta time calc
+		deltaTime = currentTime - lastDeltaTime;
+		lastDeltaTime = currentTime;
+
 		// Pre-frame stuff
 		glfwPollEvents();
 
@@ -89,7 +110,13 @@ void App::Mainloop() {
 
 		mouseDelta = currentMousePos - mousePos;
 		mousePos   = currentMousePos;
-		camera->update(mouseDelta);
+
+		if (imposterRenderingWindowOpen) { 
+			camera->UpdateBuffers(); // Update buffers, but not camera pos
+		}
+		else {
+			camera->update(mouseDelta);
+		}
 
 		// Clear
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -99,21 +126,39 @@ void App::Mainloop() {
 		// Render objects
 		planetShader->use();
 		mainPlanet->Draw();
-
 		deferredRenderer->Render();
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		if (imposterRenderingWindowOpen) {
+			imposterRenderer->Render();
+		}
 
 		// Setup ImGui for new frame
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		// ImGui debug windows
+		ImGui::Begin("Engine", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+		ImGui::SetWindowSize(ImVec2(windowWidth, windowHeight));
+		ImGui::SetWindowPos(ImVec2(0, 0));
+
+		ImGui::Columns(2, "MainGridLayout");
+		ImGui::SetColumnWidth(0, viewportWidth + 16);
+
 		deferredRenderer->DisplayViewportImGui();
+
+		ImGui::NextColumn();
+
+		deferredRenderer->DebugDraw();
+		ImGui::Separator();
 		camera->DebugDraw();
+		ImGui::Separator();
 		mainPlanet->DebugDraw();
-		deferredRenderer->DebugDraw();		
+		ImGui::Separator();
+
+		ImGui::Checkbox("Open/Close imposter rendering menu", &imposterRenderingWindowOpen);
+		ImGui::End();
+
+		if (imposterRenderingWindowOpen) imposterRenderer->DebugDraw();
 
 		// Render ImGui
 		ImGui::Render();

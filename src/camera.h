@@ -20,15 +20,17 @@ public:
 	glm::vec3 position;
 	CameraData cameraData;
 
-	Camera(App* app);
+	Camera(GLFWwindow* window, float* deltaTime, int width, int height, GLuint UBO = 0);
 	~Camera();
 	
+	void UpdateBuffers();
 	void rotate(glm::dvec2 mouseDelta);
 	void update(glm::dvec2 mouseDelta);
 	void DebugDraw();
 
 private:
-	App* app;
+	GLFWwindow* window;
+	float* deltaTime;
 
 	float aspectRatio;
 	float fov;
@@ -44,13 +46,6 @@ private:
 
 	float pitch;
 	float yaw;
-
-	// Frame counter + delta time calc
-	int currentFPS;
-	int frameCount;
-	float deltaTime;
-	float lastTime;
-	float lastDeltaTime;
 
 	bool vSync;
 };

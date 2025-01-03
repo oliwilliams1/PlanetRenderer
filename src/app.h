@@ -12,16 +12,17 @@
 #include <imgui_impl_opengl3.h>
 
 // Own stuff
+#include "imposterRenderer.h"
 #include "deferredRenderer.h"
 #include "camera.h"
 #include "planet.h"
 #include "noise.h"
 
 // Forward declarations
+class ImposterRenderer;
 class DeferredRenderer;
 class PlanetShader;
 class Planet;
-class Camera;
 
 class App {
 public:
@@ -37,13 +38,20 @@ public:
 	PlanetShader* planetShader;
 	Planet* mainPlanet;
 
+	float deltaTime;
+	glm::dvec2 mousePos, mouseDelta;
+
 private:
+	int frameCount;
+	float lastTime, lastDeltaTime, currentFPS;
 	int windowWidth, windowHeight;
 	void InitWindow();
 	void InitOpenGLParams();
 	void InitImGui();
 	void InitMouseEvents();
 
-	glm::dvec2 mousePos, mouseDelta;
 	bool wireframe;
+
+	ImposterRenderer* imposterRenderer;
+	bool imposterRenderingWindowOpen;
 };

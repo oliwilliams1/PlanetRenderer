@@ -1,14 +1,15 @@
 #include "deferredRenderer.h"
 
-DeferredRenderer::DeferredRenderer(App* app) {
-	this->app = app;
+DeferredRenderer::DeferredRenderer(int width, int height) {
 	this->viewportTexture = 0;
 	this->wireframe = false;
+	this->width = width;
+	this->height = height;
 
 	InitG_Buffer();
 	InitDeferredShadingBuffer();
 
-	deferredShader = new Shader("shaders/default.vert", "shaders/default.frag", "Deferred Shader");
+	deferredShader = new Shader("shaders/deferred.vert", "shaders/deferred.frag", "Deferred Shader");
 	InitDeferredShadingUniforms();
 	SetupQuad();
 }
@@ -40,28 +41,28 @@ void DeferredRenderer::InitG_Buffer() {
 
 	glGenTextures(1, &gPosition);
 	glBindTexture(GL_TEXTURE_2D, gPosition);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, app->viewportWidth, app->viewportHeight, 0, GL_RGB, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
 
 	glGenTextures(1, &gNormal);
 	glBindTexture(GL_TEXTURE_2D, gNormal);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, app->viewportWidth, app->viewportHeight, 0, GL_RGB, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
 
 	glGenTextures(1, &gAlbedo);
 	glBindTexture(GL_TEXTURE_2D, gAlbedo);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, app->viewportWidth, app->viewportHeight, 0, GL_RGBA, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
 
 	glGenTextures(1, &gDepth);
 	glBindTexture(GL_TEXTURE_2D, gDepth);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, app->viewportWidth, app->viewportHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
@@ -82,7 +83,7 @@ void DeferredRenderer::InitDeferredShadingBuffer() {
 
 	glGenTextures(1, &mainTexture);
 	glBindTexture(GL_TEXTURE_2D, mainTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, app->viewportWidth, app->viewportHeight, 0, GL_RGBA, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mainTexture, 0);
@@ -98,12 +99,14 @@ void DeferredRenderer::InitDeferredShadingBuffer() {
 
 void DeferredRenderer::InitDeferredShadingUniforms() {
 	gPositionLocation = GetUniformLocation(deferredShader->shaderProgram, "gPosition");
-	gNormalLocation   = GetUniformLocation(deferredShader->shaderProgram, "gNormal");
-	gAlbedoLocation   = GetUniformLocation(deferredShader->shaderProgram, "gAlbedo");
+	gNormalLocation = GetUniformLocation(deferredShader->shaderProgram, "gNormal");
+	gAlbedoLocation = GetUniformLocation(deferredShader->shaderProgram, "gAlbedo");
 }
 
 void DeferredRenderer::Bind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+	glViewport(0, 0, width, height);
+	
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, gPosition);
 	glActiveTexture(GL_TEXTURE1);
@@ -116,7 +119,6 @@ void DeferredRenderer::Bind() {
 
 void DeferredRenderer::Render() {
 	glBindFramebuffer(GL_FRAMEBUFFER, fboShading);
-	glViewport(0, 0, app->viewportWidth, app->viewportHeight);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	deferredShader->use();
@@ -143,8 +145,7 @@ void DeferredRenderer::Render() {
 }
 
 void DeferredRenderer::DebugDraw() {
-	ImGui::Begin("gBuffer view");
-	float aspectRatio = (float)app->viewportWidth / (float)app->viewportHeight;
+	float aspectRatio = (float)width / (float)height;
 	int width = 175;
 	int height = (int)(width / aspectRatio);
 
@@ -157,13 +158,9 @@ void DeferredRenderer::DebugDraw() {
 	ImGui::Image((ImTextureID)(intptr_t)gAlbedo, ImVec2(width, height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
 	ImGui::SameLine();
 	ImGui::Image((ImTextureID)(intptr_t)mainTexture, ImVec2(width, height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-	ImGui::End();
 }
 
 void DeferredRenderer::DisplayViewportImGui() {
-	ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoMove);
-	ImGui::SetWindowSize(ImVec2(0, 0));
-	ImGui::SetWindowPos(ImVec2(0, 0));
 	ImGui::Checkbox("Wireframe", &wireframe);
 
 	if (wireframe) {
@@ -174,8 +171,7 @@ void DeferredRenderer::DisplayViewportImGui() {
 	}
 
 	GLuint texture = viewportTexture == 0 ? mainTexture : viewportTexture == 1 ? gPosition : viewportTexture == 2 ? gNormal : gAlbedo;
-	ImGui::Image((ImTextureID)(intptr_t)texture, ImVec2(app->viewportWidth, app->viewportHeight), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-	ImGui::End();
+	ImGui::Image((ImTextureID)(intptr_t)texture, ImVec2(width, height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
 }
 
 DeferredRenderer::~DeferredRenderer() {
