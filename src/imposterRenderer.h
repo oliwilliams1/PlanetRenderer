@@ -9,6 +9,7 @@
 #include "deferredRenderer.h"
 #include "camera.h"
 #include "object.h"
+#include "objectSerializer.h"
 
 class DeferredRenderer;
 class Camera;
@@ -34,7 +35,8 @@ private:
 class ImposterObject : public Object {
 public:
 	ImposterObject(Shader* shader);
+	ObjectData LoadObject(std::string objName);
 
 private:
-	void ModifyBrokenOBJFile(const char* path);
+	void ModifyBrokenOBJFile(std::string path);
 };

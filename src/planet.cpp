@@ -74,6 +74,7 @@ void Planet::LoadPlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned i
 }
 
 void Planet::Draw() {
+	UpdateModelMatrix();
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_PATCHES, 0, indicesCount);
 	glBindVertexArray(0);
