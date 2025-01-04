@@ -1,4 +1,6 @@
 #pragma once
+#include <sstream>
+#include <string>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -32,4 +34,7 @@ private:
 class ImposterObject : public Object {
 public:
 	ImposterObject(Shader* shader);
+
+private:
+	void ModifyBrokenOBJFile(const char* path);
 };

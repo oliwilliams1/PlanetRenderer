@@ -11,6 +11,7 @@ Camera::Camera(GLFWwindow* window, float* deltaTime, int width, int height, CamI
 	pitch = initData.pitch;
 	yaw   = initData.yaw;
 	speed = initData.speed;
+	inputSpeed = initData.speed;
 	sensitivity = 0.2f;
 
 	position = initData.position;
@@ -66,8 +67,8 @@ void Camera::update(glm::dvec2 mouseDelta) {
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed = 10.0f;
-	else speed = 500.0f;
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) speed = inputSpeed / 10.0f;
+	else speed = inputSpeed;
 
 	// Movement
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) position += *deltaTime * speed * forward;

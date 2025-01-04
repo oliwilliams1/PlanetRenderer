@@ -91,7 +91,7 @@ void TreesHandler::PlaceTrees(int numTrees) {
 	std::vector<unsigned int> indices;
 
 	// Load an icosphere to subdivide and place trees on
-	LoadModel("resources/icosphere.obj", vertices, indices);
+	LoadBasicModel("resources/icosphere.obj", vertices, indices);
 
 	// Iterate through every face, and attempt to place trees on it
 	for (int i = 0; i < indices.size(); i += 3) {

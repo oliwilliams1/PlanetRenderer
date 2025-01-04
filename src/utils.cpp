@@ -25,6 +25,23 @@ bool ReadFile(const char* pFileName, std::string& outFile) {
 	return ret;
 }
 
+bool WriteFile(const char* pFileName, const std::string& outFile) {
+	std::ofstream f(pFileName);
+
+	bool ret = false;
+
+	if (f.is_open()) {
+		f << outFile;
+		f.close();
+		ret = true;
+	}
+	else {
+		std::cout << "Unable to open file for writing: " << pFileName << std::endl;
+	}
+
+	return ret;
+}
+
 void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType) {
 	GLuint ShaderObj = glCreateShader(ShaderType);
 
@@ -92,7 +109,7 @@ GLuint GetUniformLocation(GLuint shaderProgram, const char* uniformName) {
 	return location;
 }
 
-bool LoadModel(const std::string& path, std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices) {
+bool LoadBasicModel(const std::string& path, std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_FlipUVs);
 
@@ -117,6 +134,45 @@ bool LoadModel(const std::string& path, std::vector<glm::vec3>& vertices, std::v
 			aiFace face = mesh->mFaces[j];
 			for (unsigned int k = 0; k < face.mNumIndices; k++) {
 				indices.push_back(face.mIndices[k]);
+			}
+		}
+	}
+
+	return true;
+}
+
+bool LoadAdvancedModel(const std::string& path, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, std::vector<unsigned int>& indices) {
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile(path, aiProcess_GenSmoothNormals);
+
+	// Check if the import was successful
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+		std::cerr << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+		return false;
+	}
+
+	// Process all meshes
+	for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+		aiMesh* mesh = scene->mMeshes[i];
+
+		// Process vertices and normals
+		for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
+			aiVector3D vertex = mesh->mVertices[j];
+			vertices.emplace_back(vertex.x, vertex.y, vertex.z);
+
+			aiVector3D normal = mesh->mNormals[j];
+			normals.emplace_back(normal.x, normal.y, normal.z);
+		}
+
+		indices.reserve(mesh->mNumFaces * 3);
+
+		// Process indices
+		for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
+			aiFace face = mesh->mFaces[j];
+
+			// Reverse winding order
+			for (unsigned int k = face.mNumIndices; k > 0; --k) {
+				indices.emplace_back(face.mIndices[k - 1]);
 			}
 		}
 	}

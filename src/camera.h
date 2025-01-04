@@ -47,6 +47,7 @@ private:
 	float sensitivity;
 
 	float speed;
+	float inputSpeed;
 
 	glm::vec3 up;
 	glm::vec3 right;

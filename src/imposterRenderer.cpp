@@ -34,16 +34,11 @@ void ImposterRenderer::DebugDraw() {
     ImGui::Columns(2, "GridLayout");
     ImGui::SetColumnWidth(0, 544);
 
-    ImGui::BeginChild("Viewport", ImVec2(0, 0), true);
     deferredRenderer->DisplayViewportImGui();
-    ImGui::SameLine();
-
-    ImGui::EndChild();
 
     ImGui::NextColumn();
-    ImGui::BeginChild("G-Buffer", ImVec2(0, 0), true);
     deferredRenderer->DebugDraw();
-    ImGui::EndChild();
+    imposterObject->DebugDraw();
 
     ImGui::Columns(1);
     ImGui::End();
@@ -51,8 +46,42 @@ void ImposterRenderer::DebugDraw() {
 
 ImposterObject::ImposterObject(Shader* shader) : Object(shader) {
     std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
 	std::vector<unsigned int> indices;
-    LoadModel("resources/icosphere.obj", vertices, indices);
+    
+	ModifyBrokenOBJFile("resources/trees/tree0.obj");
+    LoadAdvancedModel("resources/trees/tree0.obj", vertices, normals, indices);
 
-	SetData(vertices, std::vector<glm::vec3>(0), indices);
+	SetData(vertices, normals, indices);
+}
+
+void ImposterObject::ModifyBrokenOBJFile(const char* path) {
+    std::string inputData;
+    std::string outputData;
+
+    if (!ReadFile(path, inputData)) {
+        std::cerr << "Failed to read file to fix OBJ issue: " << path << std::endl;
+        return;
+    }
+
+    std::istringstream stream(inputData);
+    std::string line;
+
+    while (std::getline(stream, line)) {
+        if (line.substr(0, 2) == "v ") {
+            std::istringstream vertexStream(line);
+            std::string vertexPrefix;
+            double x, y, z;
+
+            vertexStream >> vertexPrefix >> x >> y >> z;
+			outputData += "v " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(z) + "\n";
+        }
+        else {
+			outputData += line + "\n";
+        }
+    }
+
+    if (!WriteFile(path, outputData)) {
+        std::cerr << "Failed to write file to fix OBJ issue: " << path << std::endl;
+    }
 }
