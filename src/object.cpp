@@ -72,7 +72,7 @@ void Object::UpdateModelMatrix() const {
 }
 
 void Object::DebugDraw() {
-    if (ImGui::SliderFloat3("Position", &position.x, -10.0f, 10.0f)) UpdateModelMatrix();
-    if (ImGui::SliderFloat3("Rotation", &rotation.x, -180.0f, 180.0f)) UpdateModelMatrix();
-    if (ImGui::SliderFloat3("Scale", &scale.x, -10.0f, 10.0f)) UpdateModelMatrix();
+    if (ImGui::DragFloat3("Position", &position.x, 1.0f, 0.0f, 0.0f, "%.1f")) UpdateModelMatrix();
+    if (ImGui::DragFloat3("Rotation", &rotation.x, 1.0f, -180.0f, 180.0f, "%.1f")) UpdateModelMatrix();
+    if (ImGui::DragFloat3("Scale", &scale.x, 0.01f, 0.0f, 10.0f, "%.1f")) UpdateModelMatrix();
 }
