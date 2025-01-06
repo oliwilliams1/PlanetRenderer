@@ -52,11 +52,12 @@ private:
 	std::vector<glm::mat4> instanceData;
 	GLuint VAO, VBO, NBO, IBO, instanceBuffer;
 
+	void GenerateInstanceData();
 	void UpdateModelMatrix();
 	GLuint m_MasterModelLocation;
 	glm::vec3 pos;
 	glm::vec3 rot;
-	glm::vec3 scale;
+	float scale;
 
 	int indicesCount;
 	float* orthoScale;

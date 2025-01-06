@@ -3,7 +3,7 @@
 ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 	this->app = app;
 	this->ortho = true;
-	this->orthoScale = 600.0f;
+	this->orthoScale = 64.0f;
 
 	deferredRenderer = new DeferredRenderer(512, 512);
 
@@ -49,7 +49,6 @@ void ImposterRenderer::DebugDraw() {
 	deferredRenderer->DebugDraw();
 	imposterObject->DebugDraw();
 	ImGui::Checkbox("Preview ortho camera", &ortho);
-	ImGui::DragFloat("Ortho scale", &orthoScale, 0.1f, 0.0f, 0.0f, "%.1f");
 
 	ImGui::Columns(1);
 	ImGui::End();
@@ -58,14 +57,35 @@ void ImposterRenderer::DebugDraw() {
 ImposterObject::ImposterObject(Shader* shader, float* orthoScale) {
 	this->shader = shader;
 	this->orthoScale = orthoScale;
-	this->pos = glm::vec3(0.0f, 0.0f, 0.0f);
+	this->pos = glm::vec3(0.0f, -8.0f, 0.0f);
 	this->rot = glm::vec3(0.0f, 0.0f, 0.0f);
-	this->scale = glm::vec3(1.0f, 1.0f, 1.0f);
+	this->scale = 0.023f;
 
 	objData = LoadObject("tree0");
-	instanceData.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+	GenerateInstanceData();
 
 	SetupBuffers();
+}
+
+void ImposterObject::GenerateInstanceData() {
+	instanceData.clear();
+
+	for (int x = 0; x < 8; x++) {
+		for (int y = 0; y < 8; y++) {
+
+			glm::mat4 translation = glm::translate(glm::mat4(1.0f),
+				glm::vec3(-64.0f + x * 16.0f + 8.0f,
+					0.0f,
+					-64.0f + y * 16.0f + 8.0f));
+
+			glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(x * 45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+			glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(y * 22.5f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+			glm::mat4 m_Model = translation * rotX * rotY;
+			instanceData.push_back(m_Model);
+		}
+	}
 }
 
 void ImposterObject::UpdateModelMatrix() {
@@ -77,7 +97,7 @@ void ImposterObject::UpdateModelMatrix() {
 	model = glm::rotate(model, glm::radians(rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	model = glm::scale(model, scale);
+	model = glm::scale(model, glm::vec3(scale));
 
 	shader->use();
 	glUniformMatrix4fv(m_MasterModelLocation, 1, GL_FALSE, glm::value_ptr(model));
@@ -182,9 +202,9 @@ void ImposterObject::Draw() {
 }
 
 void ImposterObject::DebugDraw() {
-	if (ImGui::DragFloat3("Position", &pos.x, 1.0f, 0.0f, 0.0f, "%.1f")) UpdateModelMatrix();
+	if (ImGui::DragFloat3("Position", &pos.x, 1.0f, 0.0f, 0.0f, "%.1f"))      UpdateModelMatrix();
 	if (ImGui::DragFloat3("Rotation", &rot.x, 1.0f, -180.0f, 180.0f, "%.1f")) UpdateModelMatrix();
-	if (ImGui::DragFloat3("Scale", &scale.x, 0.05f, 0.0f, 10.0f, "%.1f")) UpdateModelMatrix();
+	if (ImGui::DragFloat ("Scale",    &scale, 0.001f, 0.001f, 0.0f, "%.3f"))  UpdateModelMatrix();
 }
 
 ImposterObject::~ImposterObject() {
