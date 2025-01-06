@@ -6,9 +6,10 @@ layout (location = 2) out vec4 gAlbedo;
 
 in vec3 FragPos;
 in vec3 Normal;
+in vec2 UV;
 
 void main() {
 	gPosition = FragPos;
 	gNormal = Normal;
-	gAlbedo = vec4(1.0);
+	gAlbedo = vec4(UV.x, 0.0, UV.y, 1.0);
 }

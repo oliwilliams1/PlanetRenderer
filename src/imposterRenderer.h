@@ -38,7 +38,7 @@ private:
 };
 
 struct ObjectBuffer {
-	GLuint VAO, VBO, NBO, IBO, instanceBuffer;
+	GLuint VAO, VBO, NBO, UVBO, IBO, instanceBuffer;
 	int indicesCount;
 };
 

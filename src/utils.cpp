@@ -143,7 +143,7 @@ bool LoadBasicModel(const std::string& path, std::vector<glm::vec3>& vertices, s
 
 bool LoadAdvancedModel(const std::string& path, std::vector<ObjectData>& objects) {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_GenSmoothNormals);
+	const aiScene* scene = importer.ReadFile(path, aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace);
 
 	// Check if the import was successful
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -158,13 +158,22 @@ bool LoadAdvancedModel(const std::string& path, std::vector<ObjectData>& objects
 
 		ObjectData objectData;
 
-		// Process vertices and normals
+		// Process vertices, normals, and UVs
 		for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
 			aiVector3D vertex = mesh->mVertices[j];
 			objectData.vertices.emplace_back(vertex.x, vertex.y, vertex.z);
 
 			aiVector3D normal = mesh->mNormals[j];
 			objectData.normals.emplace_back(normal.x, normal.y, normal.z);
+
+			// Process UVs if available
+			if (mesh->mTextureCoords[0]) {
+				aiVector3D uv = mesh->mTextureCoords[0][j];
+				objectData.uvs.emplace_back(uv.x, uv.y);
+			}
+			else {
+				objectData.uvs.emplace_back(0.0f, 0.0f);
+			}
 		}
 
 		objectData.indices.reserve(mesh->mNumFaces * 3);

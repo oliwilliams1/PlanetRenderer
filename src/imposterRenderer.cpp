@@ -131,6 +131,12 @@ void ImposterObject::SetupBuffers(const ObjectData& objData) {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
 
+	glGenBuffers(1, &objBuffer.UVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, objBuffer.UVBO);
+	glBufferData(GL_ARRAY_BUFFER, objData.uvs.size() * sizeof(glm::vec2), objData.uvs.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(2);
+
 	glGenBuffers(1, &objBuffer.IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, objBuffer.IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, objData.indices.size() * sizeof(unsigned int), objData.indices.data(), GL_STATIC_DRAW);
@@ -141,9 +147,9 @@ void ImposterObject::SetupBuffers(const ObjectData& objData) {
 	glBindBuffer(GL_ARRAY_BUFFER, objBuffer.instanceBuffer);
 	glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
 	for (int i = 0; i < 4; i++) {
-		glEnableVertexAttribArray(i + 2);
-		glVertexAttribPointer(i + 2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
-		glVertexAttribDivisor(i + 2, 1);
+		glEnableVertexAttribArray(i + 3);
+		glVertexAttribPointer(i + 3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
+		glVertexAttribDivisor(i + 3, 1);
 	}
 	glBindVertexArray(0);
 

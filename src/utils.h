@@ -11,10 +11,11 @@
 #include <glm/glm.hpp>
 
 struct ObjectData {
+    std::string texturePath;
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
+    std::vector<glm::vec2> uvs;
     std::vector<unsigned int> indices;
-    std::string texturePath;
 };
 
 bool LoadBasicModel(const std::string& path, std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);

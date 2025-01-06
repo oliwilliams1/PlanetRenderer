@@ -23,6 +23,10 @@ void SerializeObjects(const std::vector<ObjectData>& objects, const std::string&
         file.write(reinterpret_cast<const char*>(&normalCount), sizeof(normalCount));
         file.write(reinterpret_cast<const char*>(object.normals.data()), normalCount * sizeof(glm::vec3));
 
+        size_t uvCount = object.uvs.size();
+        file.write(reinterpret_cast<const char*>(&uvCount), sizeof(uvCount));
+        file.write(reinterpret_cast<const char*>(object.uvs.data()), uvCount * sizeof(glm::vec2));
+
         size_t indexCount = object.indices.size();
         file.write(reinterpret_cast<const char*>(&indexCount), sizeof(indexCount));
         file.write(reinterpret_cast<const char*>(object.indices.data()), indexCount * sizeof(unsigned int));
@@ -58,6 +62,11 @@ std::vector<ObjectData> DeserializeObjects(const std::string& filename) {
         file.read(reinterpret_cast<char*>(&normalCount), sizeof(normalCount));
         object.normals.resize(normalCount);
         file.read(reinterpret_cast<char*>(object.normals.data()), normalCount * sizeof(glm::vec3));
+
+        size_t uvCount = 0;
+        file.read(reinterpret_cast<char*>(&uvCount), sizeof(uvCount));
+        object.uvs.resize(uvCount);
+        file.read(reinterpret_cast<char*>(object.uvs.data()), uvCount * sizeof(glm::vec2));
 
         size_t indexCount = 0;
         file.read(reinterpret_cast<char*>(&indexCount), sizeof(indexCount));
