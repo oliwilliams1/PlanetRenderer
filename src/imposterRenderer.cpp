@@ -5,7 +5,9 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 	this->ortho = true;
 	this->orthoScale = 64.0f;
 
-	deferredRenderer = new DeferredRenderer(512, 512);
+	this->resolution = 1024.0f;
+
+	deferredRenderer = new DeferredRenderer(resolution, resolution);
 
 	CamInitData camInitData{};
 	camInitData.fov = 70.0f;
@@ -43,7 +45,7 @@ void ImposterRenderer::DebugDraw() {
 	ImGui::Columns(2, "GridLayout");
 	ImGui::SetColumnWidth(0, 544);
 
-	deferredRenderer->DisplayViewportImGui();
+	deferredRenderer->DisplayViewportImGui(glm::vec2(512.0f));
 
 	ImGui::NextColumn();
 	deferredRenderer->DebugDraw();

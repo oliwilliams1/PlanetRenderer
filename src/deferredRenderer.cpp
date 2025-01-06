@@ -160,7 +160,7 @@ void DeferredRenderer::DebugDraw() {
 	ImGui::Image((ImTextureID)(intptr_t)mainTexture, ImVec2(width, height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
 }
 
-void DeferredRenderer::DisplayViewportImGui() {
+void DeferredRenderer::DisplayViewportImGui(glm::vec2 inputSize) {
 	ImGui::Checkbox("Wireframe", &wireframe);
 
 	if (wireframe) {
@@ -170,8 +170,14 @@ void DeferredRenderer::DisplayViewportImGui() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
+	ImVec2 size = ImVec2(width, height);
+
+	if (inputSize.x != 0.0f && inputSize.y != 0.0f) {
+		size = ImVec2(inputSize.x, inputSize.y);
+	}
+
 	GLuint texture = viewportTexture == 0 ? mainTexture : viewportTexture == 1 ? gPosition : viewportTexture == 2 ? gNormal : gAlbedo;
-	ImGui::Image((ImTextureID)(intptr_t)texture, ImVec2(width, height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+	ImGui::Image((ImTextureID)(intptr_t)texture, size, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
 }
 
 DeferredRenderer::~DeferredRenderer() {

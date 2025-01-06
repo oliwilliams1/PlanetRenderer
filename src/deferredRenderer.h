@@ -12,7 +12,7 @@ public:
 
 	void Bind();
 	void DebugDraw();
-	void DisplayViewportImGui();
+	void DisplayViewportImGui(glm::vec2 size = { 0.0f, 0.0f });
 	void Render();
 
 private:

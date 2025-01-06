@@ -28,6 +28,7 @@ public:
 private:
 	bool ortho;
 	float orthoScale;
+	float resolution;
 
 	App* app;
 	Camera* camera;
