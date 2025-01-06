@@ -18,7 +18,10 @@ uniform mat4 m_ModelMaster;
 
 void main() {
     vec4 worldPos = m_Model * m_ModelMaster * vec4(position, 1.0);
+
+    mat3 normalMatrix = transpose(inverse(mat3(m_Model * m_ModelMaster)));
+
 	gl_Position = m_ViewProj * worldPos;
     FragPos = worldPos.xyz;
-    Normal = normal;
+    Normal = normalize(normalMatrix * normal);
 }

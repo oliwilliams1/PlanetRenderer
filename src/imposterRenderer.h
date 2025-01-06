@@ -37,30 +37,34 @@ private:
 	Shader* imposterShader;
 };
 
+struct ObjectBuffer {
+	GLuint VAO, VBO, NBO, IBO, instanceBuffer;
+	int indicesCount;
+};
+
 class ImposterObject {
 public:
-	ImposterObject(Shader* shader, float* orthoScale);
+	ImposterObject(Shader* shader);
 	~ImposterObject();
-	ObjectData LoadObject(std::string objName);
 	void Draw();
 	void DebugDraw();
 
 private:
 	Shader* shader;
-	ObjectData objData;
 
-	void SetupBuffers();
+	std::vector<ObjectData> LoadObject(std::string objName);
+	
+	void SetupBuffers(const ObjectData& objData);
 	std::vector<glm::mat4> instanceData;
-	GLuint VAO, VBO, NBO, IBO, instanceBuffer;
+	std::vector<ObjectBuffer> objBuffers;
 
 	void GenerateInstanceData();
 	void UpdateModelMatrix();
 	GLuint m_MasterModelLocation;
 	glm::vec3 pos;
 	glm::vec3 rot;
-	float scale;
+	glm::vec3 scale;
+	float overallScale;
 
-	int indicesCount;
-	float* orthoScale;
 	void ModifyBrokenOBJFile(std::string path);
 };

@@ -18,7 +18,7 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 
 	camera = new Camera(app->window, &app->deltaTime, 512, 512, camInitData, UBO);
 	imposterShader = new Shader("shaders/imposter.vert", "shaders/imposter.frag", "Imposter Shader");
-	imposterObject = new ImposterObject(imposterShader, &orthoScale);
+	imposterObject = new ImposterObject(imposterShader);
 }
 
 void ImposterRenderer::Render() {
@@ -56,17 +56,22 @@ void ImposterRenderer::DebugDraw() {
 	ImGui::End();
 }
 
-ImposterObject::ImposterObject(Shader* shader, float* orthoScale) {
+ImposterObject::ImposterObject(Shader* shader) {
 	this->shader = shader;
-	this->orthoScale = orthoScale;
 	this->pos = glm::vec3(0.0f, -8.0f, 0.0f);
-	this->rot = glm::vec3(0.0f, 0.0f, 0.0f);
-	this->scale = 0.023f;
+	this->rot = glm::vec3(0.0f);
+	this->scale = glm::vec3(1.0f);
+	this->overallScale = 0.02f;
 
-	objData = LoadObject("tree0");
 	GenerateInstanceData();
 
-	SetupBuffers();
+	std::vector<ObjectData> objData = LoadObject("tree0");
+
+	for (int obj = 0; obj < objData.size(); obj++) {
+		SetupBuffers(objData[obj]);
+	}
+
+	objData.clear();
 }
 
 void ImposterObject::GenerateInstanceData() {
@@ -81,7 +86,6 @@ void ImposterObject::GenerateInstanceData() {
 					-64.0f + y * 16.0f + 8.0f));
 
 			glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(x * 45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
 			glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(y * 22.5f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 			glm::mat4 m_Model = translation * rotX * rotY;
@@ -99,40 +103,42 @@ void ImposterObject::UpdateModelMatrix() {
 	model = glm::rotate(model, glm::radians(rot.y), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(rot.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	model = glm::scale(model, glm::vec3(scale));
+	model = glm::scale(model, scale * glm::vec3(overallScale));
 
 	shader->use();
 	glUniformMatrix4fv(m_MasterModelLocation, 1, GL_FALSE, glm::value_ptr(model));
 }
 
-void ImposterObject::SetupBuffers() {
+void ImposterObject::SetupBuffers(const ObjectData& objData) {
 	m_MasterModelLocation = glGetUniformLocation(shader->shaderProgram, "m_ModelMaster");
 
 	UpdateModelMatrix();
 
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	ObjectBuffer objBuffer{};
 
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glGenVertexArrays(1, &objBuffer.VAO);
+	glBindVertexArray(objBuffer.VAO);
+
+	glGenBuffers(1, &objBuffer.VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, objBuffer.VBO);
 	glBufferData(GL_ARRAY_BUFFER, objData.vertices.size() * sizeof(glm::vec3), objData.vertices.data(), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glGenBuffers(1, &NBO);
-	glBindBuffer(GL_ARRAY_BUFFER, NBO);
+	glGenBuffers(1, &objBuffer.NBO);
+	glBindBuffer(GL_ARRAY_BUFFER, objBuffer.NBO);
 	glBufferData(GL_ARRAY_BUFFER, objData.normals.size() * sizeof(glm::vec3), objData.normals.data(), GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
 
-	glGenBuffers(1, &IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glGenBuffers(1, &objBuffer.IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, objBuffer.IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, objData.indices.size() * sizeof(unsigned int), objData.indices.data(), GL_STATIC_DRAW);
 
-	indicesCount = objData.indices.size();
+	objBuffer.indicesCount = objData.indices.size();
 
-	glGenBuffers(1, &instanceBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer);
+	glGenBuffers(1, &objBuffer.instanceBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, objBuffer.instanceBuffer);
 	glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
 	for (int i = 0; i < 4; i++) {
 		glEnableVertexAttribArray(i + 2);
@@ -140,9 +146,11 @@ void ImposterObject::SetupBuffers() {
 		glVertexAttribDivisor(i + 2, 1);
 	}
 	glBindVertexArray(0);
+
+	objBuffers.emplace_back(objBuffer);
 }
 
-ObjectData ImposterObject::LoadObject(std::string objName) {
+std::vector<ObjectData> ImposterObject::LoadObject(std::string objName) {
 	std::ifstream bobjFile("resources/trees/" + objName + ".bobj");
 	std::ifstream objFile("resources/trees/" + objName + ".obj");
 
@@ -150,15 +158,14 @@ ObjectData ImposterObject::LoadObject(std::string objName) {
 	if (bobjFile.good()) {
 		std::cout << "Loading BOBJ file: " << objName << std::endl;
 		std::vector<ObjectData> objects = DeserializeObjects("resources/trees/" + objName + ".bobj");
-		return objects[0];
+		return objects;
 	}
 	else if (objFile.good()) {
 		std::cout << "Loading OBJ file: " << objName << std::endl;
 		ModifyBrokenOBJFile("resources/trees/" + objName + ".obj");
 		LoadAdvancedModel("resources/trees/" + objName + ".obj", objData);
 		SerializeObjects(objData, "resources/trees/" + objName + ".bobj");
-		std::cout << objData.size() << std::endl;
-		return objData[0];
+		return objData;
 	}
 	else {
 		std::cerr << "Failed to load object: " << objName << std::endl;
@@ -197,22 +204,27 @@ void ImposterObject::ModifyBrokenOBJFile(std::string path) {
 }
 
 void ImposterObject::Draw() {
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glDrawElementsInstanced(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, 0, instanceData.size());
-	glBindVertexArray(0);
+	for (int obj = 0; obj < objBuffers.size(); obj++) {
+		glBindVertexArray(objBuffers[obj].VAO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, objBuffers[obj].IBO);
+		glDrawElementsInstanced(GL_TRIANGLES, objBuffers[obj].indicesCount, GL_UNSIGNED_INT, 0, instanceData.size());
+		glBindVertexArray(0);
+	}
 }
 
 void ImposterObject::DebugDraw() {
 	if (ImGui::DragFloat3("Position", &pos.x, 1.0f, 0.0f, 0.0f, "%.1f"))      UpdateModelMatrix();
 	if (ImGui::DragFloat3("Rotation", &rot.x, 1.0f, -180.0f, 180.0f, "%.1f")) UpdateModelMatrix();
-	if (ImGui::DragFloat ("Scale",    &scale, 0.001f, 0.001f, 0.0f, "%.3f"))  UpdateModelMatrix();
+	if (ImGui::DragFloat3("Scale",  &scale.x, 0.05f, 0.001f, 0.0f, "%.1f"))  UpdateModelMatrix();
+	if (ImGui::DragFloat("ImposterScale",  &overallScale, 0.001f, 0.001f, 0.0f, "%.3f"))  UpdateModelMatrix();
 }
 
 ImposterObject::~ImposterObject() {
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &NBO);
-	glDeleteBuffers(1, &IBO);
-	glDeleteBuffers(1, &instanceBuffer);
+	for (int i = 0; i < objBuffers.size(); i++) {
+		glDeleteVertexArrays(1, &objBuffers[i].VAO);
+		glDeleteBuffers(1, &objBuffers[i].VBO);
+		glDeleteBuffers(1, &objBuffers[i].NBO);
+		glDeleteBuffers(1, &objBuffers[i].IBO);
+		glDeleteBuffers(1, &objBuffers[i].instanceBuffer);
+	}
 }
