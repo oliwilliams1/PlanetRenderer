@@ -141,7 +141,7 @@ bool LoadBasicModel(const std::string& path, std::vector<glm::vec3>& vertices, s
 	return true;
 }
 
-bool LoadAdvancedModel(const std::string& path, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, std::vector<unsigned int>& indices) {
+bool LoadAdvancedModel(const std::string& path, std::vector<ObjectData>& objects) {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_GenSmoothNormals);
 
@@ -152,19 +152,22 @@ bool LoadAdvancedModel(const std::string& path, std::vector<glm::vec3>& vertices
 	}
 
 	// Process all meshes
+	objects.reserve(scene->mNumMeshes);
 	for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
 		aiMesh* mesh = scene->mMeshes[i];
+
+		ObjectData objectData;
 
 		// Process vertices and normals
 		for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
 			aiVector3D vertex = mesh->mVertices[j];
-			vertices.emplace_back(vertex.x, vertex.y, vertex.z);
+			objectData.vertices.emplace_back(vertex.x, vertex.y, vertex.z);
 
 			aiVector3D normal = mesh->mNormals[j];
-			normals.emplace_back(normal.x, normal.y, normal.z);
+			objectData.normals.emplace_back(normal.x, normal.y, normal.z);
 		}
 
-		indices.reserve(mesh->mNumFaces * 3);
+		objectData.indices.reserve(mesh->mNumFaces * 3);
 
 		// Process indices
 		for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
@@ -172,9 +175,23 @@ bool LoadAdvancedModel(const std::string& path, std::vector<glm::vec3>& vertices
 
 			// Reverse winding order
 			for (unsigned int k = face.mNumIndices; k > 0; --k) {
-				indices.emplace_back(face.mIndices[k - 1]);
+				objectData.indices.emplace_back(face.mIndices[k - 1]);
 			}
 		}
+
+		// Retrieve material index for the current mesh
+		if (mesh->mMaterialIndex >= 0) {
+			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+			// Check for a texture path
+			aiString texturePath;
+			if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS) {
+				objectData.texturePath = texturePath.C_Str();
+			}
+		}
+
+		// Add the populated ObjectData to the objects vector
+		objects.emplace_back(std::move(objectData));
 	}
 
 	return true;

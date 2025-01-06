@@ -146,23 +146,23 @@ ObjectData ImposterObject::LoadObject(std::string objName) {
 	std::ifstream bobjFile("resources/trees/" + objName + ".bobj");
 	std::ifstream objFile("resources/trees/" + objName + ".obj");
 
-	ObjectData objData;
+	std::vector<ObjectData> objData;
 	if (bobjFile.good()) {
 		std::cout << "Loading BOBJ file: " << objName << std::endl;
 		std::vector<ObjectData> objects = DeserializeObjects("resources/trees/" + objName + ".bobj");
-		objData = objects[0];
+		return objects[0];
 	}
 	else if (objFile.good()) {
 		std::cout << "Loading OBJ file: " << objName << std::endl;
 		ModifyBrokenOBJFile("resources/trees/" + objName + ".obj");
-		LoadAdvancedModel("resources/trees/" + objName + ".obj", objData.vertices, objData.normals, objData.indices);
-		SerializeObjects({ objData }, "resources/trees/" + objName + ".bobj");
+		LoadAdvancedModel("resources/trees/" + objName + ".obj", objData);
+		SerializeObjects(objData, "resources/trees/" + objName + ".bobj");
+		std::cout << objData.size() << std::endl;
+		return objData[0];
 	}
 	else {
 		std::cerr << "Failed to load object: " << objName << std::endl;
 	}
-
-	return objData;
 }
 
 void ImposterObject::ModifyBrokenOBJFile(std::string path) {

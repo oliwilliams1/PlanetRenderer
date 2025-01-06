@@ -11,6 +11,10 @@ void SerializeObjects(const std::vector<ObjectData>& objects, const std::string&
     file.write(reinterpret_cast<const char*>(&objectCount), sizeof(objectCount));
 
     for (const auto& object : objects) {
+        size_t texturePathLength = object.texturePath.size();
+        file.write(reinterpret_cast<const char*>(&texturePathLength), sizeof(texturePathLength));
+        file.write(object.texturePath.c_str(), texturePathLength);
+
         size_t vertexCount = object.vertices.size();
         file.write(reinterpret_cast<const char*>(&vertexCount), sizeof(vertexCount));
         file.write(reinterpret_cast<const char*>(object.vertices.data()), vertexCount * sizeof(glm::vec3));
@@ -40,6 +44,11 @@ std::vector<ObjectData> DeserializeObjects(const std::string& filename) {
     objects.resize(objectCount);
 
     for (auto& object : objects) {
+        size_t texturePathLength = 0;
+        file.read(reinterpret_cast<char*>(&texturePathLength), sizeof(texturePathLength));
+        object.texturePath.resize(texturePathLength);
+        file.read(&object.texturePath[0], texturePathLength);
+
         size_t vertexCount = 0;
         file.read(reinterpret_cast<char*>(&vertexCount), sizeof(vertexCount));
         object.vertices.resize(vertexCount);

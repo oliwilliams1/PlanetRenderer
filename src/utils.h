@@ -10,8 +10,15 @@
 #include <assimp/PostProcess.h>
 #include <glm/glm.hpp>
 
+struct ObjectData {
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
+    std::vector<unsigned int> indices;
+    std::string texturePath;
+};
+
 bool LoadBasicModel(const std::string& path, std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);
-bool LoadAdvancedModel(const std::string& path, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, std::vector<unsigned int>& indices);
+bool LoadAdvancedModel(const std::string& path, std::vector<ObjectData>& objects);
 bool ReadFile(const char* pFileName, std::string& outFile);
 bool WriteFile(const char* pFileName, const std::string& inFile);
 void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType);
