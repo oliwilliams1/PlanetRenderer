@@ -38,6 +38,7 @@ private:
 };
 
 struct ObjectBuffer {
+	GLuint albedoMap;
 	GLuint VAO, VBO, NBO, UVBO, IBO, instanceBuffer;
 	int indicesCount;
 };
@@ -61,6 +62,7 @@ private:
 	void GenerateInstanceData();
 	void UpdateModelMatrix();
 	GLuint m_MasterModelLocation;
+	GLuint albedoMapLocation;
 	glm::vec3 pos;
 	glm::vec3 rot;
 	glm::vec3 scale;

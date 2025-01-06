@@ -8,8 +8,15 @@ in vec3 FragPos;
 in vec3 Normal;
 in vec2 UV;
 
+uniform sampler2D albedoMap;
+
 void main() {
+	vec4 colour = texture(albedoMap, UV);
+	if (colour.a < 0.5) {
+		discard;
+	}
+
 	gPosition = FragPos;
 	gNormal = Normal;
-	gAlbedo = vec4(UV.x, 0.0, UV.y, 1.0);
+	gAlbedo = vec4(colour.rgb, 1.0);
 }

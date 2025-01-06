@@ -110,8 +110,7 @@ void ImposterObject::UpdateModelMatrix() {
 }
 
 void ImposterObject::SetupBuffers(const ObjectData& objData) {
-	m_MasterModelLocation = glGetUniformLocation(shader->shaderProgram, "m_ModelMaster");
-
+	m_MasterModelLocation = GetUniformLocation(shader->shaderProgram, "m_ModelMaster");
 	UpdateModelMatrix();
 
 	ObjectBuffer objBuffer{};
@@ -152,6 +151,9 @@ void ImposterObject::SetupBuffers(const ObjectData& objData) {
 		glVertexAttribDivisor(i + 3, 1);
 	}
 	glBindVertexArray(0);
+
+	albedoMapLocation = GetUniformLocation(shader->shaderProgram, "albedoMap");
+	LoadTexture(&objBuffer.albedoMap, ("resources/trees/" + objData.texturePath).c_str());
 
 	objBuffers.emplace_back(objBuffer);
 }
@@ -213,6 +215,10 @@ void ImposterObject::Draw() {
 	glDisable(GL_CULL_FACE);
 
 	for (int obj = 0; obj < objBuffers.size(); obj++) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, objBuffers[obj].albedoMap);
+		glUniform1i(albedoMapLocation, 0);
+
 		glBindVertexArray(objBuffers[obj].VAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, objBuffers[obj].IBO);
 		glDrawElementsInstanced(GL_TRIANGLES, objBuffers[obj].indicesCount, GL_UNSIGNED_INT, 0, instanceData.size());
