@@ -11,8 +11,8 @@ public:
 	~DeferredRenderer();
 
 	void Bind();
-	void DebugDraw();
-	void DisplayViewportImGui(glm::vec2 size = { 0.0f, 0.0f });
+	void DebugDraw(bool flipUv = false);
+	void DisplayViewportImGui(glm::vec2 size = { 0.0f, 0.0f }, bool flipUv = false);
 	void Render();
 
 private:

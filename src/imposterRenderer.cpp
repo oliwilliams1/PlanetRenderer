@@ -45,10 +45,10 @@ void ImposterRenderer::DebugDraw() {
 	ImGui::Columns(2, "GridLayout");
 	ImGui::SetColumnWidth(0, 544);
 
-	deferredRenderer->DisplayViewportImGui(glm::vec2(512.0f));
+	deferredRenderer->DisplayViewportImGui(glm::vec2(512.0f), ortho);
 
 	ImGui::NextColumn();
-	deferredRenderer->DebugDraw();
+	deferredRenderer->DebugDraw(ortho);
 	imposterObject->DebugDraw();
 	ImGui::Checkbox("Preview ortho camera", &ortho);
 
@@ -86,7 +86,7 @@ void ImposterObject::GenerateInstanceData() {
 					-64.0f + y * 16.0f + 8.0f));
 
 			glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(x * 45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(y * 22.5f), glm::vec3(1.0f, 0.0f, 0.0f));
+			glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(157.5f - y * 22.5f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 			glm::mat4 m_Model = translation * rotX * rotY;
 			instanceData.push_back(m_Model);
@@ -204,12 +204,16 @@ void ImposterObject::ModifyBrokenOBJFile(std::string path) {
 }
 
 void ImposterObject::Draw() {
+	glDisable(GL_CULL_FACE);
+
 	for (int obj = 0; obj < objBuffers.size(); obj++) {
 		glBindVertexArray(objBuffers[obj].VAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, objBuffers[obj].IBO);
 		glDrawElementsInstanced(GL_TRIANGLES, objBuffers[obj].indicesCount, GL_UNSIGNED_INT, 0, instanceData.size());
 		glBindVertexArray(0);
 	}
+
+	glEnable(GL_CULL_FACE);
 }
 
 void ImposterObject::DebugDraw() {

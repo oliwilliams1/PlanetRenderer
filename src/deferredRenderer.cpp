@@ -144,23 +144,26 @@ void DeferredRenderer::Render() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void DeferredRenderer::DebugDraw() {
+void DeferredRenderer::DebugDraw(bool flipUv) {
 	float aspectRatio = (float)width / (float)height;
 	int width = 175;
 	int height = (int)(width / aspectRatio);
 
 	ImGui::Combo("G-Buffer", &viewportTexture, "Rendered\0Position\0Normal\0Albedo\0\0");
 
-	ImGui::Image((ImTextureID)(intptr_t)gPosition, ImVec2(width, height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-	ImGui::SameLine();
-	ImGui::Image((ImTextureID)(intptr_t)gNormal, ImVec2(width, height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+	ImVec2 uv0 = flipUv ? ImVec2(0.0f, 0.0f) : ImVec2(0.0f, 1.0f);
+	ImVec2 uv1 = flipUv ? ImVec2(1.0f, 1.0f) : ImVec2(1.0f, 0.0f);
 
-	ImGui::Image((ImTextureID)(intptr_t)gAlbedo, ImVec2(width, height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+	ImGui::Image((ImTextureID)(intptr_t)gPosition, ImVec2(width, height), uv0, uv1);
 	ImGui::SameLine();
-	ImGui::Image((ImTextureID)(intptr_t)mainTexture, ImVec2(width, height), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+	ImGui::Image((ImTextureID)(intptr_t)gNormal, ImVec2(width, height), uv0, uv1);
+
+	ImGui::Image((ImTextureID)(intptr_t)gAlbedo, ImVec2(width, height), uv0, uv1);
+	ImGui::SameLine();
+	ImGui::Image((ImTextureID)(intptr_t)mainTexture, ImVec2(width, height), uv0, uv1);
 }
 
-void DeferredRenderer::DisplayViewportImGui(glm::vec2 inputSize) {
+void DeferredRenderer::DisplayViewportImGui(glm::vec2 inputSize, bool flipUv) {
 	ImGui::Checkbox("Wireframe", &wireframe);
 
 	if (wireframe) {
@@ -176,8 +179,11 @@ void DeferredRenderer::DisplayViewportImGui(glm::vec2 inputSize) {
 		size = ImVec2(inputSize.x, inputSize.y);
 	}
 
+	ImVec2 uv0 = flipUv ? ImVec2(0.0f, 0.0f) : ImVec2(0.0f, 1.0f);
+	ImVec2 uv1 = flipUv ? ImVec2(1.0f, 1.0f) : ImVec2(1.0f, 0.0f);
+
 	GLuint texture = viewportTexture == 0 ? mainTexture : viewportTexture == 1 ? gPosition : viewportTexture == 2 ? gNormal : gAlbedo;
-	ImGui::Image((ImTextureID)(intptr_t)texture, size, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+	ImGui::Image((ImTextureID)(intptr_t)texture, size, uv0, uv1);
 }
 
 DeferredRenderer::~DeferredRenderer() {
