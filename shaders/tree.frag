@@ -63,25 +63,25 @@ void alphaDitherBasedOnDistance() {
     }
 
 void main() {
-    alphaDitherBasedOnDistance();
+    //alphaDitherBasedOnDistance();
     int lowerRow = int(LowerRow);
     int upperRow = min(lowerRow + 1, gridSize - 1);
     float rowBlendFactor = LowerRow - lowerRow;
 
     vec2 uvLower = imposterSampler(UV, lowerRow, Col);
-    vec4 albedoLower = texture(u_Albedo, uvLower);
-    vec3 normalLower = texture(u_Normal, uvLower).rgb * 2.0 - 1.0;
-
     vec2 uvUpper = imposterSampler(UV, upperRow, Col);
-    vec4 albedoUpper = texture(u_Albedo, uvUpper);
-    vec3 normalUpper = texture(u_Normal, uvUpper).rgb * 2.0 - 1.0;
 
+    vec4 albedoLower = texture(u_Albedo, uvLower);
+    vec4 albedoUpper = texture(u_Albedo, uvUpper);
     vec4 finalAlbedo = mix(albedoLower, albedoUpper, rowBlendFactor);
+
+    if (finalAlbedo.a < 0.5) discard;
+    
+    vec3 normalUpper = texture(u_Normal, uvUpper).rgb * 2.0 - 1.0;
+    vec3 normalLower = texture(u_Normal, uvLower).rgb * 2.0 - 1.0;
     vec3 finalNormal = normalize(TBN * normalize(mix(normalLower, normalUpper, rowBlendFactor)));
 
-    if (finalAlbedo.r < 0.1) discard;
-
     gPosition = FragPos;
-    gNormal = finalNormal;
-    gAlbedo = vec4(finalAlbedo.rgb, 1.0);
+    gNormal = vec3(0.0, 1.0, 0.0);
+    gAlbedo = vec4(finalAlbedo.rgba);
 }

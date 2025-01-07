@@ -4,8 +4,10 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 	this->app = app;
 	this->ortho = true;
 	this->orthoScale = 64.0f;
+	this->resolution = 784;
 
-	this->resolution = 1024.0f;
+	strncpy(this->saveToFileBuffer, "tree0", sizeof(this->saveToFileBuffer) - 1);
+	this->saveToFileBuffer[sizeof(this->saveToFileBuffer) - 1] = '\0';
 
 	deferredRenderer = new DeferredRenderer(resolution, resolution);
 
@@ -18,7 +20,7 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 
 	camera = new Camera(app->window, &app->deltaTime, 512, 512, camInitData, UBO);
 	imposterShader = new Shader("shaders/imposter.vert", "shaders/imposter.frag", "Imposter Shader");
-	imposterObject = new ImposterObject(imposterShader);
+	imposterObject = new ImposterObject(imposterShader, saveToFileBuffer);
 }
 
 void ImposterRenderer::Render() {
@@ -52,11 +54,19 @@ void ImposterRenderer::DebugDraw() {
 	imposterObject->DebugDraw();
 	ImGui::Checkbox("Preview ortho camera", &ortho);
 
+	ImGui::InputText("File name", saveToFileBuffer, sizeof(saveToFileBuffer));
+	if (ImGui::Button("Render & save to file")) SaveBuffersToFile();
+
 	ImGui::Columns(1);
 	ImGui::End();
 }
 
-ImposterObject::ImposterObject(Shader* shader) {
+void ImposterRenderer::SaveBuffersToFile() {
+	SaveTextureToFile(deferredRenderer->gAlbedo, std::string("resources/trees/") + saveToFileBuffer + std::string("-albedo-imp"), deferredRenderer->width, deferredRenderer->height, GL_RGBA);
+	SaveTextureToFile(deferredRenderer->gNormal, std::string("resources/trees/") + saveToFileBuffer + std::string("-normal-imp"), deferredRenderer->width, deferredRenderer->height, GL_RGBA);
+}
+
+ImposterObject::ImposterObject(Shader* shader, const char* name) {
 	this->shader = shader;
 	this->pos = glm::vec3(0.0f, -8.0f, 0.0f);
 	this->rot = glm::vec3(0.0f);
@@ -65,7 +75,7 @@ ImposterObject::ImposterObject(Shader* shader) {
 
 	GenerateInstanceData();
 
-	std::vector<ObjectData> objData = LoadObject("tree0");
+	std::vector<ObjectData> objData = LoadObject(name);
 
 	for (int obj = 0; obj < objData.size(); obj++) {
 		SetupBuffers(objData[obj]);

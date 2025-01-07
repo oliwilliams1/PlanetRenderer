@@ -65,8 +65,8 @@ void TreesHandler::SetupBuffers() {
 }
 
 void TreesHandler::CreateTextures() {
-	LoadTexture(&texturesTree0.topAlbedo, "resources/trees/tree0-albedo-imposter.png");
-	LoadTexture(&texturesTree0.topNormal, "resources/trees/tree0-normal-imposter.png");
+	LoadTexture(&texturesTree0.topAlbedo, "resources/trees/tree0-albedo-imp.png");
+	LoadTexture(&texturesTree0.topNormal, "resources/trees/tree0-normal-imp.png");
 }
 
 void TreesHandler::Draw() {

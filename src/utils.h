@@ -26,3 +26,4 @@ void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
 GLuint CompileComputeShader(const char* source);
 GLuint GetUniformLocation(GLuint shaderProgram, const char* uniformName);
 void LoadTexture(GLuint* texture, const char* path);
+void SaveTextureToFile(GLuint texture, const std::string& path, int width, int height, GLenum format);

@@ -3,6 +3,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 bool ReadFile(const char* pFileName, std::string& outFile) {
 	std::ifstream f(pFileName);
 
@@ -229,4 +232,26 @@ void LoadTexture(GLuint* texture, const char* path) {
 	else {
 		std::cerr << "Failed to load texture: " << path << std::endl;
 	}
+}
+
+void SaveTextureToFile(GLuint texture, const std::string& path, int width, int height, GLenum format) {
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	int channels = (format == GL_RGBA) ? 4 : 3;
+
+	float* floatData = new float[width * height * channels];
+	unsigned char* byteData = new unsigned char[width * height * channels];
+
+	glGetTexImage(GL_TEXTURE_2D, 0, format, GL_FLOAT, floatData);
+
+	for (int i = 0; i < width * height * channels; i++) {
+		byteData[i] = static_cast<unsigned char>(std::clamp(floatData[i] * 255.0f, 0.0f, 255.0f));
+	}
+
+	stbi_write_png((path + ".png").c_str(), width, height, channels, byteData, width * channels);
+
+	delete[] floatData;
+	delete[] byteData;
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 }

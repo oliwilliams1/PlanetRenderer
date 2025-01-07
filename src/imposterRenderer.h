@@ -35,6 +35,10 @@ private:
 	DeferredRenderer* deferredRenderer;
 	ImposterObject* imposterObject;
 	Shader* imposterShader;
+
+	void SaveBuffersToFile();
+
+	char saveToFileBuffer[256];
 };
 
 struct ObjectBuffer {
@@ -45,7 +49,7 @@ struct ObjectBuffer {
 
 class ImposterObject {
 public:
-	ImposterObject(Shader* shader);
+	ImposterObject(Shader* shader, const char* name);
 	~ImposterObject();
 	void Draw();
 	void DebugDraw();
