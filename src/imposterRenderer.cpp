@@ -5,6 +5,7 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 	this->ortho = true;
 	this->orthoScale = 64.0f;
 	this->resolution = 784;
+	this->needToRender = false;
 
 	strncpy(this->saveToFileBuffer, "tree0", sizeof(this->saveToFileBuffer) - 1);
 	this->saveToFileBuffer[sizeof(this->saveToFileBuffer) - 1] = '\0';
@@ -21,6 +22,16 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 	camera = new Camera(app->window, &app->deltaTime, 512, 512, camInitData, UBO);
 	imposterShader = new Shader("shaders/imposter.vert", "shaders/imposter.frag", "Imposter Shader");
 	imposterObject = new ImposterObject(imposterShader, saveToFileBuffer);
+	
+	gridShader = new Shader("shaders/default.vert", "shaders/default.frag", "Grid Shader");
+	grid = new Object(gridShader);
+
+	std::vector<ObjectData> gridObjData;
+	LoadAdvancedModel("resources/8x8grid.obj", gridObjData);
+
+	grid->SetData(gridObjData[0].vertices, gridObjData[0].normals, gridObjData[0].indices);
+	grid->scale = glm::vec3(16.0f);
+	grid->UpdateModelMatrix();
 }
 
 void ImposterRenderer::Render() {
@@ -37,6 +48,15 @@ void ImposterRenderer::Render() {
 	deferredRenderer->Bind();
 	imposterShader->use();
 	imposterObject->Draw();
+	gridShader->use();
+	if (needToRender) {
+		needToRender = false;
+		SaveTextureToFile(deferredRenderer->gAlbedo, std::string("resources/trees/") + saveToFileBuffer + std::string("-albedo-imp"), deferredRenderer->width, deferredRenderer->height, GL_RGBA);
+		SaveTextureToFile(deferredRenderer->gNormal, std::string("resources/trees/") + saveToFileBuffer + std::string("-normal-imp"), deferredRenderer->width, deferredRenderer->height, GL_RGBA);
+	}
+	else {
+		grid->Draw();
+	}
 	deferredRenderer->Render();    
 }
 
@@ -55,23 +75,18 @@ void ImposterRenderer::DebugDraw() {
 	ImGui::Checkbox("Preview ortho camera", &ortho);
 
 	ImGui::InputText("File name", saveToFileBuffer, sizeof(saveToFileBuffer));
-	if (ImGui::Button("Render & save to file")) SaveBuffersToFile();
+	if (ImGui::Button("Render & save to file")) needToRender = true;
 
 	ImGui::Columns(1);
 	ImGui::End();
 }
 
-void ImposterRenderer::SaveBuffersToFile() {
-	SaveTextureToFile(deferredRenderer->gAlbedo, std::string("resources/trees/") + saveToFileBuffer + std::string("-albedo-imp"), deferredRenderer->width, deferredRenderer->height, GL_RGBA);
-	SaveTextureToFile(deferredRenderer->gNormal, std::string("resources/trees/") + saveToFileBuffer + std::string("-normal-imp"), deferredRenderer->width, deferredRenderer->height, GL_RGBA);
-}
-
 ImposterObject::ImposterObject(Shader* shader, const char* name) {
 	this->shader = shader;
-	this->pos = glm::vec3(0.0f, -8.0f, 0.0f);
+	this->pos = glm::vec3(0.0f, -7.6f, 0.0f);
 	this->rot = glm::vec3(0.0f);
 	this->scale = glm::vec3(1.0f);
-	this->overallScale = 0.02f;
+	this->overallScale = 0.013f;
 
 	GenerateInstanceData();
 

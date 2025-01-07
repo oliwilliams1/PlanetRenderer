@@ -18,15 +18,16 @@ public:
 	virtual void Draw();
 	virtual void DebugDraw();
 
-protected:
 	glm::vec3 position;
 	glm::vec3 rotation;
 	glm::vec3 scale;
+	void UpdateModelMatrix() const;
+
+protected:
 
 	unsigned int indicesCount = 0;
 	GLuint VAO, VBO, NBO, IBO, modelMatrixLocation;
 	Shader* shader;
 
 	void GetModelMatrixLocation();
-	void UpdateModelMatrix() const;
 };

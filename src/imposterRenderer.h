@@ -26,6 +26,7 @@ public:
 	void DebugDraw();
 	
 private:
+	bool needToRender;
 	bool ortho;
 	float orthoScale;
 	float resolution;
@@ -36,7 +37,8 @@ private:
 	ImposterObject* imposterObject;
 	Shader* imposterShader;
 
-	void SaveBuffersToFile();
+	Shader* gridShader;
+	Object* grid;
 
 	char saveToFileBuffer[256];
 };
