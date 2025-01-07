@@ -6,8 +6,9 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 	this->orthoScale = 64.0f;
 	this->resolution = 784;
 	this->needToRender = false;
+	this->objectLoaded = false;
 
-	strncpy(this->saveToFileBuffer, "tree0", sizeof(this->saveToFileBuffer) - 1);
+	strncpy(this->saveToFileBuffer, "", sizeof(this->saveToFileBuffer) - 1);
 	this->saveToFileBuffer[sizeof(this->saveToFileBuffer) - 1] = '\0';
 
 	deferredRenderer = new DeferredRenderer(resolution, resolution);
@@ -21,7 +22,6 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 
 	camera = new Camera(app->window, &app->deltaTime, 512, 512, camInitData, UBO);
 	imposterShader = new Shader("shaders/imposter.vert", "shaders/imposter.frag", "Imposter Shader");
-	imposterObject = new ImposterObject(imposterShader, saveToFileBuffer);
 	
 	gridShader = new Shader("shaders/default.vert", "shaders/default.frag", "Grid Shader");
 	grid = new Object(gridShader);
@@ -47,7 +47,9 @@ void ImposterRenderer::Render() {
 
 	deferredRenderer->Bind();
 	imposterShader->use();
-	imposterObject->Draw();
+
+	if (objectLoaded) imposterObject->Draw();
+
 	gridShader->use();
 	if (needToRender) {
 		needToRender = false;
@@ -71,14 +73,28 @@ void ImposterRenderer::DebugDraw() {
 
 	ImGui::NextColumn();
 	deferredRenderer->DebugDraw(ortho);
-	imposterObject->DebugDraw();
+
+	if (objectLoaded) imposterObject->DebugDraw();
+
 	ImGui::Checkbox("Preview ortho camera", &ortho);
 
 	ImGui::InputText("File name", saveToFileBuffer, sizeof(saveToFileBuffer));
 	if (ImGui::Button("Render & save to file")) needToRender = true;
+	ImGui::SameLine();
+	if (ImGui::Button("Load object")) LoadObject();
 
 	ImGui::Columns(1);
 	ImGui::End();
+}
+
+void ImposterRenderer::LoadObject() {
+	if (objectLoaded) {
+		delete imposterObject;
+	}
+	else {
+		objectLoaded = true;
+	}
+	imposterObject = new ImposterObject(imposterShader, saveToFileBuffer);
 }
 
 ImposterObject::ImposterObject(Shader* shader, const char* name) {

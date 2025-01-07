@@ -63,7 +63,7 @@ void alphaDitherBasedOnDistance() {
     }
 
 void main() {
-    //alphaDitherBasedOnDistance();
+    alphaDitherBasedOnDistance();
     int lowerRow = int(LowerRow);
     int upperRow = min(lowerRow + 1, gridSize - 1);
     float rowBlendFactor = LowerRow - lowerRow;

@@ -28,6 +28,7 @@ public:
 private:
 	bool needToRender;
 	bool ortho;
+	bool objectLoaded;
 	float orthoScale;
 	float resolution;
 
@@ -41,6 +42,8 @@ private:
 	Object* grid;
 
 	char saveToFileBuffer[256];
+
+	void LoadObject();
 };
 
 struct ObjectBuffer {
