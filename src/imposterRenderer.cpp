@@ -35,6 +35,8 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 }
 
 void ImposterRenderer::Render() {
+	if (needToRender) ortho = true;
+
 	if (ortho) {
 		glm::mat4 m_Proj = glm::ortho(-orthoScale, orthoScale, -orthoScale, orthoScale, -orthoScale * 10.0f, orthoScale * 10.0f);
 		glm::mat4 m_View = glm::lookAt(glm::vec3(0.0f, 50.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -272,8 +274,8 @@ void ImposterObject::Draw() {
 void ImposterObject::DebugDraw() {
 	if (ImGui::DragFloat3("Position", &pos.x, 1.0f, 0.0f, 0.0f, "%.1f"))      UpdateModelMatrix();
 	if (ImGui::DragFloat3("Rotation", &rot.x, 1.0f, -180.0f, 180.0f, "%.1f")) UpdateModelMatrix();
-	if (ImGui::DragFloat3("Scale",  &scale.x, 0.05f, 0.001f, 0.0f, "%.1f"))  UpdateModelMatrix();
-	if (ImGui::DragFloat("ImposterScale",  &overallScale, 0.001f, 0.001f, 0.0f, "%.3f"))  UpdateModelMatrix();
+	if (ImGui::DragFloat3("Scale",  &scale.x, 0.05f, 0.001f, 0.0f, "%.1f"))   UpdateModelMatrix();
+	if (ImGui::DragFloat("ImposterScale", &overallScale, 0.001f, 0.001f, 0.0f, "%.3f")) UpdateModelMatrix();
 }
 
 ImposterObject::~ImposterObject() {

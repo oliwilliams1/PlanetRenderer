@@ -63,7 +63,7 @@ void alphaDitherBasedOnDistance() {
     }
 
 void main() {
-    alphaDitherBasedOnDistance();
+    //alphaDitherBasedOnDistance();
     int lowerRow = int(LowerRow);
     int upperRow = min(lowerRow + 1, gridSize - 1);
     float rowBlendFactor = LowerRow - lowerRow;
@@ -82,6 +82,6 @@ void main() {
     vec3 finalNormal = normalize(TBN * normalize(mix(normalLower, normalUpper, rowBlendFactor)));
 
     gPosition = FragPos;
-    gNormal = vec3(0.0, 1.0, 0.0);
+    gNormal = vec3(finalNormal);
     gAlbedo = vec4(finalAlbedo.rgba);
 }
