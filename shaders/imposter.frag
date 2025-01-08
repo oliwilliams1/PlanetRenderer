@@ -15,8 +15,11 @@ void main() {
 	if (colour.a < 0.5) {
 		discard;
 	}
+	
+	vec3 normal = Normal;
+	normal.y *= -1.0;
 
 	gPosition = FragPos;
-	gNormal = Normal * 0.5 + 0.5;
+	gNormal = normal * 0.5 + 0.5;
 	gAlbedo = vec4(colour.rgb, 1.0);
 }

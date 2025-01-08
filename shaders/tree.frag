@@ -83,5 +83,5 @@ void main() {
 
     gPosition = FragPos;
     gNormal = vec3(finalNormal);
-    gAlbedo = vec4(finalAlbedo.rgba);
+    gAlbedo = vec4(vec3(1.0), finalAlbedo.a);
 }

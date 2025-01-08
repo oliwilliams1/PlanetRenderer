@@ -7,8 +7,17 @@ layout (location = 2) out vec4 gAlbedo;
 in vec3 FragPos;
 in vec3 Normal;
 
+uniform int normalizedNormal;
+
 void main() {
-	gPosition = FragPos;
-	gNormal = Normal;
-	gAlbedo = vec4(1.0);
+    gPosition = FragPos;
+
+    vec3 normal = normalize(Normal);
+
+    if (normalizedNormal == 1) {
+        normal = normal * 0.5 + 0.5;
+    }
+
+    gNormal = normal;
+    gAlbedo = vec4(1.0);
 }

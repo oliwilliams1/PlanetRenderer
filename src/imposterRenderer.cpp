@@ -31,7 +31,10 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 
 	grid->SetData(gridObjData[0].vertices, gridObjData[0].normals, gridObjData[0].indices);
 	grid->scale = glm::vec3(16.0f);
+	grid->rotation = glm::vec3(90.0f, 0.0f, 0.0f);
 	grid->UpdateModelMatrix();
+
+	glUniform1i(GetUniformLocation(gridShader->shaderProgram, "normalizedNormal"), 1);
 }
 
 void ImposterRenderer::Render() {
@@ -39,7 +42,11 @@ void ImposterRenderer::Render() {
 
 	if (ortho) {
 		glm::mat4 m_Proj = glm::ortho(-orthoScale, orthoScale, -orthoScale, orthoScale, -orthoScale * 10.0f, orthoScale * 10.0f);
-		glm::mat4 m_View = glm::lookAt(glm::vec3(0.0f, 50.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 m_View = glm::lookAt(
+			glm::vec3(0.0f, 0.0f, 50.0f),
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f)
+		);
 		camera->cameraData.m_ProjView = m_Proj * m_View;
 		camera->UpdateBuffers();
 	}
@@ -101,7 +108,7 @@ void ImposterRenderer::LoadObject() {
 
 ImposterObject::ImposterObject(Shader* shader, const char* name) {
 	this->shader = shader;
-	this->pos = glm::vec3(0.0f, -7.6f, 0.0f);
+	this->pos = glm::vec3(0.0f, -8.0f, 0.0f);
 	this->rot = glm::vec3(0.0f);
 	this->scale = glm::vec3(1.0f);
 	this->overallScale = 0.013f;
@@ -125,11 +132,11 @@ void ImposterObject::GenerateInstanceData() {
 
 			glm::mat4 translation = glm::translate(glm::mat4(1.0f),
 				glm::vec3(-64.0f + x * 16.0f + 8.0f,
-					0.0f,
-					-64.0f + y * 16.0f + 8.0f));
+					-64.0f + y * 16.0f + 8.0f,
+					0.0f));
 
 			glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(x * 45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(157.5f - y * 22.5f), glm::vec3(1.0f, 0.0f, 0.0f));
+			glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(90 + y * 22.5f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 			glm::mat4 m_Model = translation * rotX * rotY;
 			instanceData.push_back(m_Model);
