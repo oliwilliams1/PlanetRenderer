@@ -3,11 +3,18 @@
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec2 uv;
-layout(location = 3) in mat4 m_Model;
 
 out vec3 FragPos;
 out vec3 Normal;
 out vec2 UV;
+
+layout(std430, binding = 0) buffer ModelMatrixInstanceData {
+    mat4 m_Model[];
+};
+
+layout(std430, binding = 1) buffer NormalMatrixInstanceData {
+    mat4 m_Normal[];
+};
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -19,11 +26,16 @@ layout(std140) uniform CameraData {
 uniform mat4 m_ModelMaster;
 
 void main() {
-    vec4 worldPos = m_Model * m_ModelMaster * vec4(position, 1.0);
-    mat4 normalMatrix = transpose(inverse(m_Model));
+    mat4 instanceModel = m_Model[gl_InstanceID];
 
-	gl_Position = m_ViewProj * worldPos;
+    vec4 worldPos = instanceModel * m_ModelMaster * vec4(position, 1.0);
+    
+    mat4 instanceNormal = m_Normal[gl_InstanceID];
+    vec3 worldNormal = normalize(vec3(instanceNormal * vec4(normal, 0.0)));
+    Normal = normalize(worldNormal);
+
+    gl_Position = m_ViewProj * worldPos;
+
     FragPos = worldPos.xyz;
-    Normal = normalize(vec3(normalMatrix * vec4(normal, 0.0)));
     UV = uv;
 }

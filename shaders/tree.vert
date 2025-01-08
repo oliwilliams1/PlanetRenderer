@@ -38,7 +38,7 @@ void main() {
 
     TBN = mat3(right, up, toCamera);
 
-    vec4 worldPos = m_Model * m_CameraRotation * vec4(position * u_TreeScale, 1.0);
+    vec4 worldPos = m_Model * mat4(TBN) * vec4(position * u_TreeScale, 1.0);
     vec3 normal = normalize(worldPos.xyz);
     float phi = acos(dot(normal, toCamera)) / PI;
     LowerRow = phi * (8.0 - 1.0);

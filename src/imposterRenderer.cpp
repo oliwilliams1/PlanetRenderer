@@ -111,7 +111,7 @@ ImposterObject::ImposterObject(Shader* shader, const char* name) {
 	this->pos = glm::vec3(0.0f, -8.0f, 0.0f);
 	this->rot = glm::vec3(0.0f);
 	this->scale = glm::vec3(1.0f);
-	this->overallScale = 0.013f;
+	this->overallScale = 0.127f;
 
 	GenerateInstanceData();
 
@@ -124,22 +124,32 @@ ImposterObject::ImposterObject(Shader* shader, const char* name) {
 	objData.clear();
 }
 
+// Code from the devil
 void ImposterObject::GenerateInstanceData() {
-	instanceData.clear();
+	m_ModelInstanceData.clear();
+	m_NormalInstanceData.clear();
 
 	for (int x = 0; x < 8; x++) {
 		for (int y = 0; y < 8; y++) {
 
-			glm::mat4 translation = glm::translate(glm::mat4(1.0f),
+			glm::mat4 modelTranslation = glm::translate(glm::mat4(1.0f),
 				glm::vec3(-64.0f + x * 16.0f + 8.0f,
 					-64.0f + y * 16.0f + 8.0f,
 					0.0f));
 
-			glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), glm::radians(x * 45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), glm::radians(90 + y * 22.5f), glm::vec3(1.0f, 0.0f, 0.0f));
+			glm::mat4 modelRotX = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f + y * 22.5f), glm::vec3(1.0f, 0.0f, 0.0f));
+			glm::mat4 modelRotY = glm::rotate(glm::mat4(1.0f), glm::radians(x * 45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-			glm::mat4 m_Model = translation * rotX * rotY;
-			instanceData.push_back(m_Model);
+			glm::mat4 m_Model = modelTranslation * modelRotX * modelRotY;
+
+			m_ModelInstanceData.push_back(m_Model);
+
+			glm::mat4 normalRotX = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+			glm::mat4 normalRotZ = glm::rotate(glm::mat4(1.0f), glm::radians((-22.5f * y + 180.0f) - (x * 45.0f)), glm::vec3(0.0f, 0.0f, 1.0f));
+			
+			glm::mat4 m_Normal = normalRotZ * normalRotX;
+
+			m_NormalInstanceData.push_back(m_Normal);
 		}
 	}
 }
@@ -162,7 +172,7 @@ void ImposterObject::UpdateModelMatrix() {
 void ImposterObject::SetupBuffers(const ObjectData& objData) {
 	m_MasterModelLocation = GetUniformLocation(shader->shaderProgram, "m_ModelMaster");
 	UpdateModelMatrix();
-
+	
 	ObjectBuffer objBuffer{};
 
 	glGenVertexArrays(1, &objBuffer.VAO);
@@ -192,14 +202,20 @@ void ImposterObject::SetupBuffers(const ObjectData& objData) {
 
 	objBuffer.indicesCount = objData.indices.size();
 
-	glGenBuffers(1, &objBuffer.instanceBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, objBuffer.instanceBuffer);
-	glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
-	for (int i = 0; i < 4; i++) {
-		glEnableVertexAttribArray(i + 3);
-		glVertexAttribPointer(i + 3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
-		glVertexAttribDivisor(i + 3, 1);
-	}
+	GLuint modelSSBO;
+	glGenBuffers(1, &modelSSBO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelSSBO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, m_ModelInstanceData.size() * sizeof(glm::mat4), m_ModelInstanceData.data(), GL_STATIC_DRAW);
+
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelSSBO);
+
+	GLuint normalSSBO;
+	glGenBuffers(1, &normalSSBO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, normalSSBO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, m_NormalInstanceData.size() * sizeof(glm::mat4), m_NormalInstanceData.data(), GL_STATIC_DRAW);
+
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, normalSSBO);
+
 	glBindVertexArray(0);
 
 	albedoMapLocation = GetUniformLocation(shader->shaderProgram, "albedoMap");
@@ -271,7 +287,7 @@ void ImposterObject::Draw() {
 
 		glBindVertexArray(objBuffers[obj].VAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, objBuffers[obj].IBO);
-		glDrawElementsInstanced(GL_TRIANGLES, objBuffers[obj].indicesCount, GL_UNSIGNED_INT, 0, instanceData.size());
+		glDrawElementsInstanced(GL_TRIANGLES, objBuffers[obj].indicesCount, GL_UNSIGNED_INT, 0, m_ModelInstanceData.size());
 		glBindVertexArray(0);
 	}
 

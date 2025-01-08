@@ -12,12 +12,8 @@ uniform sampler2D albedoMap;
 
 void main() {
 	vec4 colour = texture(albedoMap, UV);
-	if (colour.a < 0.5) {
-		discard;
-	}
 	
 	vec3 normal = Normal;
-	normal.y *= -1.0;
 
 	gPosition = FragPos;
 	gNormal = normal * 0.5 + 0.5;

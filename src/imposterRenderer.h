@@ -65,7 +65,8 @@ private:
 	std::vector<ObjectData> LoadObject(std::string objName);
 	
 	void SetupBuffers(const ObjectData& objData);
-	std::vector<glm::mat4> instanceData;
+	std::vector<glm::mat4> m_ModelInstanceData;
+	std::vector<glm::mat4> m_NormalInstanceData;
 	std::vector<ObjectBuffer> objBuffers;
 
 	void GenerateInstanceData();
