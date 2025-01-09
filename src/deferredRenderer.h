@@ -15,7 +15,7 @@ public:
 	void DisplayViewportImGui(glm::vec2 size = { 0.0f, 0.0f }, bool flipUv = false);
 	void Render();
 
-	GLuint gBuffer, gPosition, gNormal, gAlbedo, gDepth;
+	GLuint gBuffer, gPosition, gNormal, gAlbedo, gObjectType, gDepth;
 	GLuint fboShading, mainTexture;
 	int width, height;
 
@@ -23,13 +23,11 @@ private:
 
 	Shader* deferredShader;
 	GLuint quadVAO, quadVBO;
-	GLuint gPositionLocation, gNormalLocation, gAlbedoLocation;
 	int viewportTexture;
 	bool wireframe;
 
 	void InitG_Buffer();
 	void InitDeferredShadingBuffer();
-	void InitDeferredShadingUniforms();
 
 	void SetupQuad();
 };

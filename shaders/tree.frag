@@ -3,6 +3,7 @@
 layout(location = 0) out vec3 gPosition;
 layout(location = 1) out vec3 gNormal;
 layout(location = 2) out vec4 gAlbedo;
+layout(location = 3) out int  gObjectID;
 
 in vec3 FragPos;
 in vec2 UV;
@@ -63,7 +64,7 @@ void alphaDitherBasedOnDistance() {
 }
 
 void main() {
-    alphaDitherBasedOnDistance(); // Dither based on distance to camera so high LOD tree model will be rendered
+    //alphaDitherBasedOnDistance(); // Dither based on distance to camera so high LOD tree model will be rendered
 
     int lowerRow = int(LowerRow);
     int upperRow = min(lowerRow + 1, gridSize - 1);
@@ -87,4 +88,5 @@ void main() {
     gPosition = FragPos;
     gNormal = vec3(finalNormal);
     gAlbedo = vec4(finalAlbedo.rgb, 1.0);
+    gObjectID = 1;
 }

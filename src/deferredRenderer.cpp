@@ -10,8 +10,13 @@ DeferredRenderer::DeferredRenderer(int width, int height) {
 	InitDeferredShadingBuffer();
 
 	deferredShader = new Shader("shaders/deferred.vert", "shaders/deferred.frag", "Deferred Shader");
-	InitDeferredShadingUniforms();
 	SetupQuad();
+
+	deferredShader->use();
+	glUniform1i(glGetUniformLocation(deferredShader->shaderProgram, "gPosition"), 1);
+	glUniform1i(glGetUniformLocation(deferredShader->shaderProgram, "gNormal"),   2);
+	glUniform1i(glGetUniformLocation(deferredShader->shaderProgram, "gAlbedo"),   3);
+	glUniform1i(glGetUniformLocation(deferredShader->shaderProgram, "gObjectID"), 4);
 }
 
 void DeferredRenderer::SetupQuad() {
@@ -60,6 +65,13 @@ void DeferredRenderer::InitG_Buffer() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedo, 0);
 
+	glGenTextures(1, &gObjectType);
+	glBindTexture(GL_TEXTURE_2D, gObjectType);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8I, width, height, 0, GL_RED_INTEGER, GL_INT, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gObjectType, 0);
+
 	glGenTextures(1, &gDepth);
 	glBindTexture(GL_TEXTURE_2D, gDepth);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
@@ -67,8 +79,8 @@ void DeferredRenderer::InitG_Buffer() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, gDepth, 0);
 
-	GLenum drawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-	glDrawBuffers(3, drawBuffers);
+	GLenum drawBuffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+	glDrawBuffers(4, drawBuffers);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
 		std::cerr << "Framebuffer is not complete!" << std::endl;
@@ -97,12 +109,6 @@ void DeferredRenderer::InitDeferredShadingBuffer() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void DeferredRenderer::InitDeferredShadingUniforms() {
-	gPositionLocation = GetUniformLocation(deferredShader->shaderProgram, "gPosition");
-	gNormalLocation = GetUniformLocation(deferredShader->shaderProgram, "gNormal");
-	gAlbedoLocation = GetUniformLocation(deferredShader->shaderProgram, "gAlbedo");
-}
-
 void DeferredRenderer::Bind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
 	glViewport(0, 0, width, height);
@@ -113,6 +119,8 @@ void DeferredRenderer::Bind() {
 	glBindTexture(GL_TEXTURE_2D, gNormal);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, gAlbedo);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, gObjectType);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -132,10 +140,8 @@ void DeferredRenderer::Render() {
 	glBindTexture(GL_TEXTURE_2D, gNormal);
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, gAlbedo);
-
-	glUniform1i(gPositionLocation, 1);
-	glUniform1i(gNormalLocation, 2);
-	glUniform1i(gAlbedoLocation, 3);
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, gObjectType);
 
 	glBindVertexArray(quadVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
