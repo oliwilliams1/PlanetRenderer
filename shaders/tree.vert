@@ -1,7 +1,7 @@
 #version 430 core
 
 layout(location = 0) in vec3 position;
-layout(location = 1) in mat4 m_Model;
+layout(location = 1) in vec3 instancedPos;
 
 out vec3 FragPos;
 out vec2 UV;
@@ -30,15 +30,16 @@ int pseudoRandom(int seed) {
 }
 
 void main() {
-    vec4 centerWorldPos = m_Model * vec4(vec3(0.0), 1.0);
-    vec3 toCamera = normalize(cameraPos - centerWorldPos.xyz);
-    vec3 up = normalize(centerWorldPos.xyz);
+    vec3 centerWorldPos = instancedPos;
+    vec3 toCamera = normalize(cameraPos - centerWorldPos);
+    vec3 up = normalize(vec3(0.0, 1.0, 0.0));
     vec3 right = normalize(cross(up, toCamera));
     up = normalize(cross(toCamera, right));
 
     TBN = mat3(right, up, toCamera);
 
-    vec4 worldPos = m_Model * mat4(TBN) * vec4(position * u_TreeScale, 1.0);
+    vec4 worldPos = mat4(TBN) * vec4(position * u_TreeScale, 1.0) + vec4(centerWorldPos, 0.0);
+    
     vec3 normal = normalize(worldPos.xyz);
     float phi = acos(dot(normal, toCamera)) / PI;
     LowerRow = phi * (8.0 - 1.0);

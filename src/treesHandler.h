@@ -26,11 +26,13 @@ public:
 
 private:
 	Planet* planet;
-	Shader* shader;
+	Shader* imposterShader;
 	Cubemap* noiseCubemapCPU;
-	std::vector<glm::mat4> instanceData;
+	std::vector<glm::vec3> instanceData;
 
-	GLuint VAO, VBO, IBO;
+	GLuint ImposterVAO, ImposterVBO, ImposterIBO;
+	GLuint TreeVAO, TreeVBO, TreeIBO;
+
 	int passCounter;
 	int numSubdivisions;
 

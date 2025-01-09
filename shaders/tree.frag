@@ -49,8 +49,8 @@ bool shouldDiscardPixel(ivec2 pixelCoords, float v) {
 void alphaDitherBasedOnDistance() {
     float d = distance(cameraPos, FragPos);
     float v = 1.0;
-    float maxDist = 200.0;
-    float minDist = 150.0;
+    float maxDist = 100.0;
+    float minDist = 75.0;
 
     if (d < minDist) {
         discard;
@@ -64,7 +64,7 @@ void alphaDitherBasedOnDistance() {
 }
 
 void main() {
-    //alphaDitherBasedOnDistance(); // Dither based on distance to camera so high LOD tree model will be rendered
+    alphaDitherBasedOnDistance(); // Dither based on distance to camera so high LOD tree model will be rendered
 
     int lowerRow = int(LowerRow);
     int upperRow = min(lowerRow + 1, gridSize - 1);

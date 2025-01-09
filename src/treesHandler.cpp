@@ -2,14 +2,14 @@
 
 TreesHandler::TreesHandler(Planet* planet) {
 	this->planet = planet;
-	this->shader = new Shader("shaders/tree.vert", "shaders/tree.frag", "Trees Shader");
+	this->imposterShader = new Shader("shaders/tree.vert", "shaders/tree.frag", "Trees Shader");
 	this->noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
 	this->numSubdivisions = 50;
 	this->treeScale = 7.5f;
-	albedoLocation = GetUniformLocation(shader->shaderProgram, "u_Albedo");
-	normalLocation = GetUniformLocation(shader->shaderProgram, "u_Normal");
+	albedoLocation = GetUniformLocation(imposterShader->shaderProgram, "u_Albedo");
+	normalLocation = GetUniformLocation(imposterShader->shaderProgram, "u_Normal");
 
-	treeScaleLocation = GetUniformLocation(shader->shaderProgram, "u_TreeScale");
+	treeScaleLocation = GetUniformLocation(imposterShader->shaderProgram, "u_TreeScale");
 	glUniform1f(treeScaleLocation, treeScale);
 
 	PlaceTrees(numSubdivisions);
@@ -22,14 +22,14 @@ void TreesHandler::UpdateTrees() {
 	noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
 	PlaceTrees(numSubdivisions);
 
-	glBindBuffer(GL_ARRAY_BUFFER, IBO);
+	glBindBuffer(GL_ARRAY_BUFFER, TreeIBO);
 	glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void TreesHandler::DebugDraw() {
 	if (ImGui::SliderFloat("Tree Scale", &treeScale, 0.1f, 10.0f)) {
-		shader->use();
+		imposterShader->use();
 		glUniform1f(treeScaleLocation, treeScale);
 	};
 }
@@ -44,23 +44,22 @@ void TreesHandler::SetupBuffers() {
 		 1.0f, -1.0f, 0.0f
 	};
 
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	glGenVertexArrays(1, &ImposterVAO);
+	glBindVertexArray(ImposterVAO);
 
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glGenBuffers(1, &ImposterVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, ImposterVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glGenBuffers(1, &IBO);
-	glBindBuffer(GL_ARRAY_BUFFER, IBO);
-	glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
-	for (int i = 0; i < 4; i++) {
-		glEnableVertexAttribArray(i + 1);
-		glVertexAttribPointer(i + 1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
-		glVertexAttribDivisor(i + 1, 1);
-	}
+	glGenBuffers(1, &ImposterIBO);
+	glBindBuffer(GL_ARRAY_BUFFER, ImposterIBO);
+	glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::vec3), instanceData.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+	glVertexAttribDivisor(1, 1);
+
 	glBindVertexArray(0);
 }
 
@@ -70,7 +69,7 @@ void TreesHandler::CreateTextures() {
 }
 
 void TreesHandler::Draw() {
-	shader->use();
+	imposterShader->use();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texturesTree0.topAlbedo);
 	glUniform1i(albedoLocation, 0);
@@ -79,7 +78,7 @@ void TreesHandler::Draw() {
 	glBindTexture(GL_TEXTURE_2D, texturesTree0.topNormal);
 	glUniform1i(normalLocation, 1);
 
-	glBindVertexArray(VAO);
+	glBindVertexArray(ImposterVAO);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instanceData.size());
 	glBindVertexArray(0);
 }
@@ -108,11 +107,9 @@ void TreesHandler::AddTree(glm::vec3 dir, float height) {
 	glm::vec3 normal = glm::normalize(dir);
 	glm::vec3 pos = normal * (planet->planetScale + treeScale);
 	pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
-	glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
 
-	// Construct a model matrix
-	glm::mat4 m_Model = translation;
-	instanceData.push_back(m_Model);
+	// Store pos in instanceData
+	instanceData.emplace_back(pos);
 }
 
 void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3) {

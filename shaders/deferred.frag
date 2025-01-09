@@ -51,10 +51,11 @@ void main() {
     int objectID = texture(gObjectID, UV).r;
 
     if (objectID == 1) {
+        // Basic SSS, not realistic, but works as concept
         float sss = exp(-3.0 * abs(dot(normal, lightDir)));
 
         vec3 scatterColour = rgb2hsv(albedo);
-        scatterColour.x = mod(scatterColour.x + (-22.0 / 360.0), 1.0);
+        scatterColour.x = mod(scatterColour.x + (-10.0 / 360.0), 1.0);
         scatterColour.y = clamp(scatterColour.y + 0.43, 0.0, 1.0);
 
         diffuse += sss * hsv2rgb(scatterColour) * lightColour;
