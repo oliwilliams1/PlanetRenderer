@@ -22,15 +22,15 @@ uniform sampler2D u_Albedo;
 uniform sampler2D u_Normal;
 
 const int gridSize = 8;
-const float ditherPattern[64] = float[](
-    0.0,   0.125, 0.875, 0.75,  0.5,   0.625, 0.375, 0.25,
-    0.5,   0.625, 0.375, 0.25,  0.75,  0.875, 0.125, 0.0,
-    0.875, 0.75,  0.0,   0.125, 0.25,  0.375, 0.625, 0.5,
-    0.25,  0.375, 0.625, 0.5,   0.0,   0.125, 0.875, 0.75,
-    0.5,   0.625, 0.375, 0.25,  0.75,  0.875, 0.125, 0.0,
-    0.75,  0.875, 0.125, 0.0,   0.25,  0.375, 0.625, 0.5,
-    0.125, 0.0,   0.5,   0.625, 0.875, 0.75,  0.0,   0.125,
-    0.0,   0.125, 0.875, 0.75,  0.5,   0.625, 0.375, 0.25
+const int dither[64] = int[64](
+    0, 32, 8, 40, 2, 34, 10, 42,
+    48, 16, 56, 24, 50, 18, 58, 26,
+    12, 44, 4, 36, 14, 46, 6, 38,
+    60, 28, 52, 20, 62, 30, 54, 22,
+    3, 35, 11, 43, 1, 33, 9, 41,
+    51, 19, 59, 27, 49, 17, 57, 25,
+    15, 47, 7, 39, 13, 45, 5, 37,
+    63, 31, 55, 23, 61, 29, 53, 21
 );
 
 vec2 imposterSampler(vec2 uv, int row, int col) {
@@ -41,8 +41,8 @@ vec2 imposterSampler(vec2 uv, int row, int col) {
 }
 
 bool shouldDiscardPixel(ivec2 pixelCoords, float v) {
-    int index = (pixelCoords.x % gridSize) + (pixelCoords.y % gridSize) * gridSize;
-    return v < ditherPattern[index];
+    int index = (pixelCoords.x % 8) + (pixelCoords.y % 8) * 8;
+    return v < float(dither[index]) / 63.0;
 }
 
 void alphaDitherBasedOnDistance() {
@@ -60,10 +60,11 @@ void alphaDitherBasedOnDistance() {
 
     ivec2 pixelCoords = ivec2(gl_FragCoord.xy);
     if (shouldDiscardPixel(pixelCoords, v)) discard;
-    }
+}
 
 void main() {
-    //alphaDitherBasedOnDistance();
+    alphaDitherBasedOnDistance(); // Dither based on distance to camera so high LOD tree model will be rendered
+
     int lowerRow = int(LowerRow);
     int upperRow = min(lowerRow + 1, gridSize - 1);
     float rowBlendFactor = LowerRow - lowerRow;
@@ -75,7 +76,9 @@ void main() {
     vec4 albedoUpper = texture(u_Albedo, uvUpper);
     vec4 finalAlbedo = mix(albedoLower, albedoUpper, rowBlendFactor);
 
-    if (finalAlbedo.a < 0.5) discard;
+    ivec2 pixelCoords = ivec2(gl_FragCoord.xy);
+    if (finalAlbedo.a < 0.1) discard; // Remove weird artifacts
+    if (shouldDiscardPixel(pixelCoords, finalAlbedo.a)) discard; // Dither for blending between rows
     
     vec3 normalUpper = texture(u_Normal, uvUpper).rgb * 2.0 - 1.0;
     vec3 normalLower = texture(u_Normal, uvLower).rgb * 2.0 - 1.0;
