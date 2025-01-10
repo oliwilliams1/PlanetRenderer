@@ -12,6 +12,7 @@
 #include <imgui_impl_opengl3.h>
 
 // Own stuff
+#include "assetManager.h"
 #include "imposterRenderer.h"
 #include "deferredRenderer.h"
 #include "camera.h"

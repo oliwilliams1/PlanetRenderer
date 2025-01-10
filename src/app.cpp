@@ -18,6 +18,8 @@ App::App() {
 	InitOpenGLParams();
 	InitImGui();
 
+	AssetManager::System::Init();
+
 	CamInitData camInitData{};
 	camInitData.fov = 70.0f;
 	camInitData.pitch = -30.0f;
@@ -177,6 +179,12 @@ void App::Mainloop() {
 }
 
 App::~App() {
+	AssetManager::System::Shutdown();
+	delete deferredRenderer;
+	delete camera;
+	delete mainPlanet;
+	delete imposterRenderer;
+	delete planetShader;
 	glfwDestroyWindow(window);
 	glfwTerminate();
 }

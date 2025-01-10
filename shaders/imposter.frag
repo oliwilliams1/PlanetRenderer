@@ -13,7 +13,7 @@ uniform sampler2D albedoMap;
 void main() {
 	vec4 colour = texture(albedoMap, UV);
 	
-	vec3 normal = Normal;
+	vec3 normal = -Normal;
 
 	gPosition = FragPos;
 	gNormal = normal * 0.5 + 0.5;

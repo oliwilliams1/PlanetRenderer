@@ -53,12 +53,19 @@ void TreesHandler::SetupBuffers() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glGenBuffers(1, &ImposterIBO);
-	glBindBuffer(GL_ARRAY_BUFFER, ImposterIBO);
-	glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::vec3), instanceData.data(), GL_STATIC_DRAW);
+	// Imposter positions in vertex attrib for fast access
+	glGenBuffers(1, &ImposterPBO);
+	glBindBuffer(GL_ARRAY_BUFFER, ImposterPBO);
+	glBufferData(GL_ARRAY_BUFFER, instancePositions.size() * sizeof(glm::vec3), instancePositions.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
 	glVertexAttribDivisor(1, 1);
+
+	// Imposter matricies in SSBO
+	glGenBuffers(1, &ImposterMBO);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ImposterMBO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 	glBindVertexArray(0);
 }
@@ -107,9 +114,10 @@ void TreesHandler::AddTree(glm::vec3 dir, float height) {
 	glm::vec3 normal = glm::normalize(dir);
 	glm::vec3 pos = normal * (planet->planetScale + treeScale);
 	pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
+	glm::mat4 m_Model = glm::translate(glm::mat4(1.0f), pos);
 
-	// Store pos in instanceData
-	instanceData.emplace_back(pos);
+	instancePositions.emplace_back(pos);
+	instanceData.emplace_back(m_Model);
 }
 
 void TreesHandler::PlaceTreesOnTriangle(int points, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3) {

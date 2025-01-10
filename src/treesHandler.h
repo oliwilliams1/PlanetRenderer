@@ -28,9 +28,10 @@ private:
 	Planet* planet;
 	Shader* imposterShader;
 	Cubemap* noiseCubemapCPU;
-	std::vector<glm::vec3> instanceData;
+	std::vector<glm::vec3> instancePositions;
+	std::vector<glm::mat4> instanceData;
 
-	GLuint ImposterVAO, ImposterVBO, ImposterIBO;
+	GLuint ImposterVAO, ImposterVBO, ImposterPBO, ImposterMBO;
 	GLuint TreeVAO, TreeVBO, TreeIBO;
 
 	int passCounter;

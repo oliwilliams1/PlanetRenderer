@@ -51,7 +51,7 @@ set(HEADER_FILES
 )
 
 # Add executable
-add_executable(PlanetRenderer ${SOURCE_FILES} ${HEADER_FILES} "src/treesHandler.h" "src/treesHandler.cpp" "src/cubemap.h" "src/cubemap.cpp" "src/imposterRenderer.cpp" "src/imposterRenderer.h" "src/objectSerializer.h" "src/objectSerializer.cpp")
+add_executable(PlanetRenderer ${SOURCE_FILES} ${HEADER_FILES} "src/treesHandler.h" "src/treesHandler.cpp" "src/cubemap.h" "src/cubemap.cpp" "src/imposterRenderer.cpp" "src/imposterRenderer.h" "src/objectSerializer.h" "src/objectSerializer.cpp" "src/assetManager.cpp" "src/assetManager.h")
 
 # Add imgui source files if user is not using VCPKG
 if (NOT MSVC)
