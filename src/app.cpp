@@ -6,7 +6,7 @@ App::App() {
 
 	viewportWidth = 1200;
 	viewportHeight = 675;
-	imposterRenderingWindowOpen = true;
+	imposterRenderingWindowOpen = false;
 
 	currentFPS = 0;
 	frameCount = 0;
@@ -165,6 +165,9 @@ void App::Mainloop() {
 		ImGui::Separator();
 
 		ImGui::Checkbox("Open/Close imposter rendering menu", &imposterRenderingWindowOpen);
+
+		ImGui::Columns(1);
+		AssetManager::System::GetInstance().DisplayGui();
 		ImGui::End();
 
 		if (imposterRenderingWindowOpen) imposterRenderer->DebugDraw();

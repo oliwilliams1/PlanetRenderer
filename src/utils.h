@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 
 struct ObjectData {
+	std::string objName;
 	std::string texturePath;
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> normals;
