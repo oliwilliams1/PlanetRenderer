@@ -3,15 +3,21 @@
 
 TreesHandler::TreesHandler(Planet* planet) {
 	this->planet = planet;
-	this->imposterShader = new Shader("shaders/tree.vert", "shaders/tree.frag", "Trees Shader");
+	this->imposterShader = new Shader("shaders/treeImp.vert", "shaders/treeImp.frag", "Imposter tree shader");
+	this->treeShader = new Shader("shaders/default.vert", "shaders/default.frag", "Tree shader");
 	this->noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
 	this->numSubdivisions = 50;
 	this->treeScale = 7.5f;
+
+	imposterShader->use();
 	albedoLocation = GetUniformLocation(imposterShader->shaderProgram, "u_Albedo");
 	normalLocation = GetUniformLocation(imposterShader->shaderProgram, "u_Normal");
 
 	treeScaleLocation = GetUniformLocation(imposterShader->shaderProgram, "u_TreeScale");
 	glUniform1f(treeScaleLocation, treeScale);
+
+	treeShader->use();
+	TreeSSSLocation = GetUniformLocation(treeShader->shaderProgram, "u_SSS");
 
 	PlaceTrees(numSubdivisions);
 	SetupBuffers();
@@ -69,6 +75,11 @@ void TreesHandler::SetupBuffers() {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 	glBindVertexArray(0);
+
+	tree.push_back(Object(treeShader));
+	tree.push_back(Object(treeShader));
+	tree[0].SetMesh("trees/tree0");
+	tree[1].SetMesh("trees/tree0_1");
 }
 
 void TreesHandler::CreateTextures() {
@@ -89,6 +100,19 @@ void TreesHandler::Draw() {
 	glBindVertexArray(ImposterVAO);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instancePositions.size());
 	glBindVertexArray(0);
+
+	glDisable(GL_CULL_FACE);
+	treeShader->use();
+	for (int i = 0; i < tree.size(); i++) {
+		if (i == 0) {
+			glUniform1i(TreeSSSLocation, 0);
+		}
+		else {
+			glUniform1i(TreeSSSLocation, 1);
+		}
+		tree[i].Draw();
+	}
+	glEnable(GL_CULL_FACE);
 }
 
 void TreesHandler::PlaceTrees(int numTrees) {

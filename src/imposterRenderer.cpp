@@ -30,8 +30,6 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 	grid->scale = glm::vec3(16.0f);
 	grid->rotation = glm::vec3(90.0f, 0.0f, 0.0f);
 	grid->UpdateModelMatrix();
-
-	glUniform1i(GetUniformLocation(gridShader->shaderProgram, "normalizedNormal"), 1);
 }
 
 void ImposterRenderer::Render() {

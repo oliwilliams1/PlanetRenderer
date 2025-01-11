@@ -28,16 +28,22 @@ private:
 	Planet* planet;
 	Shader* imposterShader;
 	Cubemap* noiseCubemapCPU;
+
+	Shader* treeShader;
+	std::vector<Object> tree;
+
 	std::vector<glm::vec3> instancePositions;
 	std::vector<glm::mat4> instanceData;
-
-	GLuint ImposterVAO, ImposterVBO, ImposterPBO, ImposterMBO;
+	GLuint ImposterPBO, ImposterMBO;
+	
+	GLuint ImposterVAO, ImposterVBO;
 	GLuint TreeVAO, TreeVBO, TreeIBO;
 
 	int passCounter;
 	int numSubdivisions;
 
 	GLuint albedoLocation, normalLocation, treeScaleLocation;
+	GLuint TreeSSSLocation;
 	float treeScale;
 
 	void SetupBuffers();
