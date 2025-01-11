@@ -7,13 +7,11 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 	this->orthoScale = 64.0f;
 	this->resolution = 784;
 	this->needToRender = false;
-	this->objectLoaded = false;
 
 	strncpy_s(this->saveToFileBuffer, "", sizeof(this->saveToFileBuffer) - 1);
 	this->saveToFileBuffer[sizeof(this->saveToFileBuffer) - 1] = '\0';
 
 	deferredRenderer = new DeferredRenderer(resolution, resolution);
-
 	CamInitData camInitData{};
 	camInitData.fov = 70.0f;
 	camInitData.pitch = 0.0f;
@@ -23,6 +21,7 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 
 	camera = new Camera(app->window, &app->deltaTime, 512, 512, camInitData, UBO);
 	imposterShader = new Shader("shaders/imposter.vert", "shaders/imposter.frag", "Imposter Shader");
+	imposterObject = new ImposterObject(imposterShader);
 	
 	gridShader = new Shader("shaders/default.vert", "shaders/default.frag", "Grid Shader");
 	grid = new Object(gridShader);
@@ -55,7 +54,7 @@ void ImposterRenderer::Render() {
 	deferredRenderer->Bind();
 	imposterShader->use();
 
-	if (objectLoaded) imposterObject->Draw();
+	imposterObject->Draw();
 
 	gridShader->use();
 	if (needToRender) {
@@ -72,7 +71,7 @@ void ImposterRenderer::Render() {
 void ImposterRenderer::DebugDraw() {
 	ImGui::Begin("Imposter Renderer");
 
-	ImGui::SetWindowSize(ImVec2(934, 596));
+	ImGui::SetWindowSize(ImVec2(934, 630));
 	ImGui::Columns(2, "GridLayout");
 	ImGui::SetColumnWidth(0, 544);
 
@@ -81,30 +80,40 @@ void ImposterRenderer::DebugDraw() {
 	ImGui::NextColumn();
 	deferredRenderer->DebugDraw(ortho);
 
-	if (objectLoaded) imposterObject->DebugDraw();
+	imposterObject->DebugDraw();
 
 	ImGui::Checkbox("Preview ortho camera", &ortho);
+	
+	std::vector<std::string> objectNames = AssetManager::System::GetInstance().GetObjectNames();
+	
+	static int currentItem = 0;
+
+	// Show the combo box
+	ImGui::Combo("Select Object", &currentItem,
+		[](void* data, int idx, const char** out_text) {
+			auto& names = *static_cast<std::vector<std::string>*>(data);
+			*out_text = names[idx].c_str();
+			return true;
+		},
+		static_cast<void*>(&objectNames), objectNames.size());
+
+	if (ImGui::Button("Add object to scene")) imposterObject->AddObject(objectNames[currentItem]);
 
 	ImGui::InputText("File name", saveToFileBuffer, sizeof(saveToFileBuffer));
 	if (ImGui::Button("Render & save to file")) needToRender = true;
-	ImGui::SameLine();
-	if (ImGui::Button("Load object")) LoadObject();
-
 	ImGui::Columns(1);
 	ImGui::End();
 }
 
-void ImposterRenderer::LoadObject() {
-	if (objectLoaded) {
-		delete imposterObject;
-	}
-	else {
-		objectLoaded = true;
-	}
-	imposterObject = new ImposterObject(imposterShader, saveToFileBuffer);
+ImposterRenderer::~ImposterRenderer() {
+	delete deferredRenderer;
+	delete imposterShader;
+	delete imposterObject;
+	delete gridShader;
+	delete grid;
 }
 
-ImposterObject::ImposterObject(Shader* shader, const char* name) {
+ImposterObject::ImposterObject(Shader* shader) {
 	this->shader = shader;
 	this->pos = glm::vec3(0.0f, -8.0f, 0.0f);
 	this->rot = glm::vec3(0.0f);
@@ -112,14 +121,6 @@ ImposterObject::ImposterObject(Shader* shader, const char* name) {
 	this->overallScale = 0.127f;
 
 	GenerateInstanceData();
-
-	std::vector<ObjectData> objData = LoadObject(name);
-
-	for (int obj = 0; obj < objData.size(); obj++) {
-		SetupBuffers(objData[obj]);
-	}
-
-	objData.clear();
 }
 
 // Code from the devil
@@ -167,9 +168,14 @@ void ImposterObject::UpdateModelMatrix() {
 	glUniformMatrix4fv(m_MasterModelLocation, 1, GL_FALSE, glm::value_ptr(model));
 }
 
-void ImposterObject::SetupBuffers(const ObjectData& objData) {
+void ImposterObject::AddObject(const std::string& objName) {
+	shader->use();
+
 	m_MasterModelLocation = GetUniformLocation(shader->shaderProgram, "m_ModelMaster");
 	UpdateModelMatrix();
+
+	ObjectData objData;
+	AssetManager::System::GetInstance().GetObject(objName, objData);
 	
 	ObjectBuffer objBuffer{};
 
@@ -217,32 +223,9 @@ void ImposterObject::SetupBuffers(const ObjectData& objData) {
 	glBindVertexArray(0);
 
 	albedoMapLocation = GetUniformLocation(shader->shaderProgram, "albedoMap");
-	LoadTexture(&objBuffer.albedoMap, ("resources/trees/" + objData.texturePath).c_str());
+	LoadTexture(&objBuffer.albedoMap, ("resources/" + objData.texturePath).c_str());
 
 	objBuffers.emplace_back(objBuffer);
-}
-
-std::vector<ObjectData> ImposterObject::LoadObject(std::string objName) {
-	/*std::ifstream bobjFile("resources/trees/" + objName + ".bobj");
-	std::ifstream objFile("resources/trees/" + objName + ".obj");
-
-	std::vector<ObjectData> objData;
-	if (bobjFile.good()) {
-		std::cout << "Loading BOBJ file: " << objName << std::endl;
-		std::vector<ObjectData> objects = DeserializeObjects("resources/trees/" + objName + ".bobj");
-		return objects;
-	}
-	else if (objFile.good()) {
-		std::cout << "Loading OBJ file: " << objName << std::endl;
-		ModifyBrokenOBJFile("resources/trees/" + objName + ".obj");
-		LoadAdvancedModel("resources/trees/" + objName + ".obj", objData);
-		SerializeObjects(objData, "resources/trees/" + objName + ".bobj");
-		return objData;
-	}
-	else {
-		std::cerr << "Failed to load object: " << objName << std::endl;
-	}*/
-	return std::vector<ObjectData>();
 }
 
 void ImposterObject::ModifyBrokenOBJFile(std::string path) {

@@ -110,6 +110,14 @@ namespace AssetManager {
 		return false;
 	}
 
+	std::vector<std::string> System::GetObjectNames() {
+		std::vector<std::string> objectNames;
+		for (const auto& [key, object] : m_Objects) {
+			objectNames.push_back(key);
+		}
+		return objectNames;
+	}
+
 	bool System::LoadModelFromFile(const std::string& i_filePath) {
 		std::string filePath = "resources/" + i_filePath;
 

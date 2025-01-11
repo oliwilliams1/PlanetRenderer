@@ -30,6 +30,7 @@ namespace AssetManager {
 
 		void DisplayGui();
 		bool GetObject(const std::string& objName, ObjectData& object);
+		std::vector<std::string> GetObjectNames();
 
 	private:
 		System();

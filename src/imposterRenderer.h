@@ -21,14 +21,13 @@ class ImposterObject;
 class ImposterRenderer {
 public:
 	ImposterRenderer(App* app, GLuint UBO);
-
+	~ImposterRenderer();
 	void Render();
 	void DebugDraw();
 	
 private:
 	bool needToRender;
 	bool ortho;
-	bool objectLoaded;
 	float orthoScale;
 	float resolution;
 
@@ -42,8 +41,6 @@ private:
 	Object* grid;
 
 	char saveToFileBuffer[256];
-
-	void LoadObject();
 };
 
 struct ObjectBuffer {
@@ -54,17 +51,17 @@ struct ObjectBuffer {
 
 class ImposterObject {
 public:
-	ImposterObject(Shader* shader, const char* name);
+	ImposterObject(Shader* shader);
 	~ImposterObject();
 	void Draw();
 	void DebugDraw();
+	void AddObject(const std::string& objName);
 
 private:
 	Shader* shader;
 
 	std::vector<ObjectData> LoadObject(std::string objName);
 	
-	void SetupBuffers(const ObjectData& objData);
 	std::vector<glm::mat4> m_ModelInstanceData;
 	std::vector<glm::mat4> m_NormalInstanceData;
 	std::vector<ObjectBuffer> objBuffers;
