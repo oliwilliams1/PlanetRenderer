@@ -1,4 +1,5 @@
 #include "object.h"
+#include "assetManager.h"
 
 Object::Object(Shader* shader) {
     glGenVertexArrays(1, &VAO);
@@ -14,32 +15,36 @@ Object::Object(Shader* shader) {
     UpdateModelMatrix();
 }
 
-void Object::SetData(std::vector<glm::vec3> vertices, std::vector<glm::vec3> normals, std::vector<unsigned int> indices) {
+void Object::SetMesh(const std::string& objName) {
     glBindVertexArray(VAO);
+
+	ObjectData objData;
+
+    AssetManager::System::GetInstance().GetObject(objName, objData);
 
     // Vertex buffer
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, objData.vertices.size() * sizeof(glm::vec3), objData.vertices.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    if (normals.size() > 0) {
+    if (objData.normals.size() > 0) {
         // Normal buffer
         glBindBuffer(GL_ARRAY_BUFFER, NBO);
-        glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, objData.normals.size() * sizeof(glm::vec3), objData.normals.data(), GL_STATIC_DRAW);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);
     }
 
-    if (indices.size() > 0) {
+    if (objData.indices.size() > 0) {
         // Element buffer
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, objData.indices.size() * sizeof(unsigned int), objData.indices.data(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
 
-        indicesCount = indices.size();
+        indicesCount = objData.indices.size();
     }
 }
 

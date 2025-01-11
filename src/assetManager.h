@@ -7,11 +7,18 @@
 #include <glm/vec2.hpp>
 #include "utils.h"
 
+struct ObjectData {
+	std::string objName;
+	std::string texturePath;
+	std::vector<glm::vec3> vertices;
+	std::vector<glm::vec3> normals;
+	std::vector<glm::vec2> uvs;
+	std::vector<unsigned int> indices;
+};
+
 // Using chernos' alternative to a usual singleton
-namespace AssetManager
-{
-	class System
-	{
+namespace AssetManager {
+	class System {
 	public:
 		System(const System&) = delete;
 		System& operator=(const System&) = delete;

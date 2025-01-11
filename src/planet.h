@@ -39,9 +39,6 @@ private:
 	double lastDispatchTime;
 	bool needToDispatch;
 
-	GLuint noise_seedLocation;
 	GLuint noiseCubemapLocation, normalCubemapLocation, planetScaleLocation, noiseAmplitudeLocation, terrainLevelsLocation;
 	glm::vec3 terrainLevels;
-
-	void LoadPlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices);
 };

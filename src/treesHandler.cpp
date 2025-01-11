@@ -1,4 +1,5 @@
 #include "treesHandler.h"
+#include "assetManager.h"
 
 TreesHandler::TreesHandler(Planet* planet) {
 	this->planet = planet;
@@ -22,8 +23,8 @@ void TreesHandler::UpdateTrees() {
 	noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
 	PlaceTrees(numSubdivisions);
 
-	glBindBuffer(GL_ARRAY_BUFFER, TreeIBO);
-	glBufferData(GL_ARRAY_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, ImposterPBO);
+	glBufferData(GL_ARRAY_BUFFER, instancePositions.size() * sizeof(glm::vec3), instancePositions.data(), GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -86,24 +87,22 @@ void TreesHandler::Draw() {
 	glUniform1i(normalLocation, 1);
 
 	glBindVertexArray(ImposterVAO);
-	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instanceData.size());
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instancePositions.size());
 	glBindVertexArray(0);
 }
 
 void TreesHandler::PlaceTrees(int numTrees) {
-	instanceData.clear();
+	instancePositions.clear();
 
-	std::vector<glm::vec3> vertices;
-	std::vector<unsigned int> indices;
+	ObjectData object;
 
-	// Load an icosphere to subdivide and place trees on
-	LoadBasicModel("resources/icosphere.obj", vertices, indices);
+	AssetManager::System::GetInstance().GetObject("icosphere", object);
 
 	// Iterate through every face, and attempt to place trees on it
-	for (int i = 0; i < indices.size(); i += 3) {
-		glm::vec3 v1 = glm::vec3(vertices[indices[i]]);
-		glm::vec3 v2 = glm::vec3(vertices[indices[i + 1]]);
-		glm::vec3 v3 = glm::vec3(vertices[indices[i + 2]]);
+	for (int i = 0; i < object.indices.size(); i += 3) {
+		glm::vec3 v1 = glm::vec3(object.vertices[object.indices[i]]);
+		glm::vec3 v2 = glm::vec3(object.vertices[object.indices[i + 1]]);
+		glm::vec3 v3 = glm::vec3(object.vertices[object.indices[i + 2]]);
 
 		PlaceTreesOnTriangle(numTrees, v1, v2, v3);
 	}

@@ -1,4 +1,5 @@
 #include "assetManager.h"
+#include <filesystem>
 #include "objectSerializer.h"
 #include <iostream>
 #include <imgui.h>
@@ -44,7 +45,7 @@ namespace AssetManager {
 
 		// List all loaded object names
 		for (const auto& [key, object] : m_Objects) {
-			ImGui::Text(key.c_str());
+			ImGui::Selectable(key.c_str());
 		}
 
 		if (addObjectWindow) DisplayAddObjectWindow();
@@ -76,6 +77,39 @@ namespace AssetManager {
 		ImGui::End();
 	}
 
+	bool System::GetObject(const std::string& objName, ObjectData& object) {
+		auto it = m_Objects.find(objName);
+		if (it != m_Objects.end()) {
+			object = it->second;
+			return true;
+		}
+
+		// If not found, attempt to load it from file
+		std::vector<std::string> extentions = { ".obj", ".fbx", ".blend", ".glTF" };
+		for (const auto& ext : extentions) {
+			std::string fullFileName = "resources/" + objName + ext;
+			if (std::filesystem::exists(fullFileName)) {
+				std::cout << "Loading object: " << fullFileName << std::endl;
+				bool success = LoadModelFromFile(objName + ext);
+
+				if (success) {
+					std::cout << "Loaded object: " << objName << std::endl;
+					object = m_Objects[objName];
+					SaveObjects();
+					return true;
+				}
+				else {
+					std::cout << "Failed to load object: " << objName << std::endl;
+					return false;
+				}
+			}
+		}
+
+		std::cerr << "Failed to find object: " << objName << std::endl;
+
+		return false;
+	}
+
 	bool System::LoadModelFromFile(const std::string& i_filePath) {
 		std::string filePath = "resources/" + i_filePath;
 
@@ -100,7 +134,7 @@ namespace AssetManager {
 			return false;
 		}
 
-		std::string objName = filePath.substr(0, filePath.find_last_of('.'));
+		std::string objName = i_filePath.substr(0, i_filePath.find_last_of('.'));
 		
 		// Process all meshes
 		for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
@@ -193,16 +227,6 @@ namespace AssetManager {
 		if (!WriteFile(filePath.c_str(), outputData)) {
 			std::cerr << "Failed to write file to fix OBJ issue: " << filePath << std::endl;
 		}
-	}
-
-	bool System::GetObject(const std::string& objName, ObjectData& object) {
-		auto it = m_Objects.find(objName);
-		if (it != m_Objects.end()) {
-			object = it->second;
-			return true;
-		}
-		
-		return false;
 	}
 
 	void System::LoadObjects() {

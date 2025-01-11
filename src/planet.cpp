@@ -1,4 +1,5 @@
 #include "planet.h"
+#include "assetManager.h"
 
 Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	this->app = app;
@@ -9,17 +10,14 @@ Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	this->cubemapResolution = 512;
 	this->seed = 0;
 	this->needToDispatch = false;
+	this->lastDispatchTime = 0.0f;
 
 	this->noiseGen = new Noise(cubemapResolution, &noiseCubemapTexture, &normalCubemapTexture);	
 	noiseGen->Dispatch(seed);
 
 	this->treesHandler = new TreesHandler(this);
 
-	std::vector<glm::vec3> vertices;
-	std::vector<unsigned int> indices;
-
-	LoadPlanet(vertices, indices);
-	SetData(vertices, std::vector<glm::vec3>(0), indices);
+	SetMesh("planet");
 
 	shader->use();
 
@@ -40,37 +38,6 @@ Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	glUniform1f(planetScaleLocation, planetScale);
 	glUniform3f(terrainLevelsLocation, terrainLevels.x, terrainLevels.y, terrainLevels.z);
 	glUniform1f(noiseAmplitudeLocation, noiseAmplitude);
-}
-
-void Planet::LoadPlanet(std::vector<glm::vec3>& vertices, std::vector<unsigned int>& indices) {
-	Assimp::Importer importer;
-
-	const aiScene* scene = importer.ReadFile("resources/planet.obj", 0);
-
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-		std::cerr << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
-		return;
-	}
-
-	for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
-		aiMesh* mesh = scene->mMeshes[i];
-
-		for (unsigned int j = 0; j < mesh->mNumVertices; j++) {
-			vertices.emplace_back(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z);
-		}
-
-		for (unsigned int j = 0; j < mesh->mNumFaces; j++) {
-			aiFace face = mesh->mFaces[j];
-			if (face.mNumIndices == 4) {
-				indices.emplace_back(face.mIndices[0]);
-				indices.emplace_back(face.mIndices[1]);
-				indices.emplace_back(face.mIndices[2]);
-				indices.emplace_back(face.mIndices[3]);
-			}
-		}
-	}
-
-	indicesCount = indices.size();
 }
 
 void Planet::Draw() {

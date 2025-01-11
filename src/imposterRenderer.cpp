@@ -1,4 +1,5 @@
 #include "imposterRenderer.h"
+#include "assetManager.h"
 
 ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 	this->app = app;
@@ -26,10 +27,7 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 	gridShader = new Shader("shaders/default.vert", "shaders/default.frag", "Grid Shader");
 	grid = new Object(gridShader);
 
-	std::vector<ObjectData> gridObjData;
-	LoadAdvancedModel("resources/8x8grid.obj", gridObjData);
-
-	grid->SetData(gridObjData[0].vertices, gridObjData[0].normals, gridObjData[0].indices);
+	grid->SetMesh("8x8grid");
 	grid->scale = glm::vec3(16.0f);
 	grid->rotation = glm::vec3(90.0f, 0.0f, 0.0f);
 	grid->UpdateModelMatrix();
@@ -225,7 +223,7 @@ void ImposterObject::SetupBuffers(const ObjectData& objData) {
 }
 
 std::vector<ObjectData> ImposterObject::LoadObject(std::string objName) {
-	std::ifstream bobjFile("resources/trees/" + objName + ".bobj");
+	/*std::ifstream bobjFile("resources/trees/" + objName + ".bobj");
 	std::ifstream objFile("resources/trees/" + objName + ".obj");
 
 	std::vector<ObjectData> objData;
@@ -243,7 +241,8 @@ std::vector<ObjectData> ImposterObject::LoadObject(std::string objName) {
 	}
 	else {
 		std::cerr << "Failed to load object: " << objName << std::endl;
-	}
+	}*/
+	return std::vector<ObjectData>();
 }
 
 void ImposterObject::ModifyBrokenOBJFile(std::string path) {
