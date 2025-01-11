@@ -1,5 +1,6 @@
 #include "object.h"
 #include "assetManager.h"
+#include "utils.h"
 
 Object::Object(Shader* shader) {
     glGenVertexArrays(1, &VAO);
@@ -36,6 +37,14 @@ void Object::SetMesh(const std::string& objName) {
         glEnableVertexAttribArray(1);
     }
 
+    if (objData.uvs.size() > 0) {
+        glGenBuffers(1, &UVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, UVBO);
+        glBufferData(GL_ARRAY_BUFFER, objData.uvs.size() * sizeof(glm::vec2), objData.uvs.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(2);
+    }
+
     if (objData.indices.size() > 0) {
         // Element buffer
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -46,10 +55,22 @@ void Object::SetMesh(const std::string& objName) {
 
         indicesCount = objData.indices.size();
     }
+
+    if (!objData.texturePath.empty()) {
+        albedoLocation = GetUniformLocation(shader->shaderProgram, "u_Albedo");
+        LoadTexture(&albedo, ("resources/" + objData.texturePath).c_str());
+    }
 }
 
 void Object::Draw() {
     UpdateModelMatrix();
+
+    if (albedoLocation != -1) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, albedo);
+        glUniform1i(albedoLocation, 0);
+    }
+
     glBindVertexArray(VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
     glDrawElements(GL_TRIANGLES, indicesCount, GL_UNSIGNED_INT, 0);

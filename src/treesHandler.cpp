@@ -105,9 +105,11 @@ void TreesHandler::Draw() {
 	treeShader->use();
 	for (int i = 0; i < tree.size(); i++) {
 		if (i == 0) {
+			// Bark, dont want SSS
 			glUniform1i(TreeSSSLocation, 0);
 		}
 		else {
+			// Leaves, want SSS
 			glUniform1i(TreeSSSLocation, 1);
 		}
 		tree[i].Draw();

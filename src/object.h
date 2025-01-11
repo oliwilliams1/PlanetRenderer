@@ -26,8 +26,10 @@ public:
 protected:
 
 	unsigned int indicesCount = 0;
-	GLuint VAO, VBO, NBO, IBO, modelMatrixLocation;
+	GLuint VAO, VBO, NBO, UVBO, IBO, modelMatrixLocation;
 	Shader* shader;
+
+	GLuint albedo, albedoLocation;
 
 	void GetModelMatrixLocation();
 };
