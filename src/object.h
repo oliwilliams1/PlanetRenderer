@@ -23,13 +23,12 @@ public:
 	glm::vec3 scale;
 	void UpdateModelMatrix() const;
 
-protected:
-
-	unsigned int indicesCount = 0;
 	GLuint VAO, VBO, NBO, UVBO, IBO, modelMatrixLocation;
+	GLuint albedo, albedoLocation;
+	unsigned int indicesCount = 0;
+
 	Shader* shader;
 
-	GLuint albedo, albedoLocation;
-
+protected:
 	void GetModelMatrixLocation();
 };

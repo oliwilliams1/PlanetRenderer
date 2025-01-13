@@ -4,7 +4,7 @@
 TreesHandler::TreesHandler(Planet* planet) {
 	this->planet = planet;
 	this->imposterShader = new Shader("shaders/treeImp.vert", "shaders/treeImp.frag", "Imposter tree shader");
-	this->treeShader = new Shader("shaders/default.vert", "shaders/default.frag", "Tree shader");
+	this->treeShader = new Shader("shaders/tree.vert", "shaders/tree.frag", "Tree shader");
 	this->noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
 	this->numSubdivisions = 50;
 	this->treeScale = 7.5f;
@@ -44,11 +44,11 @@ void TreesHandler::DebugDraw() {
 void TreesHandler::SetupBuffers() {
 	float vertices[18] = {
 		-1.0f, -1.0f, 0.0f,
-		-1.0f,  1.0f, 0.0f,
-		 1.0f, -1.0f, 0.0f,
-		-1.0f,  1.0f, 0.0f,
-		 1.0f,  1.0f, 0.0f,
-		 1.0f, -1.0f, 0.0f
+		-1.0f, 1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		-1.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f
 	};
 
 	glGenVertexArrays(1, &ImposterVAO);
@@ -60,26 +60,25 @@ void TreesHandler::SetupBuffers() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	// Imposter positions in vertex attrib for fast access
-	glGenBuffers(1, &ImposterPBO);
-	glBindBuffer(GL_ARRAY_BUFFER, ImposterPBO);
-	glBufferData(GL_ARRAY_BUFFER, instancePositions.size() * sizeof(glm::vec3), instancePositions.data(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-	glVertexAttribDivisor(1, 1);
-
 	// Imposter matricies in SSBO
 	glGenBuffers(1, &ImposterMBO);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ImposterMBO);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ImposterMBO);
 	glBindVertexArray(0);
 
 	tree.push_back(Object(treeShader));
 	tree.push_back(Object(treeShader));
 	tree[0].SetMesh("trees/tree0");
 	tree[1].SetMesh("trees/tree0_1");
+
+	treeShader->use();
+	for (int i = 0; i < tree.size(); i++) {
+		tree[i].scale = glm::vec3(0.0127f);
+		tree[i].UpdateModelMatrix();
+	}
 }
 
 void TreesHandler::CreateTextures() {
@@ -103,6 +102,9 @@ void TreesHandler::Draw() {
 
 	glDisable(GL_CULL_FACE);
 	treeShader->use();
+
+	glActiveTexture(GL_TEXTURE0);
+
 	for (int i = 0; i < tree.size(); i++) {
 		if (i == 0) {
 			// Bark, dont want SSS
@@ -112,7 +114,13 @@ void TreesHandler::Draw() {
 			// Leaves, want SSS
 			glUniform1i(TreeSSSLocation, 1);
 		}
-		tree[i].Draw();
+		
+		glBindTexture(GL_TEXTURE_2D, tree[i].albedo);
+		glUniform1i(tree[i].albedoLocation, 0);
+
+		glBindVertexArray(tree[i].VAO);
+		glDrawElementsInstanced(GL_TRIANGLES, tree[i].indicesCount, GL_UNSIGNED_INT, 0, 50);
+		glBindVertexArray(0);
 	}
 	glEnable(GL_CULL_FACE);
 }
@@ -139,9 +147,22 @@ void TreesHandler::AddTree(glm::vec3 dir, float height) {
 	glm::vec3 normal = glm::normalize(dir);
 	glm::vec3 pos = normal * (planet->planetScale + treeScale);
 	pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
-	glm::mat4 m_Model = glm::translate(glm::mat4(1.0f), pos);
+	glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
 
 	instancePositions.emplace_back(pos);
+
+	// Align the model matrix to the normal of the planet
+	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	glm::vec3 right = glm::normalize(glm::cross(up, normal));
+	up = glm::cross(normal, right);
+
+	glm::mat4 rotation = glm::mat4(1.0f);
+	rotation[0] = glm::vec4(right, 0.0f);
+	rotation[1] = glm::vec4(normal, 0.0f);
+	rotation[2] = glm::vec4(up, 0.0f);
+	rotation[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	glm::mat4 m_Model = translation * rotation;
 	instanceData.emplace_back(m_Model);
 }
 
