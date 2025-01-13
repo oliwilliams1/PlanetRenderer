@@ -49,8 +49,8 @@ bool shouldDiscardPixel(ivec2 pixelCoords, float v) {
 void alphaDitherBasedOnDistance() {
     float d = distance(cameraPos, FragPos);
     float v = 1.0;
-    float maxDist = 100.0;
-    float minDist = 75.0;
+    float maxDist = 75.0;
+    float minDist = 60.0;
 
     if (d < minDist) {
         discard;

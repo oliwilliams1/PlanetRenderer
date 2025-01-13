@@ -60,8 +60,6 @@ public:
 private:
 	Shader* shader;
 
-	std::vector<ObjectData> LoadObject(std::string objName);
-	
 	std::vector<glm::mat4> m_ModelInstanceData;
 	std::vector<glm::mat4> m_NormalInstanceData;
 	std::vector<ObjectBuffer> objBuffers;
@@ -70,6 +68,8 @@ private:
 	void UpdateModelMatrix();
 	GLuint m_MasterModelLocation;
 	GLuint albedoMapLocation;
+	GLuint modelSSBO, normalSSBO;
+
 	glm::vec3 pos;
 	glm::vec3 rot;
 	glm::vec3 scale;

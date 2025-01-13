@@ -11,6 +11,7 @@ Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	this->seed = 0;
 	this->needToDispatch = false;
 	this->lastDispatchTime = 0.0f;
+	this->camera = app->camera;
 
 	this->noiseGen = new Noise(cubemapResolution, &noiseCubemapTexture, &normalCubemapTexture);	
 	noiseGen->Dispatch(seed);

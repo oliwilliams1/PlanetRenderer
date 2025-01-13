@@ -35,6 +35,7 @@ int pseudoRandom(int seed) {
 void main() {
     mat4 m_ModelInst = m_ModelInstance[gl_InstanceID];
     vec3 centerWorldPos = m_ModelInst[3].xyz;
+    centerWorldPos += normalize(centerWorldPos) * u_TreeScale;
 
     vec3 toCamera = normalize(cameraPos - centerWorldPos);
     vec3 up = m_ModelInst[1].xyz;

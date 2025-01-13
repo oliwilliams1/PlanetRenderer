@@ -19,10 +19,14 @@ layout(std430, binding = 0) buffer InstanceData {
 	mat4[] m_ModelInstance;
 };
 
+layout(std430, binding = 1) buffer InstanceIndexData {
+	uint[] instanceIndex;
+};
+
 uniform mat4 m_Model;
 
 void main() {
-    mat4 modelMatix = m_ModelInstance[gl_InstanceID] * m_Model;
+    mat4 modelMatix = m_ModelInstance[instanceIndex[gl_InstanceID]] * m_Model;
     vec4 worldPos = modelMatix * vec4(position, 1.0);
     mat4 normalMatrix = transpose(inverse(modelMatix));
 

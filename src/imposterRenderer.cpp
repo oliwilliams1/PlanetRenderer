@@ -204,14 +204,12 @@ void ImposterObject::AddObject(const std::string& objName) {
 
 	objBuffer.indicesCount = objData.indices.size();
 
-	GLuint modelSSBO;
 	glGenBuffers(1, &modelSSBO);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelSSBO);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, m_ModelInstanceData.size() * sizeof(glm::mat4), m_ModelInstanceData.data(), GL_STATIC_DRAW);
 
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelSSBO);
 
-	GLuint normalSSBO;
 	glGenBuffers(1, &normalSSBO);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, normalSSBO);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, m_NormalInstanceData.size() * sizeof(glm::mat4), m_NormalInstanceData.data(), GL_STATIC_DRAW);
@@ -258,6 +256,9 @@ void ImposterObject::ModifyBrokenOBJFile(std::string path) {
 }
 
 void ImposterObject::Draw() {
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelSSBO);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, normalSSBO);
+
 	glDisable(GL_CULL_FACE);
 
 	for (int obj = 0; obj < objBuffers.size(); obj++) {

@@ -66,8 +66,12 @@ void TreesHandler::SetupBuffers() {
 	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_STATIC_DRAW);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ImposterMBO);
 	glBindVertexArray(0);
+
+	glGenBuffers(1, &ImposterMatrixIndexBuffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ImposterMatrixIndexBuffer);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceIndexes.size() * sizeof(unsigned int), instanceIndexes.data(), GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 	tree.push_back(Object(treeShader));
 	tree.push_back(Object(treeShader));
@@ -76,7 +80,7 @@ void TreesHandler::SetupBuffers() {
 
 	treeShader->use();
 	for (int i = 0; i < tree.size(); i++) {
-		tree[i].scale = glm::vec3(0.0127f);
+		tree[i].scale = glm::vec3(0.02f);
 		tree[i].UpdateModelMatrix();
 	}
 }
@@ -88,6 +92,8 @@ void TreesHandler::CreateTextures() {
 
 void TreesHandler::Draw() {
 	imposterShader->use();
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ImposterMBO);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texturesTree0.topAlbedo);
 	glUniform1i(albedoLocation, 0);
@@ -102,6 +108,19 @@ void TreesHandler::Draw() {
 
 	glDisable(GL_CULL_FACE);
 	treeShader->use();
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ImposterMBO);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ImposterMatrixIndexBuffer);
+
+	glm::vec3 camPos = planet->camera->position;
+	float dist = 75.0f;
+
+	instanceIndexes.clear();
+	for (int i = 0; i < instancePositions.size(); i++) {
+		if (glm::distance(instancePositions[i], camPos) < dist) instanceIndexes.emplace_back(i);
+	}
+
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ImposterMatrixIndexBuffer);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceIndexes.size() * sizeof(unsigned int), instanceIndexes.data(), GL_DYNAMIC_DRAW);
 
 	glActiveTexture(GL_TEXTURE0);
 
@@ -119,7 +138,7 @@ void TreesHandler::Draw() {
 		glUniform1i(tree[i].albedoLocation, 0);
 
 		glBindVertexArray(tree[i].VAO);
-		glDrawElementsInstanced(GL_TRIANGLES, tree[i].indicesCount, GL_UNSIGNED_INT, 0, 50);
+		glDrawElementsInstanced(GL_TRIANGLES, tree[i].indicesCount, GL_UNSIGNED_INT, 0, instanceIndexes.size());
 		glBindVertexArray(0);
 	}
 	glEnable(GL_CULL_FACE);
@@ -145,7 +164,7 @@ void TreesHandler::PlaceTrees(int numTrees) {
 void TreesHandler::AddTree(glm::vec3 dir, float height) {
 	// Calculate the position of the tree
 	glm::vec3 normal = glm::normalize(dir);
-	glm::vec3 pos = normal * (planet->planetScale + treeScale);
+	glm::vec3 pos = normal * planet->planetScale;
 	pos += height * (planet->planetScale * planet->noiseAmplitude * normal);
 	glm::mat4 translation = glm::translate(glm::mat4(1.0f), pos);
 

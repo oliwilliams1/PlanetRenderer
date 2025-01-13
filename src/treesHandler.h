@@ -34,7 +34,8 @@ private:
 
 	std::vector<glm::vec3> instancePositions;
 	std::vector<glm::mat4> instanceData;
-	GLuint ImposterPBO, ImposterMBO;
+	std::vector<unsigned int> instanceIndexes;
+	GLuint ImposterPBO, ImposterMBO, ImposterMatrixIndexBuffer;
 	
 	GLuint ImposterVAO, ImposterVBO;
 	GLuint TreeVAO, TreeVBO, TreeIBO;

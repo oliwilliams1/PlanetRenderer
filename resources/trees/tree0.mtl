@@ -1,13 +1,13 @@
 // Created by Tree IT
-newmtl bark07
+newmtl coconut_palm1
 Ka 1 1 1
 Kd 1 1 1
 Ks 0 0 0
-map_Kd bark07.png
+map_Kd coconut_palm1.png
 
-newmtl elm leaf
+newmtl coconut_palm2
 Ka 1 1 1
 Kd 1 1 1
 Ks 0 0 0
-map_Kd elm leaf.png
+map_Kd coconut_palm2.png
 

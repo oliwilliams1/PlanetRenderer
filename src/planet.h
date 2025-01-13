@@ -30,6 +30,7 @@ public:
 	float planetScale, noiseAmplitude;
 	GLuint noiseCubemapTexture, normalCubemapTexture;
 	int seed;
+	Camera* camera;
 
 private:
 	App* app;
