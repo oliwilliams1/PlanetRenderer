@@ -76,7 +76,7 @@ void TreesHandler::SetupBuffers() {
 	tree.push_back(Object(treeShader));
 	tree.push_back(Object(treeShader));
 	tree[0].SetMesh("trees/tree0");
-	tree[1].SetMesh("trees/tree0_1");
+	tree[1].SetMesh("trees/tree0_1", true);
 
 	treeShader->use();
 	for (int i = 0; i < tree.size(); i++) {
@@ -112,7 +112,7 @@ void TreesHandler::Draw() {
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ImposterMatrixIndexBuffer);
 
 	glm::vec3 camPos = planet->camera->position;
-	float dist = 75.0f;
+	float dist = 85.0f;
 
 	instanceIndexes.clear();
 	for (int i = 0; i < instancePositions.size(); i++) {

@@ -112,29 +112,112 @@ GLuint GetUniformLocation(GLuint shaderProgram, const char* uniformName) {
 	return location;
 }
 
-void LoadTexture(GLuint* texture, const char* path) {
+void DistanceTransform(const unsigned char* input, unsigned char* output, int width, int height) {
+	std::vector<float> dist(width * height, 2147483648.0f); // Use float for distance
+
+	// Forward pass
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			if (input[y * width + x] > 0) {
+				dist[y * width + x] = 0; // Foreground pixel
+			}
+			else {
+				// Check neighbors (4-connectivity)
+				if (x > 0) dist[y * width + x] = std::min(dist[y * width + x], dist[y * width + (x - 1)] + 1.0f);
+				if (y > 0) dist[y * width + x] = std::min(dist[y * width + x], dist[(y - 1) * width + x] + 1.0f);
+				// Check diagonal neighbors (8-connectivity)
+				if (x > 0 && y > 0)
+					dist[y * width + x] = std::min(dist[y * width + x], dist[(y - 1) * width + (x - 1)] + std::sqrt(2.0f));
+				if (x < width - 1 && y > 0)
+					dist[y * width + x] = std::min(dist[y * width + x], dist[(y - 1) * width + (x + 1)] + std::sqrt(2.0f));
+				if (x > 0 && y < height - 1)
+					dist[y * width + x] = std::min(dist[y * width + x], dist[(y + 1) * width + (x - 1)] + std::sqrt(2.0f));
+				if (x < width - 1 && y < height - 1)
+					dist[y * width + x] = std::min(dist[y * width + x], dist[(y + 1) * width + (x + 1)] + std::sqrt(2.0f));
+			}
+		}
+	}
+
+	// Backward pass
+	for (int y = height - 1; y >= 0; --y) {
+		for (int x = width - 1; x >= 0; --x) {
+			if (input[y * width + x] > 0) {
+				dist[y * width + x] = 0; // Foreground pixel
+			}
+			else {
+				// Check neighbors (4-connectivity)
+				if (x < width - 1) dist[y * width + x] = std::min(dist[y * width + x], dist[y * width + (x + 1)] + 1.0f);
+				if (y < height - 1) dist[y * width + x] = std::min(dist[y * width + x], dist[(y + 1) * width + x] + 1.0f);
+				// Check diagonal neighbors (8-connectivity)
+				if (x < width - 1 && y < height - 1)
+					dist[y * width + x] = std::min(dist[y * width + x], dist[(y + 1) * width + (x + 1)] + std::sqrt(2.0f));
+				if (x > 0 && y < height - 1)
+					dist[y * width + x] = std::min(dist[y * width + x], dist[(y + 1) * width + (x - 1)] + std::sqrt(2.0f));
+				if (x < width - 1 && y > 0)
+					dist[y * width + x] = std::min(dist[y * width + x], dist[(y - 1) * width + (x + 1)] + std::sqrt(2.0f));
+				if (x > 0 && y > 0)
+					dist[y * width + x] = std::min(dist[y * width + x], dist[(y - 1) * width + (x - 1)] + std::sqrt(2.0f));
+			}
+		}
+	}
+
+	// Normalize output to be in the range [0, 255] with a fall-off of 0.5
+	float fallOffRange = 1.0f; // Define your desired fall-off range
+	float maxDist = 0.0f;
+
+	for (int i = 0; i < width * height; ++i) {
+		maxDist = std::max(maxDist, dist[i]);
+	}
+
+	for (int i = 0; i < width * height; ++i) {
+		float normalizedDistance = dist[i] / (maxDist * fallOffRange);
+		output[i] = static_cast<unsigned char>(255.0f - std::min(normalizedDistance * 255, 255.0f));
+	}
+}
+
+void LoadTexture(GLuint* texture, const char* path, bool distTransform) {
 	stbi_set_flip_vertically_on_load(true);
 
 	int width, height, channels;
 	unsigned char* data = stbi_load(path, &width, &height, &channels, 0);
-	if (data) {
-		glGenTextures(1, texture);
-		glBindTexture(GL_TEXTURE_2D, *texture);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		GLenum format = (channels == 3) ? GL_RGB : GL_RGBA;
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		stbi_image_free(data);
-	}
-	else {
+	if (data == nullptr) {
 		std::cerr << "Failed to load texture: " << path << std::endl;
+		return;
 	}
+
+	if (channels == 4 && distTransform) {
+		unsigned char* greyDataPreTransformed = new unsigned char[width * height];
+		unsigned char* greyDataPostTransformed = new unsigned char[width * height];
+
+		for (int i = 0; i < width * height; i++) {
+			greyDataPreTransformed[i] = data[i * channels + 3];
+		}
+
+		DistanceTransform(greyDataPreTransformed, greyDataPostTransformed, width, height);
+
+		for (int i = 0; i < width * height; i++) {
+			data[i * channels + 3] = greyDataPostTransformed[i];
+		}
+
+		delete[] greyDataPreTransformed;
+		delete[] greyDataPostTransformed;
+	}
+	
+
+	glGenTextures(1, texture);
+	glBindTexture(GL_TEXTURE_2D, *texture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	GLenum format = (channels == 3) ? GL_RGB : GL_RGBA;
+	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	stbi_image_free(data);
 }
 
 void SaveTextureToFile(GLuint texture, const std::string& path, int width, int height, GLenum format) {

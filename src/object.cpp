@@ -16,7 +16,7 @@ Object::Object(Shader* shader) {
     UpdateModelMatrix();
 }
 
-void Object::SetMesh(const std::string& objName) {
+void Object::SetMesh(const std::string& objName, bool foliage) {
     glBindVertexArray(VAO);
 
 	ObjectData objData;
@@ -58,7 +58,7 @@ void Object::SetMesh(const std::string& objName) {
 
     if (!objData.texturePath.empty()) {
         albedoLocation = GetUniformLocation(shader->shaderProgram, "u_Albedo");
-        LoadTexture(&albedo, ("resources/" + objData.texturePath).c_str());
+        LoadTexture(&albedo, ("resources/" + objData.texturePath).c_str(), foliage);
     }
 }
 

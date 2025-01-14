@@ -14,7 +14,7 @@
 class Object {
 public:
 	Object(Shader* shader);
-	void SetMesh(const std::string& objName);
+	void SetMesh(const std::string& objName, bool foliage = false);
 	virtual void Draw();
 	virtual void DebugDraw();
 
