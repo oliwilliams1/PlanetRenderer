@@ -75,8 +75,8 @@ void TreesHandler::SetupBuffers() {
 
 	tree.push_back(Object(treeShader));
 	tree.push_back(Object(treeShader));
-	tree[0].SetMesh("trees/tree0");
-	tree[1].SetMesh("trees/tree0_1", true);
+	tree[0].SetMesh("tree0");
+	tree[1].SetMesh("tree0_1", true);
 
 	treeShader->use();
 	for (int i = 0; i < tree.size(); i++) {
@@ -86,8 +86,8 @@ void TreesHandler::SetupBuffers() {
 }
 
 void TreesHandler::CreateTextures() {
-	LoadTexture(&texturesTree0.topAlbedo, "resources/trees/tree0-albedo-imp.png");
-	LoadTexture(&texturesTree0.topNormal, "resources/trees/tree0-normal-imp.png");
+	LoadTexture(&texturesTree0.topAlbedo, "resources/tree0-albedo-imp.png");
+	LoadTexture(&texturesTree0.topNormal, "resources/tree0-normal-imp.png");
 }
 
 void TreesHandler::Draw() {

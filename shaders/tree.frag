@@ -60,8 +60,8 @@ void main() {
 
     vec4 albedo = texture(u_Albedo, UV);
 
-    const float minDist = 10.0;
-    const float maxDist = 40.0;
+    const float minDist = 40.0;
+    const float maxDist = 100.0;
 
     float dist = length(FragPos - cameraPos);
 

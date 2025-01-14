@@ -57,8 +57,8 @@ void ImposterRenderer::Render() {
 	gridShader->use();
 	if (needToRender) {
 		needToRender = false;
-		SaveTextureToFile(deferredRenderer->gAlbedo, std::string("resources/trees/") + saveToFileBuffer + std::string("-albedo-imp"), deferredRenderer->width, deferredRenderer->height, GL_RGBA);
-		SaveTextureToFile(deferredRenderer->gNormal, std::string("resources/trees/") + saveToFileBuffer + std::string("-normal-imp"), deferredRenderer->width, deferredRenderer->height, GL_RGBA);
+		SaveTextureToFile(deferredRenderer->gAlbedo, std::string("resources/") + saveToFileBuffer + std::string("-albedo-imp"), deferredRenderer->width, deferredRenderer->height, GL_RGBA);
+		SaveTextureToFile(deferredRenderer->gNormal, std::string("resources/") + saveToFileBuffer + std::string("-normal-imp"), deferredRenderer->width, deferredRenderer->height, GL_RGBA);
 	}
 	else {
 		grid->Draw();
