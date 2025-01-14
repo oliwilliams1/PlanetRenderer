@@ -113,10 +113,10 @@ ImposterRenderer::~ImposterRenderer() {
 
 ImposterObject::ImposterObject(Shader* shader) {
 	this->shader = shader;
-	this->pos = glm::vec3(0.0f, -8.0f, 0.0f);
+	this->pos = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->rot = glm::vec3(0.0f);
 	this->scale = glm::vec3(1.0f);
-	this->overallScale = 0.127f;
+	this->overallScale = 6.0f;
 
 	GenerateInstanceData();
 }
@@ -141,10 +141,10 @@ void ImposterObject::GenerateInstanceData() {
 
 			m_ModelInstanceData.push_back(m_Model);
 
+			glm::mat4 normalRotY = glm::rotate(glm::mat4(1.0f), glm::radians(x * 45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 			glm::mat4 normalRotX = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-			glm::mat4 normalRotZ = glm::rotate(glm::mat4(1.0f), glm::radians((-22.5f * y + 180.0f) - (x * 45.0f)), glm::vec3(0.0f, 0.0f, 1.0f));
 			
-			glm::mat4 m_Normal = normalRotZ * normalRotX;
+			glm::mat4 m_Normal = normalRotX * normalRotY;
 
 			m_NormalInstanceData.push_back(m_Normal);
 		}
