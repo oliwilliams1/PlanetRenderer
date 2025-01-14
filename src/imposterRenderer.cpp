@@ -113,10 +113,10 @@ ImposterRenderer::~ImposterRenderer() {
 
 ImposterObject::ImposterObject(Shader* shader) {
 	this->shader = shader;
-	this->pos = glm::vec3(0.0f, 0.0f, 0.0f);
+	this->pos = glm::vec3(0.0f, -8.0f, 0.0f);
 	this->rot = glm::vec3(0.0f);
 	this->scale = glm::vec3(1.0f);
-	this->overallScale = 6.0f;
+	this->overallScale = 0.02f;
 
 	GenerateInstanceData();
 }

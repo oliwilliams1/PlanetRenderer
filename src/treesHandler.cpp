@@ -7,7 +7,7 @@ TreesHandler::TreesHandler(Planet* planet) {
 	this->treeShader = new Shader("shaders/tree.vert", "shaders/tree.frag", "Tree shader");
 	this->noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
 	this->numSubdivisions = 50;
-	this->treeScale = 7.5f;
+	this->treeScale = 8.0f;
 
 	imposterShader->use();
 	albedoLocation = GetUniformLocation(imposterShader->shaderProgram, "u_Albedo");

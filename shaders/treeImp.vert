@@ -60,7 +60,7 @@ void main() {
     up = normalize(cross(toCamera, right));
 
     mat3 RotMatrix = mat3(right, up, toCamera);
-
+    TBN = RotMatrix;
     vec4 worldPos = mat4(RotMatrix) * vec4(position * u_TreeScale, 1.0) + vec4(centerWorldPos, 0.0);
     
     vec3 normal = normalize(worldPos.xyz);
