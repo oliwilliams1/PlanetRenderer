@@ -22,10 +22,10 @@ App::App() {
 
 	CamInitData camInitData{};
 	camInitData.fov = 70.0f;
-	camInitData.pitch = -10.0f;
-	camInitData.yaw = -138.0f;
-	camInitData.speed = 300.0f;
-	camInitData.position = glm::vec3(445.0f, 1000.0f, 435.0f);
+	camInitData.pitch = -37.0f;
+	camInitData.yaw = -291.0f;
+	camInitData.speed = 200.0f;
+	camInitData.position = glm::vec3(155.0f, 1023.0f, 250.0f);
 
 	deferredRenderer = new DeferredRenderer(viewportWidth, viewportHeight);
 	camera = new Camera(window, &deltaTime, viewportWidth, viewportHeight, camInitData);

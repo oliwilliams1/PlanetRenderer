@@ -88,5 +88,5 @@ void main() {
     gPosition = FragPos;
     gNormal = vec3(finalNormal);
     gAlbedo = vec4(finalAlbedo.rgb, 1.0);
-    gObjectID = 1;
+    gObjectID = 2;
 }

@@ -33,34 +33,64 @@ vec3 hsv2rgb(vec3 c) {
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
+// Basic SSS, not realistic, but works as concept
+vec3 SSS(vec3 normal, vec3 lightDir, vec3 albedo, vec3 lightColour) {
+    float sss = exp(-3.0 * abs(dot(normal, lightDir)));
+
+    vec3 scatterColour = rgb2hsv(albedo);
+    scatterColour.x = mod(scatterColour.x + (-10.0 / 360.0), 1.0);
+    scatterColour.y = clamp(scatterColour.y + 0.43, 0.0, 1.0);
+
+    return sss * hsv2rgb(scatterColour) * lightColour;
+}
+
+// Add backlit lighting to billboards because trees are volumes, not flat surfaces
+vec3 BacklitLightingBillboard(float frontDiff, vec3 normal, vec3 lightDir, vec3 albedo, vec3 lightColour) {
+    float backDiff = max(dot(normal, -lightDir), 0.0);
+    backDiff = clamp(backDiff * 1.5, 0.0, 1.0);
+
+    float blendFact = 0.8;
+    vec3 treeDiffuse = mix(albedo * lightColour * frontDiff, albedo * lightColour * backDiff, blendFact);
+
+    return treeDiffuse;
+}
+
 void main() {
     vec3 lightColour = vec3(0.6);
 
     vec3 position = texture(gPosition, UV).xyz;
     vec3 normal = normalize(texture(gNormal, UV).xyz);
     vec3 albedo = texture(gAlbedo, UV).rgb;
-
-    vec3 ambient = 0.1 * albedo;
-
-    vec3 lightDir = vec3(1.0);
-    vec3 viewDir = normalize(cameraPos - position);
-    
-    float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = diff * albedo * lightColour;
-
     int objectID = texture(gObjectID, UV).r;
 
-    if (objectID == 1) {
-        // Basic SSS, not realistic, but works as concept
-        float sss = exp(-3.0 * abs(dot(normal, lightDir)));
+    vec3 lightDir = vec3(1.0);
+    lightDir = normalize(lightDir);
+    vec3 viewDir = normalize(cameraPos - position);
 
-        vec3 scatterColour = rgb2hsv(albedo);
-        scatterColour.x = mod(scatterColour.x + (-10.0 / 360.0), 1.0);
-        scatterColour.y = clamp(scatterColour.y + 0.43, 0.0, 1.0);
+    vec3 ambient = 0.1 * albedo;
+    
+    float frontDiff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = frontDiff * albedo * lightColour;
 
-        diffuse += sss * hsv2rgb(scatterColour) * lightColour;
+    // Add SSS to foliage, billboard or not
+    if (objectID == 1 || objectID == 2) {
+        diffuse += SSS(normal, lightDir, albedo, lightColour);
     }
 
+    // Add backlit lighting to tree billboard
+    if (objectID == 2) {
+        diffuse += BacklitLightingBillboard(frontDiff, normal, lightDir, albedo, lightColour);
+    }
+
+    // Specular
+	//vec3 reflectDir = reflect(-lightDir, normal);
+	//float specularStrength = pow(max(dot(viewDir, reflectDir), 0.0), 10.0);
+	//vec3 specular = specularStrength * lightColour;
+
+    // Add shadows to the planet
+    diffuse *= max(dot(normalize(position), lightDir), 0.0);
+
+    // Combine all contribs
     vec3 finalColor = ambient + diffuse;
 
     colour = vec4(finalColor, 1.0);
