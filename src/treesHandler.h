@@ -40,6 +40,9 @@ private:
 	GLuint ImposterVAO, ImposterVBO;
 	GLuint TreeVAO, TreeVBO, TreeIBO;
 
+	GLuint treeCS;
+	GLuint atomicCounterTreeCS;
+
 	int passCounter;
 	int numSubdivisions;
 
@@ -47,6 +50,7 @@ private:
 	GLuint TreeSSSLocation;
 	float treeScale;
 
+	void Dispatch();
 	void SetupBuffers();
 	void PlaceTrees(int numPoints);
 	void PlaceTreesOnTriangle(int numSubdivisons, const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3);

@@ -22,6 +22,34 @@ TreesHandler::TreesHandler(Planet* planet) {
 	PlaceTrees(numSubdivisions);
 	SetupBuffers();
 	CreateTextures();
+
+	treeCS = CompileComputeShader("shaders/treeIndirectCull.comp");
+
+	unsigned int initValue = 0;
+	glGenBuffers(1, &atomicCounterTreeCS);
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicCounterTreeCS);
+	glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(unsigned int), &initValue, GL_DYNAMIC_DRAW);
+}
+
+void TreesHandler::Dispatch() {
+	glUseProgram(treeCS);
+
+	unsigned int resetValue = 0;
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicCounterTreeCS);
+	glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(unsigned int), &resetValue);
+
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ImposterMBO);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ImposterMatrixIndexBuffer);
+	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 2, atomicCounterTreeCS);
+	
+	int workgroupSize = 16;
+	int totalInstances = instanceData.size();
+
+	int numGroupsX = (int)std::ceil(std::sqrt(totalInstances) / workgroupSize);
+	int numGroupsY = numGroupsX;
+
+	glDispatchCompute(numGroupsX, numGroupsY, 1);
+	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
 }
 
 void TreesHandler::UpdateTrees() {
@@ -32,6 +60,10 @@ void TreesHandler::UpdateTrees() {
 	glBindBuffer(GL_ARRAY_BUFFER, ImposterPBO);
 	glBufferData(GL_ARRAY_BUFFER, instancePositions.size() * sizeof(glm::vec3), instancePositions.data(), GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ImposterMBO);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void TreesHandler::DebugDraw() {
@@ -70,7 +102,7 @@ void TreesHandler::SetupBuffers() {
 
 	glGenBuffers(1, &ImposterMatrixIndexBuffer);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ImposterMatrixIndexBuffer);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceIndexes.size() * sizeof(unsigned int), instanceIndexes.data(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, 1000 * sizeof(unsigned int), nullptr, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 	tree.push_back(Object(treeShader));
@@ -91,6 +123,8 @@ void TreesHandler::CreateTextures() {
 }
 
 void TreesHandler::Draw() {
+	Dispatch();
+
 	imposterShader->use();
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ImposterMBO);
 
@@ -107,20 +141,10 @@ void TreesHandler::Draw() {
 	glBindVertexArray(0);
 
 	glDisable(GL_CULL_FACE);
+
 	treeShader->use();
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ImposterMBO);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, ImposterMatrixIndexBuffer);
-
-	glm::vec3 camPos = planet->camera->position;
-	float dist = 85.0f;
-
-	instanceIndexes.clear();
-	for (int i = 0; i < instancePositions.size(); i++) {
-		if (glm::distance(instancePositions[i], camPos) < dist) instanceIndexes.emplace_back(i);
-	}
-
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ImposterMatrixIndexBuffer);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceIndexes.size() * sizeof(unsigned int), instanceIndexes.data(), GL_DYNAMIC_DRAW);
 
 	glActiveTexture(GL_TEXTURE0);
 
@@ -138,7 +162,7 @@ void TreesHandler::Draw() {
 		glUniform1i(tree[i].albedoLocation, 0);
 
 		glBindVertexArray(tree[i].VAO);
-		glDrawElementsInstanced(GL_TRIANGLES, tree[i].indicesCount, GL_UNSIGNED_INT, 0, instanceIndexes.size());
+		glDrawElementsInstanced(GL_TRIANGLES, tree[i].indicesCount, GL_UNSIGNED_INT, 0, 1000);
 		glBindVertexArray(0);
 	}
 	glEnable(GL_CULL_FACE);

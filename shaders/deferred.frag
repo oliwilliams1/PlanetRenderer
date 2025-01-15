@@ -56,7 +56,7 @@ vec3 BacklitLightingBillboard(float frontDiff, vec3 normal, vec3 lightDir, vec3 
 }
 
 void main() {
-    vec3 lightColour = vec3(0.6);
+    vec3 lightColour = vec3(1.0);
 
     vec3 position = texture(gPosition, UV).xyz;
     vec3 normal = normalize(texture(gNormal, UV).xyz);

@@ -1,0 +1,35 @@
+#version 460
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout(std430, binding = 0) buffer InstanceData {
+	mat4[] m_ModelInstance;
+};
+
+layout(std430, binding = 1) buffer InstanceIndexData {
+	uint[] instanceIndex;
+};
+
+layout(binding = 2) uniform atomic_uint aCounter;
+
+layout(std140) uniform CameraData {
+    mat4 m_ViewProj;
+    mat4 m_CameraRotation;
+    vec3 cameraPos;
+    float deltaTime;
+};
+
+void main() {
+	uint x = gl_GlobalInvocationID.x;
+    uint y = gl_GlobalInvocationID.y;
+    uint id = x + y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
+	
+	float maxDist = 85.0;
+
+	if (distance(cameraPos, m_ModelInstance[id][3].xyz) < maxDist) {
+        uint indexID = atomicCounterAdd(aCounter, 1u);
+        if (indexID < instanceIndex.length()) {
+            instanceIndex[indexID] = id;
+        }
+    }
+}
