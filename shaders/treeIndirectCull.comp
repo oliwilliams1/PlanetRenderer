@@ -24,7 +24,7 @@ void main() {
     uint y = gl_GlobalInvocationID.y;
     uint id = x + y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
 	
-	float maxDist = 85.0;
+	float maxDist = 60.0;
 
 	if (distance(cameraPos, m_ModelInstance[id][3].xyz) < maxDist) {
         uint indexID = atomicCounterAdd(aCounter, 1u);

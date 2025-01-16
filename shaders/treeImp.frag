@@ -1,4 +1,4 @@
-#version 430 core
+#version 460 core
 
 layout(location = 0) out vec3 gPosition;
 layout(location = 1) out vec3 gNormal;
@@ -49,8 +49,8 @@ bool shouldDiscardPixel(ivec2 pixelCoords, float v) {
 void alphaDitherBasedOnDistance() {
     float d = distance(cameraPos, FragPos);
     float v = 1.0;
-    float maxDist = 75.0;
-    float minDist = 60.0;
+    float maxDist = 50.0;
+    float minDist = 37.5;
 
     if (d < minDist) {
         discard;

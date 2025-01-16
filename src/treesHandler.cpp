@@ -24,6 +24,7 @@ TreesHandler::TreesHandler(Planet* planet) {
 	CreateTextures();
 
 	treeCS = CompileComputeShader("shaders/treeIndirectCull.comp");
+	glUseProgram(treeCS);
 
 	unsigned int initValue = 0;
 	glGenBuffers(1, &atomicCounterTreeCS);
@@ -32,6 +33,11 @@ TreesHandler::TreesHandler(Planet* planet) {
 }
 
 void TreesHandler::Dispatch() {
+	// Clear index buffer
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ImposterMatrixIndexBuffer);
+	glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_R32UI, GL_RED, GL_UNSIGNED_INT, nullptr);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
 	glUseProgram(treeCS);
 
 	unsigned int resetValue = 0;
@@ -56,10 +62,6 @@ void TreesHandler::UpdateTrees() {
 	delete noiseCubemapCPU;
 	noiseCubemapCPU = new Cubemap(planet->noiseCubemapTexture, planet->cubemapResolution);
 	PlaceTrees(numSubdivisions);
-
-	glBindBuffer(GL_ARRAY_BUFFER, ImposterPBO);
-	glBufferData(GL_ARRAY_BUFFER, instancePositions.size() * sizeof(glm::vec3), instancePositions.data(), GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ImposterMBO);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, instanceData.size() * sizeof(glm::mat4), instanceData.data(), GL_DYNAMIC_DRAW);
@@ -126,8 +128,7 @@ void TreesHandler::Draw() {
 	Dispatch();
 
 	imposterShader->use();
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ImposterMBO);
-
+	
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texturesTree0.topAlbedo);
 	glUniform1i(albedoLocation, 0);
@@ -137,10 +138,9 @@ void TreesHandler::Draw() {
 	glUniform1i(normalLocation, 1);
 
 	glBindVertexArray(ImposterVAO);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ImposterMBO);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, instancePositions.size());
 	glBindVertexArray(0);
-
-	glDisable(GL_CULL_FACE);
 
 	treeShader->use();
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ImposterMBO);
@@ -154,6 +154,8 @@ void TreesHandler::Draw() {
 			glUniform1i(TreeSSSLocation, 0);
 		}
 		else {
+			glDisable(GL_CULL_FACE);
+
 			// Leaves, want SSS
 			glUniform1i(TreeSSSLocation, 1);
 		}
@@ -162,7 +164,7 @@ void TreesHandler::Draw() {
 		glUniform1i(tree[i].albedoLocation, 0);
 
 		glBindVertexArray(tree[i].VAO);
-		glDrawElementsInstanced(GL_TRIANGLES, tree[i].indicesCount, GL_UNSIGNED_INT, 0, 1000);
+		glDrawElementsInstanced(GL_TRIANGLES, tree[i].indicesCount, GL_UNSIGNED_INT, 0, 300);
 		glBindVertexArray(0);
 	}
 	glEnable(GL_CULL_FACE);
