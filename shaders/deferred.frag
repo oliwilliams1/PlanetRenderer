@@ -11,9 +11,10 @@ uniform isampler2D gObjectID;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
-    mat4 m_CameraRotation;
     vec3 cameraPos;
     float deltaTime;
+    vec3 cameraForward;
+    float time;
 };
 
 // https://stackoverflow.com/questions/15095909/from-rgb-to-hsv-in-opengl-glsl

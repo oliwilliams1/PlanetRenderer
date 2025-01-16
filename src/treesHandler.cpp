@@ -148,13 +148,14 @@ void TreesHandler::Draw() {
 
 	glActiveTexture(GL_TEXTURE0);
 
+	glDisable(GL_CULL_FACE);
+	
 	for (int i = 0; i < tree.size(); i++) {
 		if (i == 0) {
 			// Bark, dont want SSS
 			glUniform1i(TreeSSSLocation, 0);
 		}
 		else {
-			glDisable(GL_CULL_FACE);
 
 			// Leaves, want SSS
 			glUniform1i(TreeSSSLocation, 1);
@@ -164,7 +165,7 @@ void TreesHandler::Draw() {
 		glUniform1i(tree[i].albedoLocation, 0);
 
 		glBindVertexArray(tree[i].VAO);
-		glDrawElementsInstanced(GL_TRIANGLES, tree[i].indicesCount, GL_UNSIGNED_INT, 0, 300);
+		glDrawElementsInstanced(GL_TRIANGLES, tree[i].indicesCount, GL_UNSIGNED_INT, 0, 350);
 		glBindVertexArray(0);
 	}
 	glEnable(GL_CULL_FACE);

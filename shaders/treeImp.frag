@@ -14,9 +14,10 @@ in flat int Col;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
-    mat4 m_CameraRotation;
     vec3 cameraPos;
     float deltaTime;
+    vec3 cameraForward;
+    float time;
 };
 
 uniform sampler2D u_Albedo;

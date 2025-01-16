@@ -107,9 +107,10 @@ void Camera::update(glm::dvec2 mouseDelta) {
 	m_CameraRotation[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 	cameraData.m_ProjView       = m_Proj * m_View;
-	cameraData.m_CameraRotation = m_CameraRotation;
 	cameraData.position         = this->position;
 	cameraData.deltaTime        = *deltaTime;
+	cameraData.forward          = this->forward;
+	cameraData.time             = glfwGetTime();
 
 	UpdateBuffers();
 }

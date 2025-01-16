@@ -10,7 +10,6 @@ namespace AssetManager {
 	static System* s_Instance = nullptr;
 
 	System::System() {
-		std::cout << "asset manager constuctor" << std::endl;
 
 		// Set input box to empty instead of null
 		strncpy_s(this->addObjectNameBuffer, "", sizeof(this->addObjectNameBuffer) - 1);
@@ -21,7 +20,7 @@ namespace AssetManager {
 	}
 
 	System::~System() {
-		std::cout << "asset manager destructor" << std::endl;
+		m_Objects.clear();
 	}
 
 	void System::Init() {

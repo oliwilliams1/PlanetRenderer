@@ -7,9 +7,10 @@
 // Must be aligned to 16 bytes, or it will NOT work
 struct CameraData {
 	glm::mat4 m_ProjView;        // 64 bytes
-	glm::mat4 m_CameraRotation;  // 64 bytes
 	glm::vec3 position;          // 12 bytes
 	float deltaTime;             // 4 bytes
+	glm::vec3 forward;           // 12 bytes
+	float time;                  // 4 bytes
 };
 
 struct CamInitData {
