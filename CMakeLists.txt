@@ -36,6 +36,12 @@ set(SOURCE_FILES
     "src/utils.cpp"
     "src/app.cpp"
     "src/deferredRenderer.cpp"
+    "src/assetManager.cpp"
+    "src/imposterRenderer.cpp" 
+    "src/objectSerializer.cpp"
+    "src/treesHandler.cpp"
+    "src/cubemap.cpp"
+    "src/atmosphereRenderer.cpp"
 )
 
 # Add header files
@@ -48,10 +54,16 @@ set(HEADER_FILES
     "src/utils.h"
     "src/app.h"
     "src/deferredRenderer.h"
+    "src/assetManager.h"
+    "src/imposterRenderer.h"
+    "src/objectSerializer.h"
+    "src/treesHandler.h"
+    "src/cubemap.h"
+    "src/atmosphereRenderer.h"
 )
 
 # Add executable
-add_executable(PlanetRenderer ${SOURCE_FILES} ${HEADER_FILES} "src/treesHandler.h" "src/treesHandler.cpp" "src/cubemap.h" "src/cubemap.cpp" "src/imposterRenderer.cpp" "src/imposterRenderer.h" "src/objectSerializer.h" "src/objectSerializer.cpp" "src/assetManager.cpp" "src/assetManager.h")
+add_executable(PlanetRenderer ${SOURCE_FILES} ${HEADER_FILES})
 
 # Add imgui source files if user is not using VCPKG
 if (NOT MSVC)

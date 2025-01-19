@@ -17,6 +17,7 @@ Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	noiseGen->Dispatch(seed);
 
 	this->treesHandler = new TreesHandler(this);
+	this->atmosphere = new Atmosphere(app->viewportWidth, app->viewportHeight, app->deferredRenderer->gPosition, app->deferredRenderer->gDepth);
 
 	SetMesh("planet");
 
@@ -99,4 +100,12 @@ void Planet::DebugDraw() {
 	}
 
 	treesHandler->DebugDraw();
+}
+
+Planet::~Planet() {
+	glDeleteTextures(1, &noiseCubemapTexture);
+	glDeleteTextures(1, &normalCubemapTexture);
+	delete noiseGen;
+	delete treesHandler;
+	delete atmosphere;
 }

@@ -141,6 +141,8 @@ void App::Mainloop() {
 			imposterRenderer->Render();
 		}
 
+		mainPlanet->atmosphere->Draw();
+		
 		// Setup ImGui for new frame
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -163,6 +165,7 @@ void App::Mainloop() {
 		ImGui::Separator();
 		mainPlanet->DebugDraw();
 		ImGui::Separator();
+		mainPlanet->atmosphere->DebugDraw();
 
 		ImGui::Checkbox("Open/Close imposter rendering menu", &imposterRenderingWindowOpen);
 

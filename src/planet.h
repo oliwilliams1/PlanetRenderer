@@ -8,6 +8,7 @@
 #include "shader.h"
 #include "object.h"
 #include "treesHandler.h"
+#include "atmosphereRenderer.h"
 
 class App;
 class Noise;
@@ -24,6 +25,7 @@ private:
 class Planet : public Object {
 public:
 	Planet(App* app, Shader* shader);
+	~Planet();
 	void Draw() override;
 	void DebugDraw() override;
 	int cubemapResolution;
@@ -31,6 +33,7 @@ public:
 	GLuint noiseCubemapTexture, normalCubemapTexture;
 	int seed;
 	Camera* camera;
+	Atmosphere* atmosphere;
 
 private:
 	App* app;

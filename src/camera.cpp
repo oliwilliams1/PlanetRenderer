@@ -6,7 +6,7 @@ Camera::Camera(GLFWwindow* window, float* deltaTime, int width, int height, CamI
 	aspectRatio = (float)width / (float)height;
 	fov   = initData.fov;
 	zNear = 0.01f;
-	zFar  = 10000.0f;
+	zFar  = 5000.0f;
 
 	pitch = initData.pitch;
 	yaw   = initData.yaw;

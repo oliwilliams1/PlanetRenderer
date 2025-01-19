@@ -39,5 +39,5 @@ void main() {
 
     gl_Position = m_ViewProj * vec4(displacedPosition, 1.0); // Transform into cubesphere
     Normal = transpose(inverse(mat3(m_Model))) * normal;
-    FragPos = mPos.xyz;
+    FragPos = displacedPosition.xyz;
 }
