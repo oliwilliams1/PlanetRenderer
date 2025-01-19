@@ -18,27 +18,66 @@ layout(std140) uniform CameraData {
     float time;
 };
 
-float sphereSDF(vec3 p, float radius) {
-    return length(p) - radius;
+// Get ray direction from camera
+vec3 getRayDirection(mat4 m) {
+    // Unsure of why UV's are flipped, but it works
+    vec2 ndc = vec2((1.0 - UV.x) * 2.0 - 1.0, (1.0 - UV.y) * 2.0 - 1.0);
+
+    vec4 clipSpacePos = vec4(ndc, -1.0, 1.0);
+    mat4 inverseProj = inverse(m);
+    
+    vec4 cameraSpacePos = inverseProj * clipSpacePos;
+    cameraSpacePos /= cameraSpacePos.w;
+    
+    return normalize(cameraSpacePos.xyz);
+}
+
+// Ray-sphere intersection
+// https://gist.github.com/wwwtyro/beecc31d65d1004f5a9d?permalink_comment_id=2982787#gistcomment-2982787
+vec2 raySphereIntersect(vec3 r0, vec3 rd, vec3 s0, float sr) {
+    float a = dot(rd, rd);
+    vec3 s0_r0 = r0 - s0;
+    float b = 2.0 * dot(rd, s0_r0);
+    float c = dot(s0_r0, s0_r0) - (sr * sr);
+    float disc = b * b - 4.0 * a * c;
+
+    if (disc < 0.0) {
+        return vec2(-1.0, -1.0); // No intersections
+    } else {
+        // Calc the two intersection points
+        float t1 = (-b - sqrt(disc)) / (2.0 * a);
+        float t2 = (-b + sqrt(disc)) / (2.0 * a);
+
+        // Only return valid if intersecion point is in the same dir as the ray
+        if (t1 >= 0.0 && t2 >= 0.0) {
+            return vec2(t1, t2); // Both intersections are valid
+        } else if (t1 >= 0.0) {
+            return vec2(t1, -1.0); // Only first intersection is valid
+        } else if (t2 >= 0.0) {
+            return vec2(t2, -1.0); // Only second intersection is valid
+        } else {
+            return vec2(-1.0, -1.0); // Both intersections are behind the ray origin
+        }
+    }
 }
 
 void main() {
-    vec2 uv = UV;
+    mat4 m_StrippedViewProj = m_ViewProj;
+    m_StrippedViewProj[3] = vec4(0.0, 0.0, 0.0, 1.0); // Remove pesky translation from view matrix
+    vec3 rayDir = getRayDirection(m_StrippedViewProj);
+    rayDir *= -1.0; // Flip ray direction
 
-    vec3 fragPos = texture(u_FragPos, uv).xyz;
+    // Perform ray-sphere intersection
+    vec2 tValues = raySphereIntersect(cameraPos, rayDir, planetCenter, planetUpperRadius);
 
-    float distanceToSurface = sphereSDF(fragPos - planetCenter, planetRadius);
-    
-    float distanceToAtmosphere = sphereSDF(fragPos - planetCenter, planetUpperRadius);
+    float d = 0.0;
+    if (tValues.y > 0.0) {
+        d = tValues.y - tValues.x;
+    } else {
+        d = tValues.x;
+    }
 
-    float atmosphereFactor = smoothstep(0.0, planetUpperRadius - planetRadius, distanceToSurface);
-    atmosphereFactor = pow(atmosphereFactor, 0.1);
-    
-    // Define colors based on distance
-    vec4 atmosphereColor = vec4(0.0, 0.5, 1.0, 1.0);
-    vec4 surfaceColor = vec4(0.5, 1.0, 0.5, 1.0);
+    d /= planetUpperRadius * 2.0;
 
-    vec4 color = mix(surfaceColor, atmosphereColor, atmosphereFactor);
-
-    fragColour = color;
+    fragColour = vec4(vec3(d), 1.0);
 }
