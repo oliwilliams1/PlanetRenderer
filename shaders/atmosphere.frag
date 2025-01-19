@@ -62,6 +62,9 @@ vec2 raySphereIntersect(vec3 r0, vec3 rd, vec3 s0, float sr) {
 }
 
 void main() {
+    vec3 fragPos = texture(u_FragPos, UV).xyz;
+    float depth = length(fragPos - cameraPos);
+
     mat4 m_StrippedViewProj = m_ViewProj;
     m_StrippedViewProj[3] = vec4(0.0, 0.0, 0.0, 1.0); // Remove pesky translation from view matrix
     vec3 rayDir = getRayDirection(m_StrippedViewProj);
@@ -70,14 +73,20 @@ void main() {
     // Perform ray-sphere intersection
     vec2 tValues = raySphereIntersect(cameraPos, rayDir, planetCenter, planetUpperRadius);
 
-    float d = 0.0;
-    if (tValues.y > 0.0) {
-        d = tValues.y - tValues.x;
+    float closeInterstionPoint = min(tValues.x, tValues.y);
+    float farInterstionPoint = max(tValues.x, tValues.y);
+
+    float aDepth;
+    if (fragPos == vec3(0.0)) { 
+        // Ray doesnt land on planet
+        aDepth = farInterstionPoint - closeInterstionPoint;
     } else {
-        d = tValues.x;
+        // Ray lands on planet
+        aDepth = depth - closeInterstionPoint;
     }
 
-    d /= planetUpperRadius * 2.0;
+    // Temp for development view
+    aDepth /= 1000.0;
 
-    fragColour = vec4(vec3(d), 1.0);
+    fragColour = vec4(vec3(aDepth), 1.0);
 }
