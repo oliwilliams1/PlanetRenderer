@@ -156,6 +156,7 @@ void App::Mainloop() {
 		ImGui::SetColumnWidth(0, viewportWidth + 16);
 
 		deferredRenderer->DisplayViewportImGui();
+		AssetManager::System::GetInstance().DisplayGui();
 
 		ImGui::NextColumn();
 
@@ -168,9 +169,6 @@ void App::Mainloop() {
 		mainPlanet->atmosphere->DebugDraw();
 
 		ImGui::Checkbox("Open/Close imposter rendering menu", &imposterRenderingWindowOpen);
-
-		ImGui::Columns(1);
-		AssetManager::System::GetInstance().DisplayGui();
 		ImGui::End();
 
 		if (imposterRenderingWindowOpen) imposterRenderer->DebugDraw();

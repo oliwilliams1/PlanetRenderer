@@ -5,6 +5,11 @@ Atmosphere::Atmosphere(float width, float height, GLuint gFragPos, GLuint gDepth
 	this->height = height;
 	this->gDepth = gDepth;
 	this->gFragPos = gFragPos;
+	this->u_Steps = 8;
+	this->u_MinAtmsDistance = 950.0f;
+	this->u_MaxAtmsDistance = 1100.0f;
+	this->u_AtmsExpFalloff = 5.0f;
+	this->u_FalloffB = 0.1f;
 
 	this->shader = new Shader("shaders/atmosphere.vert", "shaders/atmosphere.frag", "Atmosphere");
 	SetupQuad();
@@ -12,7 +17,13 @@ Atmosphere::Atmosphere(float width, float height, GLuint gFragPos, GLuint gDepth
 	
 	shader->use();
 	glUniform1i(GetUniformLocation(shader->shaderProgram, "u_FragPos"), 1);
-	glUniform1i(GetUniformLocation(shader->shaderProgram, "u_Depth"), 2);
+
+	glUniform3f(GetUniformLocation(shader->shaderProgram, "u_PlanetCenter"),    0.0f, 0.0f, 0.0f);
+	glUniform1i(GetUniformLocation(shader->shaderProgram, "u_STEPS"),           u_Steps);
+	glUniform1f(GetUniformLocation(shader->shaderProgram, "u_MinAtmsDistance"), u_MinAtmsDistance);
+	glUniform1f(GetUniformLocation(shader->shaderProgram, "u_MaxAtmsDistance"), u_MaxAtmsDistance);
+	glUniform1f(GetUniformLocation(shader->shaderProgram, "u_AtmsExpFalloff"),  u_AtmsExpFalloff);
+	glUniform1f(GetUniformLocation(shader->shaderProgram, "u_FalloffB"),        u_FalloffB);
 }
 
 void Atmosphere::SetupQuad() {
@@ -67,8 +78,6 @@ void Atmosphere::Draw() {
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, gFragPos);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, gDepth);
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -92,6 +101,26 @@ void Atmosphere::DebugDraw() {
 	ImGui::Image((ImTextureID)(intptr_t)gFragPos, ImVec2(width, height), uv0, uv1);
 	ImGui::SameLine();
 	ImGui::Image((ImTextureID)(intptr_t)gAtmosphere, ImVec2(width, height), uv0, uv1);
+
+	if (ImGui::SliderInt("res", &u_Steps, 1, 100)) { 
+		shader->use(); glUniform1i(GetUniformLocation(shader->shaderProgram, "u_STEPS"), u_Steps); 
+	}
+
+	if (ImGui::SliderFloat("min", &u_MinAtmsDistance, 0.0, 10000.0)) {
+		shader->use(); glUniform1f(GetUniformLocation(shader->shaderProgram, "u_MinAtmsDistance"), u_MinAtmsDistance);
+	}
+	
+	if (ImGui::SliderFloat("max", &u_MaxAtmsDistance, 0.0, 10000.0)) {
+		shader->use(); glUniform1f(GetUniformLocation(shader->shaderProgram, "u_MaxAtmsDistance"), u_MaxAtmsDistance);
+	}
+
+	if (ImGui::SliderFloat("falloff", &u_AtmsExpFalloff, 0.1, 20.0)) {
+		shader->use(); glUniform1f(GetUniformLocation(shader->shaderProgram, "u_AtmsExpFalloff"), u_AtmsExpFalloff);
+	}
+
+	if (ImGui::SliderFloat("falloff b", &u_FalloffB, 0.0, 1.0)) {
+		shader->use(); glUniform1f(GetUniformLocation(shader->shaderProgram, "u_FalloffB"), u_FalloffB);
+	}
 }
 
 Atmosphere::~Atmosphere() {

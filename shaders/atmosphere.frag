@@ -6,9 +6,12 @@ in vec2 UV;
 
 uniform sampler2D u_FragPos;
 
-const vec3 planetCenter = vec3(0.0);
-const float planetRadius = 1000.0;
-const float planetUpperRadius = 1200.0;
+uniform vec3  u_PlanetCenter;
+uniform int   u_STEPS;
+uniform float u_MinAtmsDistance;
+uniform float u_MaxAtmsDistance;
+uniform float u_AtmsExpFalloff;
+uniform float u_FalloffB;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -61,9 +64,22 @@ vec2 raySphereIntersect(vec3 r0, vec3 rd, vec3 s0, float sr) {
     }
 }
 
+float sampleDensity(vec3 p) {
+    float d = length(p - u_PlanetCenter);
+
+    if (d <= u_MinAtmsDistance) {
+        return 1.0;
+    } else if (d >= u_MaxAtmsDistance) {
+        return 0.0;
+    } else {
+        float t = (d - u_MinAtmsDistance) / (u_MaxAtmsDistance - u_MinAtmsDistance);
+        return exp(-t * u_AtmsExpFalloff);
+    }
+}
+
 void main() {
     vec3 fragPos = texture(u_FragPos, UV).xyz;
-    float depth = length(fragPos - cameraPos);
+    float fragDepth = length(fragPos - cameraPos);
 
     mat4 m_StrippedViewProj = m_ViewProj;
     m_StrippedViewProj[3] = vec4(0.0, 0.0, 0.0, 1.0); // Remove pesky translation from view matrix
@@ -71,22 +87,31 @@ void main() {
     rayDir *= -1.0; // Flip ray direction
 
     // Perform ray-sphere intersection
-    vec2 tValues = raySphereIntersect(cameraPos, rayDir, planetCenter, planetUpperRadius);
+    vec2 tValues = raySphereIntersect(cameraPos, rayDir, u_PlanetCenter, u_MaxAtmsDistance);
 
     float closeInterstionPoint = min(tValues.x, tValues.y);
     float farInterstionPoint = max(tValues.x, tValues.y);
 
-    float aDepth;
-    if (fragPos == vec3(0.0)) { 
-        // Ray doesnt land on planet
-        aDepth = farInterstionPoint - closeInterstionPoint;
-    } else {
-        // Ray lands on planet
-        aDepth = depth - closeInterstionPoint;
+    // If ray lands on planet, far intersection point is planet surface
+    if (fragPos != vec3(0.0)) { 
+        farInterstionPoint = fragDepth;
     }
 
-    // Temp for development view
-    aDepth /= 1000.0;
+    // Calculate depth of atmosphere
+    float atmsDepth = farInterstionPoint - closeInterstionPoint;
 
-    fragColour = vec4(vec3(aDepth), 1.0);
+    float density = 0.0;
+    for (int i = 0; i < u_STEPS; i++) {
+		vec3 p = (cameraPos + rayDir * closeInterstionPoint) + rayDir * i / float(u_STEPS) * atmsDepth;
+		density += sampleDensity(p);
+    }
+
+    density /= float(u_STEPS);
+
+    // Temp for development view
+    atmsDepth /= u_MinAtmsDistance * u_FalloffB;
+
+    density *= atmsDepth;
+
+    fragColour = vec4(vec3(density), 1.0);
 }

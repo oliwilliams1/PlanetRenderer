@@ -25,6 +25,9 @@ private:
 	
 	Shader* shader;
 	GLuint gAtmosphereFBO, gAtmosphere;
+
+	int u_Steps;
+	float u_MinAtmsDistance, u_MaxAtmsDistance, u_AtmsExpFalloff, u_FalloffB;
 	
 	GLuint quadVAO, quadVBO;
 	float width, height;
