@@ -5,6 +5,7 @@ layout(location = 0) out vec4 fragColour;
 in vec2 UV;
 
 uniform sampler2D u_FragPos;
+uniform sampler2D u_FragColourIn;
 
 uniform vec3  u_PlanetCenter;
 uniform int   u_STEPS;
@@ -68,7 +69,7 @@ float sampleDensity(vec3 p) {
     float d = length(p - u_PlanetCenter);
 
     if (d <= u_MinAtmsDistance) {
-        return 1.0;
+        return 0.0;
     } else if (d >= u_MaxAtmsDistance) {
         return 0.0;
     } else {
@@ -113,5 +114,9 @@ void main() {
 
     density *= atmsDepth;
 
-    fragColour = vec4(vec3(density), 1.0);
+    vec4 colour = vec4(vec3(1.0), density);
+    vec4 fragColourIn = texture(u_FragColourIn, UV);
+
+    // Alpha blend atmosphere onto scene
+    fragColour = fragColourIn * (1.0 - colour.a) + colour * colour.a;
 }

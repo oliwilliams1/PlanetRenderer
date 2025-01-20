@@ -1,21 +1,22 @@
 #include "atmosphereRenderer.h"
 
-Atmosphere::Atmosphere(float width, float height, GLuint gFragPos, GLuint gDepth) {
+Atmosphere::Atmosphere(float width, float height, GLuint gFragPos, GLuint gRendered) {
 	this->width  = width;
 	this->height = height;
-	this->gDepth = gDepth;
+	this->gRendered = gRendered;
 	this->gFragPos = gFragPos;
 	this->u_Steps = 8;
 	this->u_MinAtmsDistance = 950.0f;
-	this->u_MaxAtmsDistance = 1100.0f;
-	this->u_AtmsExpFalloff = 5.0f;
-	this->u_FalloffB = 0.1f;
+	this->u_MaxAtmsDistance = 1250.0f;
+	this->u_AtmsExpFalloff = 5.5f;
+	this->u_FalloffB = 0.45f;
 
 	this->shader = new Shader("shaders/atmosphere.vert", "shaders/atmosphere.frag", "Atmosphere");
 	SetupQuad();
 	CreateTextures();
 	
 	shader->use();
+	glUniform1i(GetUniformLocation(shader->shaderProgram, "u_FragColourIn"), 0);
 	glUniform1i(GetUniformLocation(shader->shaderProgram, "u_FragPos"), 1);
 
 	glUniform3f(GetUniformLocation(shader->shaderProgram, "u_PlanetCenter"),    0.0f, 0.0f, 0.0f);
@@ -51,12 +52,9 @@ void Atmosphere::CreateTextures() {
 	glGenFramebuffers(1, &gAtmosphereFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, gAtmosphereFBO);
 
-	glGenTextures(1, &gAtmosphere);
-	glBindTexture(GL_TEXTURE_2D, gAtmosphere);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gAtmosphere, 0);
+	glBindTexture(GL_TEXTURE_2D, gRendered);
+	
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gRendered, 0);
 
 	GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, drawBuffers);
@@ -74,13 +72,11 @@ void Atmosphere::Draw() {
 	shader->use();
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gAtmosphere);
+	glBindTexture(GL_TEXTURE_2D, gRendered);
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, gFragPos);
 	
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	glBindVertexArray(quadVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
@@ -90,17 +86,6 @@ void Atmosphere::Draw() {
 
 void Atmosphere::DebugDraw() {
 	ImGui::Text("Atmosphere");
-	float aspectRatio = (float)width / (float)height;
-	int width = 175;
-	int height = (int)(width / aspectRatio);
-	bool flipUv = false;
-
-	ImVec2 uv0 = flipUv ? ImVec2(0.0f, 0.0f) : ImVec2(0.0f, 1.0f);
-	ImVec2 uv1 = flipUv ? ImVec2(1.0f, 1.0f) : ImVec2(1.0f, 0.0f);
-
-	ImGui::Image((ImTextureID)(intptr_t)gFragPos, ImVec2(width, height), uv0, uv1);
-	ImGui::SameLine();
-	ImGui::Image((ImTextureID)(intptr_t)gAtmosphere, ImVec2(width, height), uv0, uv1);
 
 	if (ImGui::SliderInt("res", &u_Steps, 1, 100)) { 
 		shader->use(); glUniform1i(GetUniformLocation(shader->shaderProgram, "u_STEPS"), u_Steps); 
@@ -125,5 +110,4 @@ void Atmosphere::DebugDraw() {
 
 Atmosphere::~Atmosphere() {
 	glDeleteFramebuffers(1, &gAtmosphereFBO);
-	glDeleteTextures(1, &gAtmosphere);
 }

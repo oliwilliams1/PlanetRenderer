@@ -21,10 +21,10 @@ public:
 	void SetupQuad();
 
 private:
-	GLuint gDepth, gFragPos;
+	GLuint gRendered, gFragPos;
 	
 	Shader* shader;
-	GLuint gAtmosphereFBO, gAtmosphere;
+	GLuint gAtmosphereFBO;
 
 	int u_Steps;
 	float u_MinAtmsDistance, u_MaxAtmsDistance, u_AtmsExpFalloff, u_FalloffB;
