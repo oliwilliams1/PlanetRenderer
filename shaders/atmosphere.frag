@@ -13,6 +13,7 @@ uniform float u_MinAtmsDistance;
 uniform float u_MaxAtmsDistance;
 uniform float u_AtmsExpFalloff;
 uniform float u_FalloffB;
+uniform vec3  u_SunDir = normalize(vec3(1.0));
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -65,6 +66,25 @@ vec2 raySphereIntersect(vec3 r0, vec3 rd, vec3 s0, float sr) {
     }
 }
 
+// Chatgpt
+vec2 closestPointOnRayToSphere(vec3 rayOrigin, vec3 rayDirection, vec3 sphereCenter, float sphereRadius) {
+    vec3 normalizedDirection = normalize(rayDirection);
+    
+    // Vector from ray origin to sphere center
+    vec3 oc = sphereCenter - rayOrigin;
+    
+    // Project oc onto the ray direction to find the closest point
+    float t = dot(oc, normalizedDirection);
+    
+    // Calculate the closest point on the ray
+    vec3 closestPoint = rayOrigin + t * normalizedDirection;
+
+    // Calculate the distance from the closest point to the sphere center
+    float distanceToSphere = length(closestPoint - sphereCenter) - sphereRadius;
+    
+    return vec2(distanceToSphere, closestPoint);
+}
+
 float sampleDensity(vec3 p) {
     float d = length(p - u_PlanetCenter);
 
@@ -101,13 +121,29 @@ void main() {
     // Calculate depth of atmosphere
     float atmsDepth = farInterstionPoint - closeInterstionPoint;
 
+    vec3 sunDir = normalize(vec3(1.0));
+
     float density = 0.0;
     for (int i = 0; i < u_STEPS; i++) {
 		vec3 p = (cameraPos + rayDir * closeInterstionPoint) + rayDir * i / float(u_STEPS) * atmsDepth;
-		density += sampleDensity(p);
+        for (int j = 0; j < u_STEPS; j++) {
+            vec3 p2 = p + rayDir * j / float(u_STEPS);
+
+            float closestPointDepth = 1.0;
+            // If p2 is on the "dark side" of the planet, perform nesscary calculations for rim falloff lighting
+            if (dot((p2 - u_PlanetCenter), sunDir) < 0.0) {
+                vec2 closestPoint = closestPointOnRayToSphere(p2, sunDir, u_PlanetCenter, u_MinAtmsDistance);
+                closestPointDepth = closestPoint.x;
+                closestPointDepth = clamp(closestPointDepth, -50.0, 50.0);
+                closestPointDepth += 50.0;
+                closestPointDepth /= 50.0 * 2.0;
+            } 
+            
+		    density += sampleDensity(p2) * closestPointDepth;
+        }
     }
 
-    density /= float(u_STEPS);
+    density /= float(u_STEPS * u_STEPS);
 
     // Temp for development view
     atmsDepth /= u_MinAtmsDistance * u_FalloffB;
@@ -117,6 +153,8 @@ void main() {
     vec4 colour = vec4(vec3(1.0), density);
     vec4 fragColourIn = texture(u_FragColourIn, UV);
 
+    density = clamp(density, 0.0, 1.0);
+
     // Alpha blend atmosphere onto scene
-    fragColour = fragColourIn * (1.0 - colour.a) + colour * colour.a;
+    fragColour = fragColourIn + density;
 }
