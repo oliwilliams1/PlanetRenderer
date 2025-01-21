@@ -1,45 +1,56 @@
 # PlanetRenderer
 This repo is research for my upcoming scholarship project, intending get further understanding and experience in C++ and OpenGL.
 
-The terrain for a planet is generated via dynamic mesh tesselated on the GPU via tesselation shaders, with a heightmap generated at runtime with compute shaders for each vertex of the planet to sample its height.
-### Low lod, near planet yet not close enough for little details to matter
-![no subdivision](images/no%20subdivision.png)
-### Smooth transition to high lod via tesselation shaders
-![medium lod](images/med%20lod.png)
-### Max lod, enough verts to remain performant while keep all the detail
-![on surface](images/on%20surface.png)
+## Features & screenshots
+![atmosphere](images/atmosphere.png)
+^ Above is an overview of the features I have, a planet with ~50k trees rendered in real time, volumetric atmospheric scattering (colours to be added), deffered rendering pipline for a solution to expensive overdraw, realtime planet generation (planet generation is procedural and happens via compute shaders for all components). Many settings making the planet dynamic. An asset manager for ease of adding meshes to the project.
+<br><br><br>
+Below shows the dyamic lod of the planet, tesselated based on distance on the gpu makes this extremely performant and low cost (frame time lost to planet generation is negligible)
+<div style="display: flex; justify-content: space-between;">
+    <div style="margin-right: 10px;">
+        <img src="images/low-lod.png" alt="Low LOD" style="max-width: 100%; height: auto;">
+    </div>
+    <div>
+        <img src="images/high-lod.png" alt="High LOD" style="max-width: 100%; height: auto;">
+    </div>
+</div>
 
-**Features**<br>
-As of now, there is features for generating the planet with complex noise manipulation, distance-based dynamic tesselation for the planet, compute shaders for generating the planet in realtime (can generate the terrain data for around 20 planets per second), deffered shading which opens up into a performant PBR pipeline, flipbook imposters for trees, realtime planet changing etc.
+<br><br>
 
-**Libraries**<br>
-[GLFW](https://github.com/glfw/glfw) Used for window management across platforms, and linking an OpenGL context to it.<br>
-[GLEW](https://github.com/nigels-com/glew) A binding library used to access opengl functions.<br>
-[glm](https://github.com/icaven/glm) OpenGl mathematics library, used for complex vector and matrix mathematics and easy-to-implement with OpenGL.<br>
-OpenGL is the base framework that allows me to do basically everything I do on the GPU.<br>
-[ImGui](https://github.com/ocornut/imgui) An immediate-mode gui which is for immediate debugging.<br>
-All are correctly linked via cmake for both windows with vcpkg and linux with custom package managers.
-## Building and running
-### Windows
-On windows, my CMake file has been tested to work with MSVC and [VCPKG](https://github.com/microsoft/vcpkg) (a package manager for windows), installation should be as easy as cloning the repo via MSVC, installing vcpkg to path, and running directly in the MSVC ide, CMake should handle the harder things.
+<div style="display: flex; justify-content: space-between;">
+    <div style="width: 40%; margin-right: 10px;">
+        Rendering trees are a challenging task as they have lots of vertices & alpha textures, but my implementation allows me to render ~100k trees before noticing any dip in performance. This is because all trees are just an image, which is switched out based on your viewing angle to the billboard. The only name I've found for this is Simplygon's flipbook billboard imposters, and getting them to work was hell.
+    </div>
+    <div style="width: 60%;">
+        <img src="images/imposters.png" alt="atmosphere" style="max-width: 100%; height: auto;">
+    </div>
+</div>
 
-### Linux
-On linux, you need to install the required libraries via your distros package manager. Here is an example: 
-```bash 
-sudo pacman -S glfw glew glm imgui
-```
-After installing packages, you can clone the repo via
-```bash
-git clone https://github.com/oliwilliams1/PlanetRenderer
-```
-Cd into the cloned folder, make a build directory and run cmake
-```bash
-cd PlanetRenderer/
-mkdir build
-cd build/
-cmake ..
-```
-Build the project and run the exectuable
-```bash
-make && ./PlanetRenderer
-```
+<br><br>
+
+<div style="display: flex; justify-content: space-between;">
+    <div style="width: 60%; margin-right: 10px;">
+        <img src="images/tree-lod.png" alt="atmosphere" style="max-width: 100%; height: auto;">
+    </div>
+    <div style="width: 40%;">
+        Trees when close enough, swtich out with their full mesh version, and is indirectly drawn and managed all of the gpu via compute shaders and atomic counters. (Found a way to not use atomic counters but havn't implemented yet).
+    </div>
+</div>
+
+<br><br>
+
+<div style="display: flex; justify-content: space-between;">
+    <div style="width: 40%; margin-right: 10px;">
+        For flipbook imposters, I've found it hard to do in blender as there has not been many implementations on it, so I made my own interface to create these "flipbook imposters" textures.
+    </div>
+    <div style="width: 60%;">
+        <img src="images/billboard-gen.png" alt="atmosphere" style="max-width: 100%; height: auto;">
+    </div>
+</div>
+
+
+
+
+
+## Libraries
+GLFW, GLEW, glm, ImGui, Assimp, and stb_image
