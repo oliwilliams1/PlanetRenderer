@@ -1,6 +1,10 @@
 # PlanetRenderer
 This repo is research for my upcoming scholarship project, intending get further understanding and experience in C++ and OpenGL.
 
+Time poured into this project
+
+[![wakatime](https://wakatime.com/badge/user/c2914490-a1ff-469e-9751-c6f7f416b31c/project/9affd918-ef81-4f90-a4c2-6aed6d2c2766.svg)](https://wakatime.com/badge/user/c2914490-a1ff-469e-9751-c6f7f416b31c/project/9affd918-ef81-4f90-a4c2-6aed6d2c2766)
+
 ## Features & screenshots
 ![atmosphere](images/atmosphere.png)
 ^ Above is an overview of the features I have, a planet with ~50k trees rendered in real time, volumetric atmospheric scattering (colours to be added), deffered rendering pipline for a solution to expensive overdraw, realtime planet generation (planet generation is procedural and happens via compute shaders for all components). Many settings making the planet dynamic. An asset manager for ease of adding meshes to the project.
