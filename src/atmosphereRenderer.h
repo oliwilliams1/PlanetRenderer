@@ -5,7 +5,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-
+#include <glm/common.hpp>
 #include "shader.h"
 
 class Atmosphere {
@@ -28,7 +28,9 @@ private:
 
 	int u_Steps;
 	float u_MinAtmsDistance, u_MaxAtmsDistance, u_AtmsExpFalloff, u_FalloffB;
-	
+	glm::vec3 u_ColourContribs;
+	glm::vec3 u_Colour1, u_Colour2, u_Colour3;
+
 	GLuint quadVAO, quadVBO;
 	float width, height;
 };

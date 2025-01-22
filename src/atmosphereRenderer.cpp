@@ -5,11 +5,15 @@ Atmosphere::Atmosphere(float width, float height, GLuint gFragPos, GLuint gRende
 	this->height = height;
 	this->gRendered = gRendered;
 	this->gFragPos = gFragPos;
-	this->u_Steps = 8;
-	this->u_MinAtmsDistance = 950.0f;
+	this->u_Steps = 5;
+	this->u_MinAtmsDistance = 1000.0f;
 	this->u_MaxAtmsDistance = 1250.0f;
-	this->u_AtmsExpFalloff = 5.5f;
-	this->u_FalloffB = 0.45f;
+	this->u_AtmsExpFalloff = 7.0f;
+	this->u_FalloffB = 0.1f;
+	this->u_ColourContribs = glm::vec3(0.25f, 0.7f, 1.0f);
+	this->u_Colour1 = glm::vec3(1.0f, 0.0f, 0.0f);
+	this->u_Colour2 = glm::vec3(0.0f, 1.0f, 0.0f);
+	this->u_Colour3 = glm::vec3(0.0f, 0.0f, 1.0f);
 
 	this->shader = new Shader("shaders/atmosphere.vert", "shaders/atmosphere.frag", "Atmosphere");
 	SetupQuad();
@@ -25,6 +29,10 @@ Atmosphere::Atmosphere(float width, float height, GLuint gFragPos, GLuint gRende
 	glUniform1f(GetUniformLocation(shader->shaderProgram, "u_MaxAtmsDistance"), u_MaxAtmsDistance);
 	glUniform1f(GetUniformLocation(shader->shaderProgram, "u_AtmsExpFalloff"),  u_AtmsExpFalloff);
 	glUniform1f(GetUniformLocation(shader->shaderProgram, "u_FalloffB"),        u_FalloffB);
+	glUniform3f(GetUniformLocation(shader->shaderProgram, "u_ColourContribs"),  u_ColourContribs.x, u_ColourContribs.y, u_ColourContribs.z);
+	glUniform3f(GetUniformLocation(shader->shaderProgram, "u_Colour1"),         u_Colour1.x, u_Colour1.y, u_Colour1.z);
+	glUniform3f(GetUniformLocation(shader->shaderProgram, "u_Colour2"),         u_Colour2.x, u_Colour2.y, u_Colour2.z);
+	glUniform3f(GetUniformLocation(shader->shaderProgram, "u_Colour3"),         u_Colour3.x, u_Colour3.y, u_Colour3.z);
 }
 
 void Atmosphere::SetupQuad() {
@@ -105,6 +113,22 @@ void Atmosphere::DebugDraw() {
 
 	if (ImGui::SliderFloat("falloff b", &u_FalloffB, 0.0, 1.0)) {
 		shader->use(); glUniform1f(GetUniformLocation(shader->shaderProgram, "u_FalloffB"), u_FalloffB);
+	}
+
+	if (ImGui::SliderFloat3("Colour contribs", &u_ColourContribs.x, 0.0, 1.0)) {
+		shader->use(); glUniform3f(GetUniformLocation(shader->shaderProgram, "u_ColourContribs"), u_ColourContribs.x, u_ColourContribs.y, u_ColourContribs.z);
+	}
+
+	if (ImGui::ColorEdit3("Colour 1", &u_Colour1.x)) {
+		shader->use(); glUniform3f(GetUniformLocation(shader->shaderProgram, "u_Colour1"), u_Colour1.x, u_Colour1.y, u_Colour1.z);
+	}
+
+	if (ImGui::ColorEdit3("Colour 2", &u_Colour2.x)) {
+		shader->use(); glUniform3f(GetUniformLocation(shader->shaderProgram, "u_Colour2"), u_Colour2.x, u_Colour2.y, u_Colour2.z);
+	}
+
+	if (ImGui::ColorEdit3("Colour 3", &u_Colour3.x)) {
+		shader->use(); glUniform3f(GetUniformLocation(shader->shaderProgram, "u_Colour3"), u_Colour3.x, u_Colour3.y, u_Colour3.z);
 	}
 }
 
