@@ -1,5 +1,40 @@
 #include "app.h"
 
+static bool dragging = false;
+static double offsetX, offsetY;
+
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+	if (button == GLFW_MOUSE_BUTTON_LEFT) {
+		if (action == GLFW_PRESS) {
+			dragging = true;
+			double xpos, ypos;
+			glfwGetCursorPos(window, &xpos, &ypos);
+			offsetX = xpos;
+			offsetY = ypos;
+		}
+		else if (action == GLFW_RELEASE) {
+			dragging = false;
+		}
+	}
+}
+
+void cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
+	if (dragging) {
+		int width, height;
+		glfwGetWindowSize(window, &width, &height);
+		int x, y;
+		glfwGetWindowPos(window, &x, &y);
+
+		if (ypos > 32) return;
+		if (xpos < 175 || xpos > width - 175) return;
+		// Calculate new window position
+		int newX = x + static_cast<int>(xpos - offsetX);
+		int newY = y + static_cast<int>(ypos - offsetY);
+
+		glfwSetWindowPos(window, newX, newY);
+	}
+}
+
 App::App() {
 	windowWidth = 1600;
 	windowHeight = 900;
@@ -42,6 +77,8 @@ void App::InitWindow() {
 		return;
 	}
 
+	glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+
 	// Create a window with OpenGL
 	window = glfwCreateWindow(windowWidth, windowHeight, "Planet Renderer", nullptr, nullptr);
 	if (!window) {
@@ -50,9 +87,24 @@ void App::InitWindow() {
 		return;
 	}
 
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+	// Calculate the center position
+	int windowWidth, windowHeight;
+	glfwGetWindowSize(window, &windowWidth, &windowHeight);
+	int posX = (mode->width - windowWidth) / 2;
+	int posY = (mode->height - windowHeight) / 2;
+
+	// Set the window position to the center
+	glfwSetWindowPos(window, posX, posY);
+
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
 
 	glfwMakeContextCurrent(window);
+
+	glfwSetMouseButtonCallback(window, mouseButtonCallback);
+	glfwSetCursorPosCallback(window, cursorPosCallback);
 
 	GLenum err = glewInit();
 	if (err != GLEW_OK) {
@@ -101,7 +153,6 @@ void App::Mainloop() {
 		frameCount++;
 		float currentTime = glfwGetTime();
 		if (currentTime - lastTime >= 1.0f) {
-			glfwSetWindowTitle(window, ("Planet Renderer - FPS: " + std::to_string(frameCount)).c_str());
 			currentFPS = frameCount;
 			frameCount = 0;
 			lastTime = currentTime;
@@ -149,9 +200,29 @@ void App::Mainloop() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::Begin("Engine", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-		ImGui::SetWindowSize(ImVec2(windowWidth, windowHeight));
+		ImGui::Begin("Top Bar", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+		ImGui::SetWindowSize(ImVec2(windowWidth, 32));
 		ImGui::SetWindowPos(ImVec2(0, 0));
+
+		// Center the title
+		ImGui::SameLine(ImGui::GetWindowWidth() * 0.5f - ImGui::CalcTextSize("Sable Engine").x * 0.5f);
+		ImGui::Text("Sable Engine");
+
+		// Minimize and close buttons
+		ImGui::SameLine(ImGui::GetWindowWidth() - ImGui::CalcTextSize("x").x - ImGui::CalcTextSize("-").x * 6);
+		if (ImGui::Button("-")) {
+			glfwIconifyWindow(window);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("x")) {
+			glfwSetWindowShouldClose(window, true);
+		}
+
+		ImGui::End();
+
+		ImGui::Begin("Engine", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+		ImGui::SetWindowSize(ImVec2(windowWidth, windowHeight - 32));
+		ImGui::SetWindowPos(ImVec2(0, 32));
 
 		ImGui::Columns(2, "MainGridLayout");
 		ImGui::SetColumnWidth(0, viewportWidth + 16);

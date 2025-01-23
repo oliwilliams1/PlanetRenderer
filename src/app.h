@@ -1,6 +1,5 @@
 #pragma once
 
-
 // Standard library stuff
 #include <iostream>
 
