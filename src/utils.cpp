@@ -200,8 +200,10 @@ void SetupImGuiStyle() {
 	style.Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.699999988079071f);
 	style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.800000011920929f, 0.800000011920929f, 0.800000011920929f, 0.2000000029802322f);
 	style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.800000011920929f, 0.800000011920929f, 0.800000011920929f, 0.3499999940395355f);
-}
 
+	ImGuiIO& io = ImGui::GetIO();
+	io.Fonts->AddFontFromFileTTF("resources/Roboto-Black.ttf", 16.0f);
+}
 
 void DistanceTransform(const unsigned char* input, unsigned char* output, int width, int height) {
 	std::vector<float> dist(width * height, 2147483648.0f); // Use float for distance
