@@ -9,7 +9,9 @@
 #include <assimp/Scene.h>
 #include <assimp/PostProcess.h>
 #include <glm/glm.hpp>
+#include <imgui.h>
 
+void SetupImGuiStyle();
 void DistanceTransform(const unsigned char* input, unsigned char* output, int width, int height);
 bool ReadFile(const char* pFileName, std::string& outFile);
 bool WriteFile(const char* pFileName, const std::string& inFile);
