@@ -24,7 +24,6 @@ private:
 	Shader* deferredShader;
 	GLuint quadVAO, quadVBO;
 	int viewportTexture;
-	bool wireframe;
 
 	void InitG_Buffer();
 	void InitDeferredShadingBuffer();

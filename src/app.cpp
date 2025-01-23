@@ -204,6 +204,8 @@ void App::Mainloop() {
 		ImGui::SetWindowSize(ImVec2(windowWidth, 32));
 		ImGui::SetWindowPos(ImVec2(0, 0));
 
+		ImGui::Text("FPS: %i", (int)currentFPS);
+
 		// Center the title
 		ImGui::SameLine(ImGui::GetWindowWidth() * 0.5f - ImGui::CalcTextSize("Sable Engine").x * 0.5f);
 		ImGui::Text("Sable Engine");
@@ -232,15 +234,35 @@ void App::Mainloop() {
 
 		ImGui::NextColumn();
 
-		deferredRenderer->DebugDraw();
-		ImGui::Separator();
-		camera->DebugDraw();
-		ImGui::Separator();
-		mainPlanet->DebugDraw();
-		ImGui::Separator();
-		mainPlanet->atmosphere->DebugDraw();
+		if (ImGui::BeginTabBar("Debug Draw Tabs")) {
+			if (ImGui::BeginTabItem("Deferred Renderer")) {
+				deferredRenderer->DebugDraw();
+				if (ImGui::Checkbox("Wireframe", &wireframe)) {
+					if (wireframe) {
+						glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+					}
+					else {
+						glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+					}
+				}
+				ImGui::Checkbox("Open/Close imposter rendering menu", &imposterRenderingWindowOpen);
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Camera")) {
+				camera->DebugDraw();
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Main Planet")) {
+				mainPlanet->DebugDraw();
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Atmosphere")) {
+				mainPlanet->atmosphere->DebugDraw();
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
+		}
 
-		ImGui::Checkbox("Open/Close imposter rendering menu", &imposterRenderingWindowOpen);
 		ImGui::End();
 
 		if (imposterRenderingWindowOpen) imposterRenderer->DebugDraw();

@@ -2,7 +2,6 @@
 
 DeferredRenderer::DeferredRenderer(int width, int height) {
 	this->viewportTexture = 0;
-	this->wireframe = false;
 	this->width = width;
 	this->height = height;
 
@@ -170,15 +169,6 @@ void DeferredRenderer::DebugDraw(bool flipUv) {
 }
 
 void DeferredRenderer::DisplayViewportImGui(glm::vec2 inputSize, bool flipUv) {
-	ImGui::Checkbox("Wireframe", &wireframe);
-
-	if (wireframe) {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	}
-	else {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
-
 	ImVec2 size = ImVec2(width, height);
 
 	if (inputSize.x != 0.0f && inputSize.y != 0.0f) {
