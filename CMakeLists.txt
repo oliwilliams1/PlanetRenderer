@@ -62,8 +62,23 @@ set(HEADER_FILES
     "src/atmosphereRenderer.h"
 )
 
+set(ICON_RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.ico")
+
+set(RESOURCE_FILE "${CMAKE_CURRENT_BINARY_DIR}/resources/resources.rc")
+
+# Write the resource script for the icon
+file(WRITE ${RESOURCE_FILE} 
+    "IDI_ICON1 ICON \"${ICON_RESOURCE}\""
+)
+
 # Add executable
-add_executable(PlanetRenderer ${SOURCE_FILES} ${HEADER_FILES})
+add_executable(PlanetRenderer ${SOURCE_FILES} ${HEADER_FILES} ${RESOURCE_FILE})
+
+if(WIN32)
+    set_target_properties(PlanetRenderer PROPERTIES WIN32_EXECUTABLE TRUE)
+elseif(APPLE)
+    set_target_properties(PlanetRenderer PROPERTIES MACOSX_BUNDLE TRUE)
+endif()
 
 # Add imgui source files if user is not using VCPKG
 if (NOT MSVC)
