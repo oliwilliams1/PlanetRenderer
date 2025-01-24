@@ -30,6 +30,8 @@ private:
 	float u_MinAtmsDistance, u_MaxAtmsDistance, u_AtmsExpFalloff, u_FalloffB;
 	glm::vec3 u_ColourContribs;
 	glm::vec3 u_Colour1, u_Colour2, u_Colour3;
+	glm::vec3 u_SunColour;
+	float u_SunIntensity;
 
 	GLuint quadVAO, quadVBO;
 	float width, height;

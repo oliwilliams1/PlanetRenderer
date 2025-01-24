@@ -48,9 +48,19 @@ namespace Sable {
     }
 
 	void Console::DisplayConsoleImGui() {
-		for (int i = 0, size = m_Logs.size(); i < size; i++) {
-			ImGui::Text(m_Logs[i].c_str());
-		}
+        ImGui::BeginChild("ConsoleChild", ImVec2(0, 0), true); // 0,0 for auto size, true for border
+
+        // Loop through logs and display them
+        for (int i = 0, size = m_Logs.size(); i < size; i++) {
+            ImGui::Text(m_Logs[i].c_str());
+        }
+
+        // Snap to the bottom of the console
+        if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+            ImGui::SetScrollHereY(1.0f); // Scroll to the bottom
+        }
+
+        ImGui::EndChild();
 	}
 
 	Console::Console() {}

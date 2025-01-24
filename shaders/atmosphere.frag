@@ -18,6 +18,8 @@ uniform vec3  u_ColourContribs;
 uniform vec3  u_Colour1;
 uniform vec3  u_Colour2;
 uniform vec3  u_Colour3;
+uniform vec3  u_SunColour;
+uniform float u_SunIntensity;
 
 layout(std140) uniform CameraData {
     mat4 m_ViewProj;
@@ -141,27 +143,28 @@ vec3 getRayDir() {
 }
 
 vec3 atmsScatter(vec3 rayDir, float closeInterstionPoint, float atmsDepth) {
-    vec3 sunDir = normalize(vec3(1.0));
-
+    vec3 sunDir = normalize(u_SunDir); // Use the uniform sun direction
     vec3 colourContribs = vec3(0.0);
 
+    float sunGlowContrib = 0.0;
+
     for (int i = 0; i < u_STEPS; i++) {
-        // Sample point along ray
+        // Sample point along the ray
         vec3 p = (cameraPos + rayDir * closeInterstionPoint) + rayDir * i / float(u_STEPS) * atmsDepth;
 
-        // Find dist through atms from p to sun
+        // Find distance through atmosphere from p to sun
         float distPToAtms = intersectRaySphere(p, -sunDir, u_PlanetCenter, u_MaxAtmsDistance);
     
         // Pre-computations
         vec3 toPlanetCenter = normalize(p - u_PlanetCenter);
-        float NdotL = dot(toPlanetCenter, u_SunDir);
+        float NdotL = dot(toPlanetCenter, sunDir);
 
         for (int j = 0; j < u_STEPS; j++) {
             vec3 p2 = p + sunDir * j * distPToAtms / float(u_STEPS);
 
             vec2 closestPoint = closestPointOnRayToSphere(p2, sunDir, u_PlanetCenter, u_MinAtmsDistance);
             float closestPointDepth = clamp(closestPoint.x, -50.0, 50.0) + 50.0;
-            closestPointDepth /= 100.0; // [0.0, 1.0]
+            closestPointDepth /= 100.0; // Normalize to [0.0, 1.0]
 
             float density = sampleDensity(p2);
 
@@ -171,25 +174,34 @@ vec3 atmsScatter(vec3 rayDir, float closeInterstionPoint, float atmsDepth) {
             colourContribs.g += densityMulNdotL * closestPointDepth * u_ColourContribs.g;
             colourContribs.g += densityMulNdotL * (1.0 - closestPointDepth) * u_ColourContribs.g;
             colourContribs.b += (density * (1.0 - closestPointDepth) * u_ColourContribs.b) * NdotL;
+
         }
+
+        // Add sun glow
+        float sunGlow = max(0.0, dot(rayDir, sunDir));
+        sunGlow = pow(sunGlow, 7.0);
+        sunGlowContrib += sunGlow * (sampleDensity(p) * u_SunIntensity * (NdotL + 0.3));
     }
 
-    // Normalise colour contributions
+    // Normalize color contributions
     colourContribs /= float(u_STEPS * u_STEPS);
+    sunGlowContrib /= float(u_STEPS);
 
-    // Calculate final colour
+    // Calculate final color
     vec3 colour = vec3(0.0);
     mat3 colours = mat3(u_Colour1, u_Colour2, u_Colour3);
 
     for (int i = 0; i < 3; i++) {
-		colour += colourContribs[i] * colours[i];
-	}
+        colour += colourContribs[i] * colours[i];
+    }
 
     // Further normalize
     atmsDepth /= u_MinAtmsDistance * u_FalloffB;
     colour *= atmsDepth;
 
-    // Correct any out of bounds values
+    colour += sunGlowContrib * u_SunColour;
+
+    // Correct any out-of-bounds values
     colour = clamp(colour, 0.0, 1.0);
 
     return colour;

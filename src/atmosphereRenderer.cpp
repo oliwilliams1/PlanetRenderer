@@ -14,6 +14,8 @@ Atmosphere::Atmosphere(float width, float height, GLuint gFragPos, GLuint gRende
 	this->u_Colour1 = glm::vec3(1.0f, 0.0f, 0.0f);
 	this->u_Colour2 = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->u_Colour3 = glm::vec3(0.0f, 0.0f, 1.0f);
+	this->u_SunColour = glm::vec3(1.0f, 1.0f, 0.8f);
+	this->u_SunIntensity = 5.0f;
 
 	this->shader = new Shader("shaders/atmosphere.vert", "shaders/atmosphere.frag", "Atmosphere");
 	SetupQuad();
@@ -33,6 +35,8 @@ Atmosphere::Atmosphere(float width, float height, GLuint gFragPos, GLuint gRende
 	glUniform3f(GetUniformLocation(shader->shaderProgram, "u_Colour1"),         u_Colour1.x, u_Colour1.y, u_Colour1.z);
 	glUniform3f(GetUniformLocation(shader->shaderProgram, "u_Colour2"),         u_Colour2.x, u_Colour2.y, u_Colour2.z);
 	glUniform3f(GetUniformLocation(shader->shaderProgram, "u_Colour3"),         u_Colour3.x, u_Colour3.y, u_Colour3.z);
+	glUniform3f(GetUniformLocation(shader->shaderProgram, "u_SunColour"),       u_SunColour.x, u_SunColour.y, u_SunColour.z);
+	glUniform1f(GetUniformLocation(shader->shaderProgram, "u_SunIntensity"),    u_SunIntensity);
 }
 
 void Atmosphere::SetupQuad() {
@@ -129,6 +133,14 @@ void Atmosphere::DebugDraw() {
 
 	if (ImGui::ColorEdit3("Colour 3", &u_Colour3.x)) {
 		shader->use(); glUniform3f(GetUniformLocation(shader->shaderProgram, "u_Colour3"), u_Colour3.x, u_Colour3.y, u_Colour3.z);
+	}
+
+	if (ImGui::ColorEdit3("Sun colour", &u_SunColour.x)) {
+		shader->use(); glUniform3f(GetUniformLocation(shader->shaderProgram, "u_SunColour"), u_SunColour.x, u_SunColour.y, u_SunColour.z);
+	}
+
+	if (ImGui::SliderFloat("Sun intensity", &u_SunIntensity, 0.0, 100.0)) {
+		shader->use(); glUniform1f(GetUniformLocation(shader->shaderProgram, "u_SunIntensity"), u_SunIntensity);
 	}
 }
 
