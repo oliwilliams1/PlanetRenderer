@@ -1,8 +1,5 @@
 #pragma once
 
-// Standard library stuff
-#include <iostream>
-
 // External libraries
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -17,6 +14,7 @@
 #include "camera.h"
 #include "planet.h"
 #include "noise.h"
+#include "console.h"
 
 // Forward declarations
 class ImposterRenderer;

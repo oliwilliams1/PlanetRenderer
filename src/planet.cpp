@@ -71,7 +71,7 @@ void PlanetShader::AddTesselationShaders() {
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
 	if (success == 0) {
 		glGetProgramInfoLog(shaderProgram, sizeof(errorLog), nullptr, errorLog);
-		std::cout << "Error linking shader program: " << errorLog << std::endl;
+		Sable::Console::Log("Error linking shader program: %s", errorLog);
 		exit(1);
 	}
 

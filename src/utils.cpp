@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "console.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -22,7 +23,7 @@ bool ReadFile(const char* pFileName, std::string& outFile) {
 		ret = true;
 	}
 	else {
-		std::cout << "Unable to open file: " << pFileName << std::endl;
+		Sable::Console::Log("Unable to open file: %s", pFileName);
 	}
 
 	return ret;
@@ -39,7 +40,7 @@ bool WriteFile(const char* pFileName, const std::string& outFile) {
 		ret = true;
 	}
 	else {
-		std::cout << "Unable to open file for writing: " << pFileName << std::endl;
+		Sable::Console::Log("Unable to open file for writing: %s", pFileName);
 	}
 
 	return ret;
@@ -68,7 +69,7 @@ void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
 	if (!success) {
 		GLchar InfoLog[4096];
 		glGetShaderInfoLog(ShaderObj, 4096, NULL, InfoLog);
-		std::cout << stderr << "Error compiling shader:\n" << pShaderText << std::endl << InfoLog;
+		Sable::Console::Log("Error compiling shader type %d: '%s'", ShaderType, InfoLog);
 		exit(1);
 	}
 
@@ -78,7 +79,7 @@ void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
 GLuint CompileComputeShader(const char* source) {
 	GLuint shader = glCreateProgram();
 	if (shader == 0) {
-		std::cout << stderr << "Error creating shader program!" << std::endl;
+		Sable::Console::Log("Error creating shader program!");
 		exit(1);
 	}
 
@@ -95,7 +96,7 @@ GLuint CompileComputeShader(const char* source) {
 	glGetProgramiv(shader, GL_LINK_STATUS, &success);
 	if (success == 0) {
 		glGetProgramInfoLog(shader, sizeof(errorLog), nullptr, errorLog);
-		std::cout << "Error linking shader program: " << errorLog << std::endl;
+		Sable::Console::Log("Error linking shader program: %s", errorLog);
 		exit(1);
 	}
 
@@ -107,7 +108,7 @@ GLuint CompileComputeShader(const char* source) {
 GLuint GetUniformLocation(GLuint shaderProgram, const char* uniformName) {
 	GLuint location = glGetUniformLocation(shaderProgram, uniformName);
 	if (location == -1) {
-		std::cerr << "Warning: " << uniformName << " uniform not found!" << std::endl;
+		Sable::Console::Log("Warning: %s uniform not found!", uniformName);
 	}
 	return location;
 }
@@ -275,7 +276,7 @@ void LoadTexture(GLuint* texture, const char* path, bool distTransform) {
 	unsigned char* data = stbi_load(path, &width, &height, &channels, 0);
 
 	if (data == nullptr) {
-		std::cerr << "Failed to load texture: " << path << std::endl;
+		Sable::Console::Log("Failed to load texture: %s", path);
 		return;
 	}
 

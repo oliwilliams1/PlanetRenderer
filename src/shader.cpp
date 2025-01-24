@@ -1,4 +1,5 @@
 #include "shader.h"
+#include "console.h"
 
 Shader::Shader(const char* vsSource, const char* fsSource, const char* shaderName) {
     this->shaderName = shaderName;
@@ -12,7 +13,7 @@ void Shader::LoadBasicShaders() {
     // Simmilar to OGLDEVs implementation
     shaderProgram = glCreateProgram();
     if (shaderProgram == 0) {
-        std::cout << stderr << "Error creating shader program!" << std::endl;
+        Sable::Console::Log("Error creating shader program!");
         exit(1);
     }
 
@@ -32,7 +33,7 @@ void Shader::LoadBasicShaders() {
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (success == 0) {
         glGetProgramInfoLog(shaderProgram, sizeof(errorLog), nullptr, errorLog);
-        std::cout << "Error linking shader program: " << errorLog << std::endl;
+        Sable::Console::Log("Error linking shader program: %s", errorLog);
         exit(1);
     }
 

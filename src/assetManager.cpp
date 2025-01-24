@@ -5,6 +5,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include "console.h"
 
 namespace AssetManager {
 	static System* s_Instance = nullptr;
@@ -62,7 +63,7 @@ namespace AssetManager {
 
 			if (success) {
 				addObjectWindow = false;
-				std::cout << "Loaded object: " << addObjectNameBuffer << std::endl;
+				Sable::Console::Log("Loaded object: %s", addObjectNameBuffer);
 
 				SaveObjects();
 				// Clear input box to empty instead of null
@@ -70,7 +71,7 @@ namespace AssetManager {
 				this->addObjectNameBuffer[sizeof(this->addObjectNameBuffer) - 1] = '\0';
 			}
 			else {
-				std::cout << "Failed to load object: " << addObjectNameBuffer << std::endl;
+				Sable::Console::Log("Failed to load object: %s", addObjectNameBuffer);
 			}
 		};
 		ImGui::End();
@@ -88,23 +89,23 @@ namespace AssetManager {
 		for (const auto& ext : extentions) {
 			std::string fullFileName = "resources/" + objName + ext;
 			if (std::filesystem::exists(fullFileName)) {
-				std::cout << "Loading object: " << fullFileName << std::endl;
+				Sable::Console::Log("Loading object: %s", fullFileName.c_str());
 				bool success = LoadModelFromFile(objName + ext);
 
 				if (success) {
-					std::cout << "Loaded object: " << objName << std::endl;
+					Sable::Console::Log("Loaded object: %s", fullFileName.c_str());
 					object = m_Objects[objName];
 					SaveObjects();
 					return true;
 				}
 				else {
-					std::cout << "Failed to load object: " << objName << std::endl;
+					Sable::Console::Log("Failed to load object: %s", fullFileName.c_str());
 					return false;
 				}
 			}
 		}
 
-		std::cerr << "Failed to find object: " << objName << std::endl;
+		Sable::Console::Log("Failed to find object: %s", objName.c_str());
 
 		return false;
 	}
@@ -128,7 +129,7 @@ namespace AssetManager {
 		std::ifstream file(filePath);
 
 		if (!file.good()) {
-			std::cerr << "Failed to load object: " << filePath << std::endl;
+			Sable::Console::Log("Failed to load object: %s", filePath.c_str());
 			return false;
 		}
 
@@ -137,7 +138,7 @@ namespace AssetManager {
 
 		// Check if the import was successful
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-			std::cerr << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+			Sable::Console::Log("Failed to load object: %s", filePath.c_str());
 			return false;
 		}
 
@@ -210,7 +211,7 @@ namespace AssetManager {
 		std::string outputData;
 
 		if (!ReadFile(filePath.c_str(), inputData)) {
-			std::cerr << "Failed to read file to fix OBJ issue: " << filePath << std::endl;
+			Sable::Console::Log("Failed to read file to fix OBJ issue: %s", filePath.c_str());
 			return;
 		}
 
@@ -232,14 +233,14 @@ namespace AssetManager {
 		}
 
 		if (!WriteFile(filePath.c_str(), outputData)) {
-			std::cerr << "Failed to write file to fix OBJ issue: " << filePath << std::endl;
+			Sable::Console::Log("Failed to write file to fix OBJ issue: %s", filePath.c_str());
 		}
 	}
 
 	void System::LoadObjects() {
 		std::ifstream file("resources/assets.assets", std::ios::binary);
 		if (!file.is_open()) {
-			std::cerr << "Failed to open file for reading: " << "resources/assets.assets" << std::endl;
+			Sable::Console::Log("Failed to open file for reading: resources/assets.assets");
 			return;
 		}
 
@@ -297,7 +298,7 @@ namespace AssetManager {
 	void System::SaveObjects() {
 		std::ofstream file("resources/assets.assets", std::ios::binary);
 		if (!file.is_open()) {
-			std::cerr << "Failed to open file for writing: " << "resources/assets.assets" << std::endl;
+			Sable::Console::Log("Failed to open file for writing: resources/assets.assets");
 			return;
 		}
 

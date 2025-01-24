@@ -1,9 +1,10 @@
 #include "objectSerializer.h"
+#include "console.h"
 
 void SerializeObjects(const std::vector<ObjectData>& objects, const std::string& filename) {
     std::ofstream file(filename, std::ios::binary);
     if (!file) {
-        std::cerr << "Failed to open file for writing: " << filename << std::endl;
+        Sable::Console::Log("Failed to open file for writing: %s", filename.c_str());
         return;
     }
 
@@ -39,7 +40,7 @@ std::vector<ObjectData> DeserializeObjects(const std::string& filename) {
     std::vector<ObjectData> objects;
     std::ifstream file(filename, std::ios::binary);
     if (!file) {
-        std::cerr << "Failed to open file for reading: " << filename << std::endl;
+        Sable::Console::Log("Failed to open file for reading: %s", filename.c_str());
         return objects;
     }
 

@@ -72,7 +72,7 @@ file(WRITE ${RESOURCE_FILE}
 )
 
 # Add executable
-add_executable(PlanetRenderer ${SOURCE_FILES} ${HEADER_FILES} ${RESOURCE_FILE})
+add_executable(PlanetRenderer ${SOURCE_FILES} ${HEADER_FILES} ${RESOURCE_FILE} "src/console.cpp" "src/console.h")
 
 if(WIN32)
     set_target_properties(PlanetRenderer PROPERTIES WIN32_EXECUTABLE TRUE)

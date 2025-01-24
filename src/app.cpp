@@ -54,6 +54,7 @@ App::App() {
 	InitImGui();
 
 	AssetManager::System::Init();
+	Sable::Console::Init();
 
 	CamInitData camInitData{};
 	camInitData.fov = 70.0f;
@@ -112,7 +113,7 @@ void App::InitWindow() {
 		return;
 	}
 
-	std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
+	Sable::Console::Log("OpenGL version: %s", glGetString(GL_VERSION));
 }
 
 void App::InitOpenGLParams() {
@@ -230,11 +231,24 @@ void App::Mainloop() {
 		ImGui::SetColumnWidth(0, viewportWidth + 16);
 
 		deferredRenderer->DisplayViewportImGui();
-		AssetManager::System::GetInstance().DisplayGui();
+
+		if (ImGui::BeginTabBar("Bottom Tabs")) {
+			if (ImGui::BeginTabItem("Console")) {
+				Sable::Console::DisplayConsoleImGui();
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Asset Manager")) {
+				AssetManager::System::GetInstance().DisplayGui();
+				ImGui::EndTabItem();
+			}
+
+			ImGui::EndTabBar();
+		}
+
 
 		ImGui::NextColumn();
 
-		if (ImGui::BeginTabBar("Debug Draw Tabs")) {
+		if (ImGui::BeginTabBar("Right Tabs")) {
 			if (ImGui::BeginTabItem("Deferred Renderer")) {
 				deferredRenderer->DebugDraw();
 				if (ImGui::Checkbox("Wireframe", &wireframe)) {
@@ -277,6 +291,7 @@ void App::Mainloop() {
 }
 
 App::~App() {
+	Sable::Console::Shutdown();
 	AssetManager::System::Shutdown();
 	delete deferredRenderer;
 	delete camera;
