@@ -62,6 +62,9 @@ add_library(imguiFileDialog ${IMGUI_FILE_DIALOG_SOURCE})
 set(STB_DIR "${CMAKE_SOURCE_DIR}/dependencies/stb")
 include_directories(${STB_DIR})
 
+# Assimp
+add_subdirectory(dependencies/assimp)
+
 # Source files
 file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 
@@ -90,6 +93,7 @@ target_link_libraries(${PROJECT_NAME}
     glfw
     imgui
     imguiFileDialog
+    assimp
 )
 
 # Gather shaders for copying
