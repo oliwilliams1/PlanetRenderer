@@ -142,7 +142,7 @@ vec3 getRayDir() {
     return rayDir;
 }
 
-vec3 atmsScatter(vec3 rayDir, float closeInterstionPoint, float atmsDepth) {
+vec3 atmsScatter(vec3 rayDir, float closeInterstionPoint, float atmsDepth, bool rayOnPlanet) {
     vec3 sunDir = normalize(u_SunDir); // Use the uniform sun direction
     vec3 colourContribs = vec3(0.0);
 
@@ -180,7 +180,10 @@ vec3 atmsScatter(vec3 rayDir, float closeInterstionPoint, float atmsDepth) {
         // Add sun glow
         float sunGlow = max(0.0, dot(rayDir, sunDir));
         sunGlow = pow(sunGlow, 7.0);
-        sunGlowContrib += sunGlow * (sampleDensity(p) * u_SunIntensity * (NdotL + 0.3));
+
+        if (!rayOnPlanet) {
+            sunGlowContrib += sunGlow * (sampleDensity(p) * u_SunIntensity * (NdotL + 0.3));
+        }
     }
 
     // Normalize color contributions
@@ -219,16 +222,19 @@ void main() {
     float closeInterstionPoint = min(intersectionDistances.x, intersectionDistances.y);
     float farInterstionPoint = max(intersectionDistances.x,   intersectionDistances.y);
 
+    bool rayOnPlanet = false;
+
     // If ray lands on planet, far intersection point is planet surface
     if (fragPos != vec3(0.0)) { 
         farInterstionPoint = fragDepth;
+        rayOnPlanet = true;
     }
 
     // Calculate depth of atmosphere
     float atmsDepth = farInterstionPoint - closeInterstionPoint;
 
     // Get atmosphere colour
-    vec3 colour = atmsScatter(rayDir, closeInterstionPoint, atmsDepth);
+    vec3 colour = atmsScatter(rayDir, closeInterstionPoint, atmsDepth, rayOnPlanet);
 
     // Get colour from render target
     vec4 fragColourIn = texture(u_FragColourIn, UV);
