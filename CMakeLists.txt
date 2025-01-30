@@ -1,66 +1,69 @@
-﻿cmake_minimum_required (VERSION 3.12)
+﻿cmake_minimum_required(VERSION 3.16)
 
-# Set toolchain file for VCPKG if on windows
-if(WIN32)
-    set(CMAKE_TOOLCHAIN_FILE "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
-endif()
+# Set the project name and version
+project(PlanetRenderer VERSION 1.0)
 
-# Enable Hot Reload for MSVC compilers if supported.
-if (POLICY CMP0141)
-    cmake_policy(SET CMP0141 NEW)
-    set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
-endif()
+# Set the C++ standard
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-project ("PlanetRenderer" CXX)
+# Find OpenGL
+find_package(OpenGL REQUIRED)
 
-# Find packages
-find_package(glfw3 CONFIG REQUIRED)
-find_package(glm CONFIG REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(imgui CONFIG REQUIRED)
-find_package(assimp CONFIG REQUIRED)
-find_package(Stb REQUIRED)
+# Specify the path to GLM
+set(GLM_DIR "${CMAKE_SOURCE_DIR}/dependencies/glm")  # Path to your cloned GLM directory
+include_directories(${GLM_DIR})
 
-# Add imgui include dir for bindings
-include_directories(${CMAKE_SOURCE_DIR}/imgui)
-include_directories(${Stb_INCLUDE_DIR})
+# Specify the path to GLEW
+set(GLEW_DIR "${CMAKE_SOURCE_DIR}/dependencies/glew")  # Path to GLEW
+include_directories("${GLEW_DIR}/include")
 
-# Add source
-set(SOURCE_FILES
-    "src/main.cpp"
-    "src/object.cpp"
-    "src/shader.cpp"
-    "src/camera.cpp"
-    "src/planet.cpp"
-    "src/noise.cpp"
-    "src/utils.cpp"
-    "src/app.cpp"
-    "src/deferredRenderer.cpp"
-    "src/assetManager.cpp"
-    "src/imposterRenderer.cpp" 
-    "src/objectSerializer.cpp"
-    "src/treesHandler.cpp"
-    "src/cubemap.cpp"
-    "src/atmosphereRenderer.cpp"
+add_definitions(-DGLEW_STATIC)
+
+file(GLOB_RECURSE GLEW_SOURCE "${GLEW_DIR}/src/*.c" "${GLEW_DIR}/include/*.h")
+add_library(glew ${GLEW_SOURCE})
+
+# GLFW
+add_subdirectory(dependencies/glfw)
+
+# ImGui
+set(IMGUI_DIR "${CMAKE_SOURCE_DIR}/dependencies/imgui")
+# Specify the backend directory
+set(IMGUI_BACKEND_DIR "${IMGUI_DIR}/backends")
+include_directories(${IMGUI_DIR} ${IMGUI_BACKEND_DIR})
+
+
+# Collect ImGui source files
+file(GLOB IMGUI_SOURCE "${IMGUI_DIR}/*.cpp" "${IMGUI_DIR}/*.h")
+
+# Collect backend include files (if needed, typically not necessary for linking)
+file(GLOB IMGUI_BACKENDS_INCLUDE
+    "${IMGUI_BACKEND_DIR}/imgui_impl_glfw.h"
+    "${IMGUI_BACKEND_DIR}/imgui_impl_opengl3.h"
 )
 
-# Add header files
-set(HEADER_FILES
-    "src/object.h"
-    "src/shader.h"
-    "src/camera.h"
-    "src/planet.h"
-    "src/noise.h"
-    "src/utils.h"
-    "src/app.h"
-    "src/deferredRenderer.h"
-    "src/assetManager.h"
-    "src/imposterRenderer.h"
-    "src/objectSerializer.h"
-    "src/treesHandler.h"
-    "src/cubemap.h"
-    "src/atmosphereRenderer.h"
+# Collect backend source files
+file(GLOB IMGUI_BACKENDS_SOURCE
+    "${IMGUI_BACKEND_DIR}/imgui_impl_glfw.cpp"
+    "${IMGUI_BACKEND_DIR}/imgui_impl_opengl3.cpp"
 )
+
+# Create the ImGui library, including both ImGui and backend source files
+add_library(imgui ${IMGUI_SOURCE} ${IMGUI_BACKENDS_SOURCE})
+
+# ImGui File Dialog
+set(IMGUI_FILE_DIALOG_DIR "${CMAKE_SOURCE_DIR}/dependencies/imgui-file-dialog")
+include_directories(${IMGUI_FILE_DIALOG_DIR})
+file(GLOB IMGUI_FILE_DIALOG_SOURCE "${IMGUI_FILE_DIALOG_DIR}/*.cpp" "${IMGUI_FILE_DIALOG_DIR}/*.h")
+
+add_library(imguiFileDialog ${IMGUI_FILE_DIALOG_SOURCE})
+
+# Stb Image
+set(STB_DIR "${CMAKE_SOURCE_DIR}/dependencies/stb")
+include_directories(${STB_DIR})
+
+# Source files
+file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.h")
 
 set(ICON_RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.ico")
 
@@ -71,8 +74,8 @@ file(WRITE ${RESOURCE_FILE}
     "IDI_ICON1 ICON \"${ICON_RESOURCE}\""
 )
 
-# Add executable
-add_executable(PlanetRenderer ${SOURCE_FILES} ${HEADER_FILES} ${RESOURCE_FILE} "src/console.cpp" "src/console.h")
+# Add the executable
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 if(WIN32)
     set_target_properties(PlanetRenderer PROPERTIES WIN32_EXECUTABLE TRUE)
@@ -80,34 +83,14 @@ elseif(APPLE)
     set_target_properties(PlanetRenderer PROPERTIES MACOSX_BUNDLE TRUE)
 endif()
 
-# Add imgui source files if user is not using VCPKG
-if (NOT MSVC)
-    set(CMAKE_C_COMPILER "gcc")
-    set(CMAKE_CXX_COMPILER "g++")
-    target_sources(PlanetRenderer PRIVATE
-        "imgui/imgui_impl_glfw.cpp"
-        "imgui/imgui_impl_opengl3.cpp"
-    )
-endif()
-
 # Link libraries
-target_link_libraries(PlanetRenderer PRIVATE 
-    glfw 
-    glm::glm 
-    GLEW::GLEW
-    imgui::imgui
-    assimp::assimp
+target_link_libraries(${PROJECT_NAME} 
+    ${OPENGL_LIBRARIES} 
+    glew
+    glfw
+    imgui
+    imguiFileDialog
 )
-
-# Link OpenGL if not on windows
-if(NOT WIN32)
-    find_package(OpenGL REQUIRED)
-    target_link_libraries(PlanetRenderer PRIVATE OpenGL::GL)
-endif()
-
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET PlanetRenderer PROPERTY CXX_STANDARD 20)
-endif()
 
 # Gather shaders for copying
 set(SHADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")

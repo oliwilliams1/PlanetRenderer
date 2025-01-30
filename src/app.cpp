@@ -298,6 +298,8 @@ App::~App() {
 	delete mainPlanet;
 	delete imposterRenderer;
 	delete planetShader;
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
 	glfwDestroyWindow(window);
 	glfwTerminate();
 }
