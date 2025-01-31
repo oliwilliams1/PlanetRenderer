@@ -6,8 +6,8 @@
 #include <cstring>
 #include <GL/glew.h>
 #include <assimp/Importer.hpp>
-#include <assimp/Scene.h>
-#include <assimp/PostProcess.h>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include <glm/glm.hpp>
 #include <imgui.h>
 

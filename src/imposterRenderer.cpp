@@ -8,7 +8,7 @@ ImposterRenderer::ImposterRenderer(App* app, GLuint UBO) {
 	this->resolution = 784;
 	this->needToRender = false;
 
-	strncpy_s(this->saveToFileBuffer, "", sizeof(this->saveToFileBuffer) - 1);
+	strncpy(this->saveToFileBuffer, "", sizeof(this->saveToFileBuffer) - 1);
 	this->saveToFileBuffer[sizeof(this->saveToFileBuffer) - 1] = '\0';
 
 	deferredRenderer = new DeferredRenderer(resolution, resolution);

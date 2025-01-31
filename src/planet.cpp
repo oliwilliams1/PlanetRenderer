@@ -1,5 +1,4 @@
 #include "planet.h"
-#include "assetManager.h"
 
 Planet::Planet(App* app, Shader* shader) : Object(shader) {
 	this->app = app;
@@ -51,17 +50,24 @@ void Planet::Draw() {
 	treesHandler->Draw();
 }
 
-PlanetShader::PlanetShader(const char* vsSource, const char* fsSource, const char* shaderName) : Shader(vsSource, fsSource, shaderName) {
+PlanetShader::PlanetShader(const char* vsSource, const char* fsSource, const char* shaderName) : Shader("", "", shaderName) {
 	AddTesselationShaders();
 }
 
 void PlanetShader::AddTesselationShaders() {
-	std::string tesc, tese;
+	std::string vs, tesc, tese, fs;
+
+	if (!ReadFile("shaders/planet.vert", vs)) exit(1);
+    AddShader(shaderProgram, vs.c_str(), GL_VERTEX_SHADER);
+
 	if (!ReadFile("shaders/planet.tesc", tesc)) exit(1);
 	AddShader(shaderProgram, tesc.c_str(), GL_TESS_CONTROL_SHADER);
 
 	if (!ReadFile("shaders/planet.tese", tese)) exit(1);
 	AddShader(shaderProgram, tese.c_str(), GL_TESS_EVALUATION_SHADER);
+
+	if (!ReadFile("shaders/planet.frag", fs)) exit(1);
+    AddShader(shaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
 
 	GLint success = 0;
 	GLchar errorLog[1024] = { 0 };

@@ -1,6 +1,5 @@
 #include "assetManager.h"
 #include <filesystem>
-#include "objectSerializer.h"
 #include <iostream>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -11,9 +10,8 @@ namespace AssetManager {
 	static System* s_Instance = nullptr;
 
 	System::System() {
-
 		// Set input box to empty instead of null
-		strncpy_s(this->addObjectNameBuffer, "", sizeof(this->addObjectNameBuffer) - 1);
+		strncpy(this->addObjectNameBuffer, "", sizeof(this->addObjectNameBuffer) - 1);
 		this->addObjectNameBuffer[sizeof(this->addObjectNameBuffer) - 1] = '\0';
 
 		this->addObjectWindow = false;
@@ -67,7 +65,7 @@ namespace AssetManager {
 
 				SaveObjects();
 				// Clear input box to empty instead of null
-				strncpy_s(this->addObjectNameBuffer, "", sizeof(this->addObjectNameBuffer) - 1);
+				strncpy(this->addObjectNameBuffer, "", sizeof(this->addObjectNameBuffer) - 1);
 				this->addObjectNameBuffer[sizeof(this->addObjectNameBuffer) - 1] = '\0';
 			}
 			else {
@@ -204,6 +202,7 @@ namespace AssetManager {
 			// Add the populated ObjectData to the objects vector
 			m_Objects[saveName] = objectData;
 		}
+		return true;
 	}
 
 	void System::ModifyBrokenOBJFile(const std::string& filePath) {

@@ -19,12 +19,17 @@ void Shader::LoadBasicShaders() {
 
     std::string vs, fs;
 
-    if (!ReadFile(vsSource.c_str(), vs)) exit(1);
-    AddShader(shaderProgram, vs.c_str(), GL_VERTEX_SHADER);
+    if (vsSource.size() > 0) {
+        if (!ReadFile(vsSource.c_str(), vs)) exit(1);
+        AddShader(shaderProgram, vs.c_str(), GL_VERTEX_SHADER);
+    }
 
-    if (!ReadFile(fsSource.c_str(), fs)) exit(1);
-    AddShader(shaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
+    if (fsSource.size() > 0) {
+        if (!ReadFile(fsSource.c_str(), fs)) exit(1);
+        AddShader(shaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
+    }
 
+    if (vsSource.size() == 0 && fsSource.size() == 0) return;
     GLint success = 0;
     GLchar errorLog[1024] = { 0 };
 
@@ -33,7 +38,7 @@ void Shader::LoadBasicShaders() {
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (success == 0) {
         glGetProgramInfoLog(shaderProgram, sizeof(errorLog), nullptr, errorLog);
-        Sable::Console::Log("Error linking shader program: %s", errorLog);
+        Sable::Console::Log("Error linking shader program: %s shader name: %s", errorLog, shaderName);
         exit(1);
     }
 
