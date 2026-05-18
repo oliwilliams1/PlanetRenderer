@@ -1,5 +1,5 @@
 # PlanetRenderer
-This repo is research for my upcoming scholarship project, intending get further understanding and experience in C++ and OpenGL.
+This project renders a Planet from scratch with no assets and minimal dependencies, using c++ and OpenGL. This project uses flipbook imposters, which is a relatively new and undocumented solution, forcing me to make my own sufficient solution from scratch with only the end goal as support. 
 
 Time poured into this project
 
